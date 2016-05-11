@@ -19,7 +19,7 @@ AC, AC
 MC, MC
 LC, LC
 
-H1,X
+H1,A1
 
 H2,X
 
