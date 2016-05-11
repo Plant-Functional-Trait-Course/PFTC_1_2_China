@@ -19,13 +19,17 @@ AC, AC
 MC, MC
 LC, LC
 
-H1,A1
+H1, A1
+A1, M1
+M1, L1
 
-H2,X
+A2, H2
+M2, A2
+L2, M2
 
-H3,X
+H3, L3
 
-H4,X
+L4, H4
 
 ")  
                                 
