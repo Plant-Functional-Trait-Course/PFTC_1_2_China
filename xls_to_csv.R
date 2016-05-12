@@ -87,3 +87,4 @@ allsites <- allsites[,  c(metaNames, sppNames, envNames)]
 names(allsites)
 
 ##write data to csv file
+write.csv(allsites, file = "./data/allsites.csv", row.names = FALSE)
