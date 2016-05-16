@@ -1,0 +1,136 @@
+-- ----------------------------------------------------------
+-- MDB Tools - A library for reading MS Access database files
+-- Copyright (C) 2000-2011 Brian Bruns and others.
+-- Files in libmdb are licensed under LGPL and the utilities under
+-- the GPL, see COPYING.LIB and COPYING files respectively.
+-- Check out http://mdbtools.sourceforge.net
+-- ----------------------------------------------------------
+
+-- That file uses encoding UTF-8
+CREATE transplant;
+USE transplant;
+
+CREATE TABLE `blocks`
+ (
+	`blockID`			varchar (20), 
+	`siteID`			varchar (40), 
+	`slope`			float, 
+	`aspect`			float, 
+	`comment`			text (255)
+);
+
+CREATE TABLE `plots`
+ (
+	`plotID`			int, 
+	`blockID`			varchar (40), 
+	`aspect`			float, 
+	`slope`			float
+);
+
+CREATE TABLE `sites`
+ (
+	`siteID`			varchar (40), 
+	`norwegianName`			varchar (40), 
+	`siteCode`			varchar (12), 
+	`latitude`			float, 
+	`longitude`			float, 
+	`x_UTM33_North`			float, 
+	`y_UTM33_north`			int, 
+	`altitude(DEM)`			int, 
+	`annualprecipitation_gridded`			float, 
+	`temperature_level`			int, 
+	`summerTemperature_gridded`			float, 
+	`precipitation_level`			int, 
+	`geology`			varchar (100), 
+	`landUse`			varchar (100), 
+	`aspect`			float, 
+	`solar_radiation(DEM)(mw/hour/m^2)`			float, 
+	`totalN (mg N/m2 yr)`			int, 
+	`slope`			float
+);
+
+
+CREATE TABLE `subTurfEnvironment`
+ (
+	`turfID`			varchar (100), 
+	`subTurf`			int, 
+	`year`			int, 
+	`pleuro`			int, 
+	`acro`			int, 
+	`liver`			int, 
+	`lichen`			int, 
+	`litter`			int, 
+	`soil`			int, 
+	`rock`			int, 
+	`comment`			varchar (510), 
+	`bad`			varchar (2)
+);
+
+CREATE TABLE `taxon`
+ (
+	`species`			varchar (510), 
+	`speciesName`			varchar (510), 
+	`family`			varchar (510), 
+	`functionalGroup`			varchar (510), 
+	`lifeSpan`			varchar (510), 
+	`comment`			varchar (510), 
+	`height`			float, 
+	`leafSize`			float, 
+	`seedMass`			float, 
+	`SLA`			float
+);
+
+CREATE TABLE `turfCommunity`
+ (
+	`turfID`			varchar (40), 
+	`year`			int, 
+	`species`			varchar (100), 
+	`cover`			float, 
+	`cf`			char NOT NULL
+);
+
+CREATE TABLE `turfEnvironment`
+ (
+	`turfID`			varchar (100), 
+	`year`			int, 
+	`pleuro`			float, 
+	`acro`			float, 
+	`liver`			float, 
+	`lichen`			float, 
+	`litter`			float, 
+	`soil`			float, 
+	`rock`			float, 
+	`totalVascular`			float, 
+	`totalBryophytes`			float, 
+	`totalLichen`			float, 
+	`vegetationHeight`			float, 
+	`mossHeight`			float, 
+	`comment`			varchar (510), 
+	`recorder`			varchar (100), 
+	`date`			varchar (100)
+);
+
+CREATE TABLE `turfs`
+ (
+	`turfID`			varchar (40), 
+	`TTtreat`			varchar (10), 
+	`originPlotID`			int, 
+	`destinationPlotID`			int
+);
+
+CREATE TABLE `subTurfCommunity`
+ (
+	`turfID`			varchar (40), 
+	`subTurf`			int, 
+	`year`			int, 
+	`species`			varchar (100), 
+	`seedlings`			int, 
+	`juvenile`			int, 
+	`adult`			char NOT NULL, 
+	`fertile`			char NOT NULL, 
+	`vegetative`			char NOT NULL, 
+	`dominant`			char NOT NULL, 
+	`cf`			char NOT NULL
+);
+
+
