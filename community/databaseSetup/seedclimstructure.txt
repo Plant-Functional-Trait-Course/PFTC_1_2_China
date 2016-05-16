@@ -7,7 +7,8 @@
 -- ----------------------------------------------------------
 
 -- That file uses encoding UTF-8
-CREATE transplant;
+DROP DATABASE transplant;
+CREATE DATABASE transplant;
 USE transplant;
 
 CREATE TABLE `blocks`
@@ -55,9 +56,7 @@ CREATE TABLE `subTurfEnvironment`
 	`turfID`			varchar (100), 
 	`subTurf`			int, 
 	`year`			int, 
-	`pleuro`			int, 
-	`acro`			int, 
-	`liver`			int, 
+	`moss`			int, 
 	`lichen`			int, 
 	`litter`			int, 
 	`soil`			int, 
@@ -93,9 +92,7 @@ CREATE TABLE `turfEnvironment`
  (
 	`turfID`			varchar (100), 
 	`year`			int, 
-	`pleuro`			float, 
-	`acro`			float, 
-	`liver`			float, 
+	`moss`			float, 
 	`lichen`			float, 
 	`litter`			float, 
 	`soil`			float, 
@@ -105,6 +102,7 @@ CREATE TABLE `turfEnvironment`
 	`totalLichen`			float, 
 	`vegetationHeight`			float, 
 	`mossHeight`			float, 
+	`litterThickness`			float, 
 	`comment`			varchar (510), 
 	`recorder`			varchar (100), 
 	`date`			varchar (100)
