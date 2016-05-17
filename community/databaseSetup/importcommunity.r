@@ -75,7 +75,7 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
       cf <- grep("cf", sp, ignore.case = TRUE)
       sp <- gsub("cf", "", sp, ignore.case = TRUE)
       sp <- gsub("\\*", "", sp, ignore.case = TRUE)
-      spp2 <- data.frame(turfID = spp$turfID, year = spp$year, species = names(spp)[nc], cover = sp, cf = 0)
+      spp2 <- data.frame(turfID = spp$turfID, year = spp$year, species = names(spp)[nc], cover = as.numeric(sp), cf = 0)
       spp2$cf[cf] <- 1
       spp2 <- spp2[!is.na(spp2$cover), ]
       spp2 <- spp2[spp2$cover > 0, ]
@@ -131,7 +131,6 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
     #Find oddities in dataset:
     tmp <- sapply(subspp, function(z){a <- which(z == "f"); if(length(a) > 0){subspp[a, 1:3]} else NULL})
     tmp[!sapply(tmp, is.null)]
-
     spp0 <- ldply(as.list(4:ncol(subspp)), function(nc){
       sp <- subspp[,nc ]
       spp2 <- data.frame(turfID = subspp$turfID, year = subspp$year, subTurf = subspp$subPlot, species = names(subspp)[nc], seedlings = 0, juvenile = 0, adult = 0, fertile = 0, vegetative = 0, dominant = 0, cf = 0)
@@ -165,7 +164,7 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
       tmpSp$seedlings[tmpSp$seedlings == 0 & tmpSp$juvenile == 1] <- 1
     spp0[spp0$species %in% seedlingSp,] <- tmpSp
     
-    sqlAppendTable(con, "subTurfCommunity", spp0, row.names = FALSE)
+    dbWriteTable(con, "subTurfCommunity", spp0, row.names = FALSE, append = TRUE)
     
     
    #Check rows query for subTurfCommunity :
