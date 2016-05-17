@@ -44,7 +44,9 @@ taxonomy <- taxonomy[, c("oldCode", "newCode")]
                                 
 #import data, process and export to CSV
 allsites <- lapply(flist, function(fl){
+  print(fl)
   onesite <- lapply(excel_sheets(fl), function(sheet){
+    print(sheet)
     dat <- read_excel(fl, sheet = sheet)
 
     #fix metadata

@@ -14,11 +14,34 @@ con <- make_connection(username = "gbsrt", password = "b5b5b5", dbname = "transp
 
 
 #taxa - replace with full info
+
+taxonomy <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
+taxonomy <- taxonomy[, c("oldCode", "newCode", "full name")]
+
+ #discard duplicate taxa (which have oldCode != newCode or singletons) #NB multiple changes to new code will fail
+keep <-
+  taxonomy$oldCode == taxonomy$newCode |
+  !(duplicated(taxonomy$newCode) |
+      duplicated(taxonomy$newCode, fromLast = TRUE))
+
+taxonomy$newCode[keep]
+
+#
+taxonomy <- setNames(taxonomy[keep, c("newCode", "full name")], c("species", "speciesName"))
+
+#catch any extras (none now)
+
 spp <- names(dat)
 meta <-c("DestinationSite", "DestinationBlock", "originPlotID", "TTtreat", "destinationPlotID", "turfID", "RTtreat", "GRtreat", "subPlot", "year", "date", "Measure", "recorder", "moss", "lichen", "litter", "soil", "rock", "totalVascular", "totalBryophytes", "totalLichen", "vegetationHeight", "mossHeight", "litterThickness", "comment"  )
-spp <- spp[!spp %in% meta ]
-spp <- data.frame(species = spp)
-dbWriteTable(con, "taxon", value = spp, row.names = FALSE, append = TRUE)
+spp <- spp[!spp %in% meta]
+extras <- spp[!spp %in% taxonomy$species]
+
+if(length(extras) != 0){
+  taxonomy <- rbind(taxonomy, cbind(species = extras, speciesName = extras))  
+  warning("Not found in species list: ", paste(extras, collapse = " "))
+}
+#add to database
+dbWriteTable(con, "taxon", value = as.data.frame(taxonomy), row.names = FALSE, append = TRUE)
 
 dbGetQuery(con, "select * from taxon;")
 
@@ -40,6 +63,8 @@ dbWriteTable(con, "plots", value = plots, row.names = FALSE, append = TRUE)
 turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID", "destinationPlotID")])), c("turfID", "TTtreat", "originPlotID", "destinationPlotID"))
 dbWriteTable(con, "turfs", value = turfs, row.names = FALSE, append = TRUE)
 
+#import community and environment data
 import.data(dat)
 
 dbDisconnect(con)
+
