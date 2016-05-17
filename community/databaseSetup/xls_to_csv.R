@@ -52,7 +52,7 @@ allsites <- lapply(flist, function(fl){
     #fix metadata
     dat <- dat[!is.na(dat$Measure), ]
     meta <- dat$DestinationSite
-    meta[is.na(meta)] <- meta[which(is.na(meta))-1]#fill blanks in meta with row above
+    meta[is.na(meta)] <- meta[which(is.na(meta))-1]#fill blanks in meta with row above   
     dat$DestinationSite <- substr(meta, 1, 1)
     dat$DestinationBlock <- substr(meta, 1, 2)
     dat$TTtreat <- substr(meta, 4, nchar(meta))
@@ -67,8 +67,10 @@ allsites <- lapply(flist, function(fl){
     #delete empty columns
     dat <- dat[, colSums(!is.na(dat))>0] # currently also removes GRtreat and RTtreat
     
-    #taxonomy
+    #year
+    dat$year[is.na(dat$year)] <- dat$year[which(is.na(dat$year))-1]#fill blanks in year with row above
     
+    #taxonomy
     names(dat) <- trimws(names(dat))#zap trailing white space
     names(dat) <- make.names(names(dat))
     extras <- setdiff(names(dat), taxonomy$oldCode)
