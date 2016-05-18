@@ -18,6 +18,8 @@ CREATE TABLE `blocks`
 	`slope`			float, 
 	`aspect`			float, 
 	`comment`			text (255)
+	 PRIMARY KEY (blockID)
+	 FOREIGN KEY (siteID) REFERENCES sites(siteID)
 );
 
 CREATE TABLE `plots`
@@ -26,6 +28,8 @@ CREATE TABLE `plots`
 	`blockID`			varchar (40), 
 	`aspect`			float, 
 	`slope`			float
+	 PRIMARY KEY (plotID)
+	 FOREIGN KEY (blockID) REFERENCES blocks(blockID)
 );
 
 CREATE TABLE `sites`
@@ -48,6 +52,7 @@ CREATE TABLE `sites`
 	`solar_radiation(DEM)(mw/hour/m^2)`			float, 
 	`totalN (mg N/m2 yr)`			int, 
 	`slope`			float
+	 PRIMARY KEY (siteID)
 );
 
 
@@ -63,6 +68,8 @@ CREATE TABLE `subTurfEnvironment`
 	`rock`			int, 
 	`comment`			varchar (510), 
 	`bad`			varchar (2)
+	 PRIMARY KEY (turfID, subTurf, year)
+	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
 );
 
 CREATE TABLE `taxon`
@@ -77,6 +84,7 @@ CREATE TABLE `taxon`
 	`leafSize`			float, 
 	`seedMass`			float, 
 	`SLA`			float
+	 PRIMARY KEY (species)
 );
 
 CREATE TABLE `turfCommunity`
@@ -86,6 +94,9 @@ CREATE TABLE `turfCommunity`
 	`species`			varchar (100), 
 	`cover`			float, 
 	`cf`			char NOT NULL
+	 PRIMARY KEY (turfID, year, species)
+	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
+
 );
 
 CREATE TABLE `turfEnvironment`
@@ -106,6 +117,9 @@ CREATE TABLE `turfEnvironment`
 	`comment`			varchar (510), 
 	`recorder`			varchar (100), 
 	`date`			varchar (100)
+	 PRIMARY KEY (turfID, year)
+	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
+
 );
 
 CREATE TABLE `turfs`
@@ -114,6 +128,8 @@ CREATE TABLE `turfs`
 	`TTtreat`			varchar (10), 
 	`originPlotID`			int, 
 	`destinationPlotID`			int
+	 PRIMARY KEY (turfID)
+	 FOREIGN KEY (originPlotID) REFERENCES plots(plotID)
 );
 
 CREATE TABLE `subTurfCommunity`
@@ -129,6 +145,9 @@ CREATE TABLE `subTurfCommunity`
 	`vegetative`			char NOT NULL, 
 	`dominant`			char NOT NULL, 
 	`cf`			char NOT NULL
+	 PRIMARY KEY (turfID, subTurf, year, species)
+	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
+
 );
 
 
