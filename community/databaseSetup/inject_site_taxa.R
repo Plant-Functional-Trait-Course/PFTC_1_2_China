@@ -1,5 +1,6 @@
 library("DBI")
 library("RMySQL")
+library("readxl")
 source(file = "community/make_connection.R")
 
 
@@ -48,7 +49,6 @@ dbGetQuery(con, "select * from taxon;")
 
 #sites
 sites <- data.frame(siteID = unique(dat$DestinationSite))
-#sqlAppendTable(con, "sites", values = sites, row.names = FALSE)# why doesn't this work
 dbWriteTable(con, "sites", value = sites, row.names = FALSE, append = TRUE)
 
 #blocks
@@ -64,6 +64,7 @@ turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID",
 dbWriteTable(con, "turfs", value = turfs, row.names = FALSE, append = TRUE)
 
 #import community and environment data
+source("community/databaseSetup/importcommunity.r")
 import.data(dat)
 
 dbDisconnect(con)
