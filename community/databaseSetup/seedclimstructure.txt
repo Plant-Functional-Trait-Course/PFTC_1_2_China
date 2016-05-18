@@ -11,27 +11,6 @@ DROP DATABASE transplant;
 CREATE DATABASE transplant;
 USE transplant;
 
-CREATE TABLE `blocks`
- (
-	`blockID`			varchar (20), 
-	`siteID`			varchar (40), 
-	`slope`			float, 
-	`aspect`			float, 
-	`comment`			text (255)
-	 PRIMARY KEY (blockID)
-	 FOREIGN KEY (siteID) REFERENCES sites(siteID)
-);
-
-CREATE TABLE `plots`
- (
-	`plotID`			int, 
-	`blockID`			varchar (40), 
-	`aspect`			float, 
-	`slope`			float
-	 PRIMARY KEY (plotID)
-	 FOREIGN KEY (blockID) REFERENCES blocks(blockID)
-);
-
 CREATE TABLE `sites`
  (
 	`siteID`			varchar (40), 
@@ -51,8 +30,55 @@ CREATE TABLE `sites`
 	`aspect`			float, 
 	`solar_radiation(DEM)(mw/hour/m^2)`			float, 
 	`totalN (mg N/m2 yr)`			int, 
-	`slope`			float
+	`slope`			float,
 	 PRIMARY KEY (siteID)
+);
+
+
+CREATE TABLE `blocks`
+ (
+	`blockID`			varchar (20), 
+	`siteID`			varchar (40), 
+	`slope`			float, 
+	`aspect`			float, 
+	`comment`			text (255),
+	 PRIMARY KEY (blockID),
+	 FOREIGN KEY (siteID) REFERENCES sites(siteID)
+);
+
+CREATE TABLE `plots`
+ (
+	`plotID`			int, 
+	`blockID`			varchar (40), 
+	`aspect`			float, 
+	`slope`			float,
+	 PRIMARY KEY (plotID),
+	 FOREIGN KEY (blockID) REFERENCES blocks(blockID)
+);
+
+CREATE TABLE `turfs`
+ (
+	`turfID`			varchar (40), 
+	`TTtreat`			varchar (10), 
+	`originPlotID`			int, 
+	`destinationPlotID`			int,
+	 PRIMARY KEY (turfID),
+	 FOREIGN KEY (originPlotID) REFERENCES plots(plotID)
+);
+
+CREATE TABLE `taxon`
+ (
+	`species`			varchar (510), 
+	`speciesName`			varchar (510), 
+	`family`			varchar (510), 
+	`functionalGroup`			varchar (510), 
+	`lifeSpan`			varchar (510), 
+	`comment`			varchar (510), 
+	`height`			float, 
+	`leafSize`			float, 
+	`seedMass`			float, 
+	`SLA`			float,
+	 PRIMARY KEY (species)
 );
 
 
@@ -67,24 +93,9 @@ CREATE TABLE `subTurfEnvironment`
 	`soil`			int, 
 	`rock`			int, 
 	`comment`			varchar (510), 
-	`bad`			varchar (2)
-	 PRIMARY KEY (turfID, subTurf, year)
+	`bad`			varchar (2),
+	 PRIMARY KEY (turfID, subTurf, year),
 	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
-);
-
-CREATE TABLE `taxon`
- (
-	`species`			varchar (510), 
-	`speciesName`			varchar (510), 
-	`family`			varchar (510), 
-	`functionalGroup`			varchar (510), 
-	`lifeSpan`			varchar (510), 
-	`comment`			varchar (510), 
-	`height`			float, 
-	`leafSize`			float, 
-	`seedMass`			float, 
-	`SLA`			float
-	 PRIMARY KEY (species)
 );
 
 CREATE TABLE `turfCommunity`
@@ -93,8 +104,8 @@ CREATE TABLE `turfCommunity`
 	`year`			int, 
 	`species`			varchar (100), 
 	`cover`			float, 
-	`cf`			char NOT NULL
-	 PRIMARY KEY (turfID, year, species)
+	`cf`			char NOT NULL,
+	 PRIMARY KEY (turfID, year, species),
 	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
 
 );
@@ -116,21 +127,12 @@ CREATE TABLE `turfEnvironment`
 	`litterThickness`			float, 
 	`comment`			varchar (510), 
 	`recorder`			varchar (100), 
-	`date`			varchar (100)
-	 PRIMARY KEY (turfID, year)
+	`date`			varchar (100),
+	 PRIMARY KEY (turfID, year),
 	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
 
 );
 
-CREATE TABLE `turfs`
- (
-	`turfID`			varchar (40), 
-	`TTtreat`			varchar (10), 
-	`originPlotID`			int, 
-	`destinationPlotID`			int
-	 PRIMARY KEY (turfID)
-	 FOREIGN KEY (originPlotID) REFERENCES plots(plotID)
-);
 
 CREATE TABLE `subTurfCommunity`
  (
@@ -144,10 +146,8 @@ CREATE TABLE `subTurfCommunity`
 	`fertile`			char NOT NULL, 
 	`vegetative`			char NOT NULL, 
 	`dominant`			char NOT NULL, 
-	`cf`			char NOT NULL
-	 PRIMARY KEY (turfID, subTurf, year, species)
+	`cf`			char NOT NULL,
+	 PRIMARY KEY (turfID, subTurf, year, species),
 	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
 
 );
-
-
