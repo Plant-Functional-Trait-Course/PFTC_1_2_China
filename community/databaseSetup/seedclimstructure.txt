@@ -48,7 +48,7 @@ CREATE TABLE `blocks`
 
 CREATE TABLE `plots`
  (
-	`plotID`			int, 
+	`plotID`			varchar (10), 
 	`blockID`			varchar (40), 
 	`aspect`			float, 
 	`slope`			float,
@@ -60,8 +60,8 @@ CREATE TABLE `turfs`
  (
 	`turfID`			varchar (40), 
 	`TTtreat`			varchar (10), 
-	`originPlotID`			int, 
-	`destinationPlotID`			int,
+	`originPlotID`			varchar (10), 
+	`destinationPlotID`			varchar (10),
 	 PRIMARY KEY (turfID),
 	 FOREIGN KEY (originPlotID) REFERENCES plots(plotID)
 );
