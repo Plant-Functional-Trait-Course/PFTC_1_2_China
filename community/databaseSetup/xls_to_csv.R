@@ -51,18 +51,23 @@ allsites <- lapply(flist, function(fl){
 
     #fix metadata
     dat <- dat[!is.na(dat$Measure), ]
-    meta <- dat$DestinationSite
+    meta <- dat$DestinationSite #NB DestinationSite is the OriginSite!
     meta[is.na(meta)] <- meta[which(is.na(meta))-1]#fill blanks in meta with row above   
-    dat$DestinationSite <- substr(meta, 1, 1)
-    dat$DestinationBlock <- substr(meta, 1, 2)
-    dat$TTtreat <- substr(meta, 4, nchar(meta))
-    dat$destinationPlotID <- meta    
+    dat$originPlotID <-meta
     dat$turfID <- meta
+    dat$TTtreat <- substr(meta, 4, nchar(meta))
+  
+    
 
-    #find originplot
+#    dat$destinationPlotID <- meta    
+
+    #find destination site/block/plot
     sitetreat <-  gsub("[[:digit:]]-", "",meta) #remove block info
-    originSitetreat <- mapvalues(sitetreat, from = originDestination$destination, to = originDestination$origin, warn_missing = FALSE)
-    dat$originPlotID <- paste0(substr(originSitetreat, 1, 1), substr(meta,2, 3), substr(originSitetreat, 2, nchar(originSitetreat)))
+    destSitetreat <- mapvalues(sitetreat, from = originDestination$origin, to = originDestination$destination, warn_missing = FALSE)
+    dat$destinationPlotID <- paste0(substr(destSitetreat, 1, 1), substr(meta,2, 3), dat$TTtreat)
+    dat$DestinationSite <- substr(destSitetreat, 1, 1)
+    dat$DestinationBlock <- substr(dat$destinationPlotID, 1, 2)#assuming transplant from block1 go to block 1
+    
 
     #delete empty columns
     dat <- dat[, colSums(!is.na(dat))>0] # currently also removes GRtreat and RTtreat
