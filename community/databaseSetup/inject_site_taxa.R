@@ -57,7 +57,8 @@ dbWriteTable(con, "blocks", value = blocks, row.names = FALSE, append = TRUE)
 
 #plots
 plots <- setNames(data.frame(unique(dat[, c("destinationPlotID", "DestinationBlock")])), c("plotID", "blockID"))
-dbWriteTable(con, "plots", value = plots, row.names = FALSE, append = TRUE)
+plots1 <- data.frame(plotID = unique(dat$"originPlotID"), blockID = substr(unique(dat$"originPlotID"), 1, 2))
+dbWriteTable(con, "plots", value = rbind(plots, plots1), row.names = FALSE, append = TRUE)
 
 #turfs
 turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID", "destinationPlotID")])), c("turfID", "TTtreat", "originPlotID", "destinationPlotID"))
