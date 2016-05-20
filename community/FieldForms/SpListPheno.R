@@ -12,7 +12,6 @@ phen <- dbGetQuery(con, phenQ)
 head(phen)
 audsfun <- function(site, year = 2015) {
   phen <- subset(phen, phen$siteID == site)
-  
   splist <- by(phen, phen$turfID, function(turf) {
     sp2012 <- turf$species[turf$year == 2012]
     sp2015 <- turf$species[turf$year == year]
