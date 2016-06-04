@@ -32,10 +32,10 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
     message("done turfs")                                  
     
     #subTurf env
-    subturfEnv <- dat[dat$Measure != "Cover", c("turfID", "subPlot", "year", "moss", "lichen", "litter", "soil", "rock", "comment")]
+    subturfEnv <- dat[dat$Measure != "cover%", c("turfID", "subPlot", "year", "moss", "lichen", "litter", "soil", "rock", "comment")]
     names(subturfEnv)[2] <- "subTurf"
       if(!is.null(dat$missing)){
-         bad = dat$missing[dat$Measure != "Cover"]
+         bad = dat$missing[dat$Measure != "cover%"]
          bad[is.na(bad)] <- ""
         subturfEnv <- cbind(subturfEnv, bad = bad)
       } else{
@@ -46,7 +46,7 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
     nrow(subturfEnv)
     
     #TurfEnv
-    turfEnv <- dat[dat$Measure == "Cover", c("turfID","year",  "moss", "lichen", "litter", "soil", "rock", "totalVascular","totalBryophytes", "totalLichen", "vegetationHeight", "mossHeight", "litterThickness", "comment", "recorder", "date")]
+    turfEnv <- dat[dat$Measure == "cover%", c("turfID","year",  "moss", "lichen", "litter", "soil", "rock", "totalVascular","totalBryophytes", "totalLichen", "vegetationHeight", "mossHeight", "litterThickness", "comment", "recorder", "date")]
     if(any(nchar(as.character(turfEnv$comment[!is.na(turfEnv$comment)])) > 255)) {
       stop ("more than 255 characters in a comment field in turfEnv")
     }
