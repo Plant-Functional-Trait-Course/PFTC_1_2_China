@@ -29,18 +29,5 @@ load_comm <- function(con, cover = TRUE) {
       levels = c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC")
     )
   
-  
-  # make fat table
-  #  cover <- spread(cover.thin, key = species, value = cover, fill = 0)
-  
-  #make meta data
-  #  cover.meta <- cover[, 1:which(names(cover) == "year")]
-  
-  #make turf list
-  #  turfs <- cover.meta[!duplicated(cover.meta$turfID),]
-  #  turfs <- turfs[order(turfs$turfID),]
-  
-  
-  #  list(meta = meta, spp = spp, turfs = turfs)
   cover.thin
 }
