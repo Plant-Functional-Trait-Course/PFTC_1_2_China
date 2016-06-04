@@ -12,10 +12,10 @@
 
 
 #' @export
-#' @importFrom RODBC odbcConnectAccess2007 odbcConnect
+#' @importFrom DBI dbConnect
 
 
-make_connection<-function(username = "", password = "", host = "127.0.0.1", port = 3306, dbname = "seedclimComm"){
+make_connection<-function(username = "", password = "", host = "127.0.0.1", port = 3306, dbname = "transplant"){
   con <- dbConnect (RMySQL::MySQL(),
                     username = username,
                     password = password,
