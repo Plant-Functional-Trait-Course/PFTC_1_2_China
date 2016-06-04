@@ -1,7 +1,7 @@
 library("DBI")
 library("RMySQL")
 library("readxl")
-source(file = "community/make_connection.R")
+source(file = "community/R/make_connection.R")
 
 
 #load csv file
