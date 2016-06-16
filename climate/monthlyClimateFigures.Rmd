@@ -1,0 +1,44 @@
+---
+title: "Transplant monthly climate data"
+author: "Richard J. Telford"
+date: "June 16, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("ggplot2")
+library("dplyr")
+```
+
+
+```{r loadData}
+load("../monthlyclimate.Rdata")
+```
+
+## Temperature
+```{r temperature}
+ggplot(mklima%>%filter(grepl("temp", variable, ignore.case = TRUE)), aes(x = month, y = value, colour = variable)) + 
+  geom_line() + 
+  facet_wrap(~site)
+```
+
+## Precipitation
+```{r ppt}
+ggplot(mklima%>%filter(variable == "rain"), aes(x = month, y = value, colour = site)) + 
+  geom_line() 
+```
+## Humidity
+```{r RH}
+ggplot(mklima%>%filter(variable == "RH"), aes(x = month, y = value, colour = site)) + 
+  geom_line() 
+```
+## Soil moisture
+```{r moisture}
+ggplot(mklima%>%filter(grepl("waterContent", variable)), aes(x = month, y = value, colour = site, linetype = variable)) + 
+  geom_line() 
+```
+Some doubtful values
+
+
+
