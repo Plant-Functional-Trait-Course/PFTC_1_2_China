@@ -69,6 +69,7 @@ siteL <- remove_duplicates(siteL)
 ## combine data
 
 klima <- rbind(siteH, siteA, siteM, siteL)
+klima$site <- factor(klima$site, levels = c("A", "H", "M", "L"))
 klima <- gather(klima, key = "variable", value = "value", -site, -datetime)
 head(klima)
 
