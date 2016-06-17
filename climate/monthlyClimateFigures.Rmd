@@ -23,21 +23,26 @@ ggplot(mklima%>%filter(grepl("temp", variable, ignore.case = TRUE)), aes(x = mon
   facet_wrap(~site)
 ```
 
+Appears to be warmer in the soil than in the air. Will check with the original data.
+
 ## Precipitation
 ```{r ppt}
 ggplot(mklima%>%filter(variable == "rain"), aes(x = month, y = value, colour = site)) + 
   geom_line() 
 ```
+
 ## Humidity
 ```{r RH}
 ggplot(mklima%>%filter(variable == "RH"), aes(x = month, y = value, colour = site)) + 
   geom_line() 
 ```
+
 ## Soil moisture
 ```{r moisture}
 ggplot(mklima%>%filter(grepl("waterContent", variable)), aes(x = month, y = value, colour = site, linetype = variable)) + 
   geom_line() 
 ```
+
 Some doubtful values
 
 
