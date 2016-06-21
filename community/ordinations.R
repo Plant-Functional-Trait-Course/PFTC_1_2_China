@@ -24,23 +24,49 @@ autoplot(CA)
 fCA <- fortify(CA, display = "sites")
 fCA <- cbind(fCA, cover_meta[cover_meta$TTtreat %in% c("control", "local"), ])
 
-g <-ggplot(fCA, aes(x = Dim1, y = Dim2, col = originSiteID, shape = TTtreat, group = originPlotID, linetype = TTtreat)) +
+sites <- c("H", "A", "M", "L")
+site_colours <- c("black", "grey50", "pink", "lightblue", "red", "blue", "green")
+
+g <-ggplot(fCA, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
   geom_point(aes(size = ifelse(year == min(year), 2, 1))) +
   geom_line() + 
   coord_fixed(ratio = 1) +
-  scale_size(range = c(1, 2), guide = "none")
-  labs(x = "CA1", y = "CA2", colour = "Site", shape = "Treatment", linetype = "Treatment")
+  scale_size(range = c(1, 3), guide = "none") +
+  scale_colour_manual(limits = levels(cover_meta$TTtreat), values = site_colours) +
+  scale_fill_manual(limits = levels(cover_meta$TTtreat), values = site_colours) +
+  scale_shape_manual(breaks = sites, limits = sites, values = c(24, 22, 23, 25)) +
+  guides(shape = guide_legend(override.aes = list(fill = "black"))) +
+  labs(x = "CA1", y = "CA2", colour = "Treatment", fill = "Treatment", shape = "Site")
 g
   
-#Hogsete plot. Site M
-M_cover <- cover[cover_meta$destSiteID == "M", ]
-M_cover <- M_cover[, colSums(M_cover >0) >1]
-decorana(sqrt(M_cover))
+#Hogsete plots.
 
-# CA
-MCA <- cca(sqrt(M_cover))
+hogsete_plot <- function(site, base, ord = cca, dest = TRUE) {
+  if(dest){
+    use <- cover_meta$destSiteID == site
+  } else {
+    use <- cover_meta$originSiteID == site
+  }
+  S_cover <- cover[use,]
+  S_cover <- S_cover[, colSums(S_cover > 0) > 1]
+  decorana(sqrt(S_cover))
+  
+  # CA
+  SCA <- ord(sqrt(S_cover))
+  
+  fSCA <- fortify(SCA, display = "sites")
+  fSCA <- cbind(fSCA, cover_meta[use, ])
+  
+  base %+% fSCA
+}
 
-fMCA <- fortify(MCA, display = "sites")
-fMCA <- cbind(fMCA, cover_meta[cover_meta$destSiteID == "M", ])
+hogsete_plot(site = "L", base = g)
+hogsete_plot(site = "M", base = g)
+hogsete_plot(site = "A", base = g)
+hogsete_plot(site = "H", base = g)  
 
-g %+% fMCA
+hogsete_plot(site = "L", base = g, dest = FALSE)
+hogsete_plot(site = "M", base = g, dest = FALSE)
+hogsete_plot(site = "A", base = g, dest = FALSE)
+hogsete_plot(site = "H", base = g, dest = FALSE)  
+
