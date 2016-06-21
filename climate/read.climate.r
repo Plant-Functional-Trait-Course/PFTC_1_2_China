@@ -3,6 +3,7 @@ library("ggplot2")
 library("lubridate")
 library("tidyr")
 library("ggplot2")
+library("dplyr")
 
 #load functions
 source("climate/R/read_climate_functions.R")
@@ -32,7 +33,7 @@ x <- gather(rbind(siteA, siteM, siteL, siteH), key = "variable", value = value, 
 ggplot(x, aes(x = value)) + geom_histogram() + geom_rug() + facet_wrap(~variable, scales = "free_x")
 
 #soilTemp0 problems
-ggplot(x%>%filter(variable == "soilTemp0"), aes(x = datetime, y = value, colour = site)) + geom_path()
+ggplot(x %>% filter(variable == "soilTemp0"), aes(x = datetime, y = value, colour = site)) + geom_path()
 
 ggplot(x%>%filter(variable == "soilTemp0"), aes(x = datetime, y = value, colour = site)) + geom_path() + scale_y_continuous(limits = c(NA, 54)) + geom_point()
 
