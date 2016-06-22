@@ -20,7 +20,7 @@ plot(CA)
 
 fortify(CA)
 autoplot(CA)
-?ggvegan::autoplot.cca
+
 fCA <- fortify(CA, display = "sites")
 fCA <- cbind(fCA, cover_meta[cover_meta$TTtreat %in% c("control", "local"), ])
 
@@ -72,3 +72,7 @@ hogsete_plot(site = "M", base = g, dest = FALSE)
 hogsete_plot(site = "A", base = g, dest = FALSE)
 hogsete_plot(site = "H", base = g, dest = FALSE)  
 
+hogsete_plot(site = "L", base = g, transplant = FALSE)
+hogsete_plot(site = "M", base = g, transplant = FALSE)
+hogsete_plot(site = "A", base = g, transplant = FALSE)
+hogsete_plot(site = "H", base = g, transplant = FALSE)  
