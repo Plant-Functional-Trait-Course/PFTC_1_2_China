@@ -1,7 +1,7 @@
 library("DBI")
 library("RMySQL")
 library("readxl")
-
+library("plyr")
 
 #load csv file
 dat <- read.csv ("community/databaseSetup/data/allsites.csv")
@@ -28,6 +28,22 @@ taxonomy$newCode[keep]
 #
 taxonomy <- setNames(taxonomy[keep, c("newCode", "full name")], c("species", "speciesName"))
 
+# split authority from name
+spNames <- strsplit(taxonomy$speciesName, " ")
+nameAuthority <-ldply(spNames, function(x){
+  if(any(grepl("var.", x, fixed = TRUE))){
+    speciesName <- paste(x[1:4], collapse = " ")
+    authority <- paste(x[-(1:4)], collapse = " ")
+  } else {
+    speciesName <- paste(x[1:2], collapse = " ")  
+    authority <- paste(x[-(1:2)], collapse = " ")
+  }
+  if(is.na(authority)) authority <- ""
+  data.frame(speciesName, authority)
+})
+
+taxonomy <- cbind(species = taxonomy$species, nameAuthority)
+
 #catch any extras (none now)
 
 spp <- names(dat)
@@ -36,12 +52,9 @@ spp <- spp[!spp %in% meta]
 extras <- spp[!spp %in% taxonomy$species]
 
 if(length(extras) != 0){
-  taxonomy <- rbind(taxonomy, cbind(species = extras, speciesName = extras))  
+  taxonomy <- rbind(taxonomy, cbind(species = extras, speciesName = extras, authority  = ""))  
   warning("Not found in species list: ", paste(extras, collapse = " "))
 }
-
-# split authority from name
-strsplit(taxonomy$)
 
 
 #add to database

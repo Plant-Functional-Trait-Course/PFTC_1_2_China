@@ -68,11 +68,12 @@ CREATE TABLE `turfs`
 
 CREATE TABLE `taxon`
  (
-	`species`			varchar (510), 
-	`speciesName`			varchar (510), 
-	`family`			varchar (510), 
-	`functionalGroup`			varchar (510), 
-	`lifeSpan`			varchar (510), 
+	`species`			varchar (10), 
+	`speciesName`			varchar (200), 
+	`authority` varchar(200),
+	`family`			varchar (50), 
+	`functionalGroup`			varchar (50), 
+	`lifeSpan`			varchar (50), 
 	`comment`			varchar (510), 
 	`height`			float, 
 	`leafSize`			float, 
