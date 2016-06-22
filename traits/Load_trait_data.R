@@ -20,19 +20,8 @@ taxa <- dbGetQuery(con, "SELECT * FROM taxon")
 
 sp.comparison <- plyr::ldply(unique(trait.site$Taxon_TNRS_corrected), function(x){
   code <- taxa$species[grep(x, taxa$speciesName, ignore.case = TRUE)]
+  if(length(code) > 1) warning("Too many", code)
   data.frame(traitName = x, commCode = ifelse(length(code) == 1, code, NA))
 })
 
 ggplot(data.frame(noccur = colSums(cover > 0), inTraits = names(cover) %in% sp.comparison$commCode), aes(x = inTraits, y = noccur)) + geom_boxplot()
-
-# sp names from traits not found in community data
-sp.comparison[!is.na(sp.comparison$commCode),]
-
-# sp names from community data not in traits
-taxa$species[grep(trait.site$Taxon_TNRS_corrected, taxa$speciesName, ignore.case = TRUE)]
-
-
-sum(!is.na(sp.comparison$commCode))
-names(cover) %in% sp.comparison$commCode
-sum(is.na(sp.comparison$commCode))
-sort(colSums(cover > 0))
