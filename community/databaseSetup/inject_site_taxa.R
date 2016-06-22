@@ -1,7 +1,6 @@
 library("DBI")
 library("RMySQL")
 library("readxl")
-source(file = "community/R/make_connection.R")
 
 
 #load csv file
@@ -9,8 +8,7 @@ dat <- read.csv ("community/databaseSetup/data/allsites.csv")
 
 #make connection to transplant database
 
-con <- make_connection(username = "gbsrt", password = "b5b5b5", dbname = "transplant")
-
+con <- dbConnect(RMySQL::MySQL(), group = "transplant")
 
 
 
@@ -41,6 +39,11 @@ if(length(extras) != 0){
   taxonomy <- rbind(taxonomy, cbind(species = extras, speciesName = extras))  
   warning("Not found in species list: ", paste(extras, collapse = " "))
 }
+
+# split authority from name
+strsplit(taxonomy$)
+
+
 #add to database
 dbWriteTable(con, "taxon", value = as.data.frame(taxonomy), row.names = FALSE, append = TRUE)
 
