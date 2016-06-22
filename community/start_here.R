@@ -1,15 +1,19 @@
 #load packages
-require("tidyr")
-require("plyr")
-require("DBI")
-library(dplyr)
+library("tidyr")
+library("plyr")
+library("DBI")# also needs RMySQL installed
+library("dplyr")
 
 #source functions
 fl <- list.files("community/R/", full.names = TRUE)
 sapply(fl, source)
 
 #make database connection
-con <- make_connection(username = "gbsrt", password = "b5b5b5", dbname = "transplant")
+# uses username, password, host etc (including sock) information from file .my.cnf that should be in your root directory. 
+#See http://www.inside-r.org/packages/cran/rmysql/docs/MySQL
+#for Macs see here http://stackoverflow.com/questions/10757169/mysql-my-cnf-location
+con <- dbConnect(RMySQL::MySQL(), group = "transplant")
+
 
 #load cover data and metadata
 cover_thin <- load_comm(con = con)
