@@ -29,7 +29,7 @@ site_colours <- c("black", "grey50", "pink", "lightblue", "red", "blue", "green"
 
 g <-ggplot(fCA, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
   geom_point(aes(size = ifelse(year == min(year), 2, 1))) +
-  geom_line() + 
+  geom_path() + 
   coord_fixed(ratio = 1) +
   scale_size(range = c(1, 3), guide = "none") +
   scale_colour_manual(limits = levels(cover_meta$TTtreat), values = site_colours) +
@@ -41,12 +41,14 @@ g
   
 #Hogsete plots.
 
-hogsete_plot <- function(site, base, ord = cca, dest = TRUE) {
+hogsete_plot <- function(site, base, ord = cca, dest = TRUE, OTC = TRUE, transplant = TRUE) {
   if(dest){
     use <- cover_meta$destSiteID == site
   } else {
     use <- cover_meta$originSiteID == site
   }
+  if(!OTC) use <- use & cover_meta$TTtreat != "OTC"
+  if(!transplant) use <- use & cover_meta$TTtreat %in% c("OTC", "control")
   S_cover <- cover[use,]
   S_cover <- S_cover[, colSums(S_cover > 0) > 1]
   decorana(sqrt(S_cover))
