@@ -19,11 +19,8 @@ trait.site$Taxon_TNRS_corrected[trait.site$Taxon_TNRS_corrected=="Bistorta vivip
 # Replace missing site values from elevation
 index <- as.vector(unique(trait.site$Elevation))
 values <- c("L", "M", "A", "H")
-Site.Check <- values[match(trait.site$Elevation, index)]
-trait.site$Site == Site.Check
+trait.site[trait.site$Site == "", "Site"] <- values[match(trait.site$Elevation, index)][trait.site$Site==""]
 
-trait.site[trait.site$Site == "", "Site"] <- values[match(trait.site$Elevation, index)]
- 
 
 # Get an idea how many species are measured in common with trait data set
 taxa <- dbGetQuery(con, "SELECT * FROM taxon")
