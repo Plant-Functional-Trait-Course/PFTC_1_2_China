@@ -4,7 +4,7 @@
 #######################################################
 library(lubridate)
 
-#####Data by Site
+#### DATA BY SITE ####
 trait.site<- read.csv(file="traits/data/ChinaLeafTraitData20151102Site.csv", stringsAsFactors = FALSE)
 trait.site$Taxon_TNRS_corrected <- gsub("\xa0", "", trait.site$Taxon_TNRS_corrected)
 head(trait.site)
@@ -22,9 +22,12 @@ values <- c("L", "M", "A", "H")
 trait.site[trait.site$Site == "", "Site"] <- values[match(trait.site$Elevation, index)][trait.site$Site==""]
 
 
-# Get an idea how many species are measured in common with trait data set
+#### SUMMARY ####
+
+# Community data
 taxa <- dbGetQuery(con, "SELECT * FROM taxon")
 
+# Get an idea how many species are measured in common with trait data set
 sp.comparison <- plyr::ldply(unique(trait.site$Taxon_TNRS_corrected), function(x){
   code <- taxa$species[grep(x, taxa$speciesName, ignore.case = TRUE)]
   if(length(code) > 1) warning("Too many", code)
