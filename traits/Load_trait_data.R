@@ -2,9 +2,14 @@
 ###########   China Leaf Trait  2015     ##############
 ###########                              ##############
 #######################################################
-library(lubridate); library(ggplot2)
+library("lubridate")
+library("ggplot2")
+library("plyr")
+library("dplyr")
+library("tidyr")
 
 #### DATA BY SITE ####
+# read in file
 trait.site<- read.csv(file="traits/data/ChinaLeafTraitData20160623Site.csv", stringsAsFactors = FALSE)
 trait.site$Taxon_TNRS_corrected <- gsub("\xa0", "", trait.site$Taxon_TNRS_corrected)
 head(trait.site)
@@ -15,12 +20,6 @@ trait.site$Leaf_Thickness_Ave_mm <- rowMeans(trait.site[,c("Leaf_Thickness_1_mm"
 
 # Change Bistorta to Polygonum
 trait.site$Taxon_TNRS_corrected[trait.site$Taxon_TNRS_corrected=="Bistorta vivipara"] <- "Polygonum viviparum"
-
-# Replace missing site values from elevation (not needed anymore)
-index <- as.vector(unique(trait.site$Elevation))
-values <- c("L", "M", "A", "H")
-trait.site[trait.site$Site == "", "Site"] <- values[match(trait.site$Elevation, index)][trait.site$Site==""]
-
 
 
 #### SUMMARY ####
@@ -37,6 +36,7 @@ trait.site$Individual_Number[trait.site$Individual_Number=="3.2"] <- 9
 trait.site$Individual_Number[trait.site$Individual_Number=="4.2"] <- 10
 trait.site$Individual_Number[trait.site$Individual_Number=="5.2"] <- 11
 
+
 # MISSING SPECIES FROM COMMUNITY DATA
 # Get community data form data base
 taxa <- dbGetQuery(con, "SELECT * FROM taxon")
@@ -50,23 +50,37 @@ sp.comparison <- plyr::ldply(unique(trait.site$Taxon_TNRS_corrected), function(x
 
 ggplot(data.frame(noccur = colSums(cover > 0), inTraits = names(cover) %in% sp.comparison$commCode), aes(x = inTraits, y = noccur)) + geom_boxplot()
 
+
 # How many species (from community data) have no traits? 
 ...
 
 
-# INCOMPLETE TRAITS
+# MISSING TRAITS
 # Number of traits measured per site and species
 # 6 traits measured: Leaf_Area_cm2, Wet_Mass_g, Dry_Mass_g, Leaf_Thickness_Ave_mm, SLA_cm2.g, LDMC
-traits <- trait.site[,c(4,8:9,11,19:21)]
-traits.incomplete <- traits[!complete.cases(traits),]
-unique(traits.incomplete$Taxon_TNRS_corrected) # from 52 species not complete trait measures
+missing.trait <- trait.site %>%
+  select(Site, Taxon_TNRS_corrected, SLA_cm2.g, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, LDMC, Wet_Mass_g, Dry_Mass_g, Individual_Number) %>%
+  group_by(Site, Taxon_TNRS_corrected) %>%
+  mutate(NoPlants = n_distinct(Individual_Number), nLeaves = n()) %>%
+  select(-Individual_Number) %>%
+  gather(key = "trait", value = value, -Site, -Taxon_TNRS_corrected, -nLeaves, -NoPlants) %>%
+  group_by(Site, Taxon_TNRS_corrected, trait, NoPlants, nLeaves) %>%
+  summarise (missing = sum(is.na(value))) %>%
+ # filter(missing > 0) %>% # including this line gives all incomplete cases, if line is excluded you get all species
+  spread(key = trait, value = missing, fill = 0)
+
+# make csv file
+write.csv(missing.trait, file = "Missing.Trait.csv", row.names = FALSE)
 
 
-# Which species have more than 3 or 5 trait values.
 # Number of indivivduals and leaves per site and species
-by(trait.site, trait.site$Site, function(x){
-  table(x$Taxon_TNRS_corrected, x$Individual_Number)
+trait.sum <- trait.site %>%
+  filter(!is.na(SLA_cm2.g)) %>%
+  group_by(Site, Taxon_TNRS_corrected, Individual_Number) %>%
+  summarise(n = n()) %>%
+  group_by(Site, Taxon_TNRS_corrected) %>%
+  mutate(N = n()) %>%
   
-})
-
+  spread(key = Individual_Number, value = n) %>%
+  as.data.frame()
 
