@@ -84,3 +84,9 @@ trait.sum <- trait.site %>%
   spread(key = Individual_Number, value = n) %>%
   as.data.frame()
 
+
+# CALCULATE MEAN AND VARIANCE PER TRAIT
+trait.site %>%
+  select(Site, Taxon_TNRS_corrected, SLA_cm2.g, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, LDMC, Wet_Mass_g, Dry_Mass_g, Individual_Number) %>%
+  group_by(Site, Taxon_TNRS_corrected) %>%
+  summarise(meanSLA = mean(SLA_cm2.g), varSLA = var(SLA_cm2.g)) %>%
