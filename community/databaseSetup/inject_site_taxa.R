@@ -14,19 +14,16 @@ con <- dbConnect(RMySQL::MySQL(), group = "transplant")
 
 #taxa - replace with full info
 
-taxonomy <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
-taxonomy <- taxonomy[, c("oldCode", "newCode", "full name")]
+taxonomy0 <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
+taxonomy0 <- taxonomy0[, c("oldCode", "newCode", "fullName")]
 
- #discard duplicate taxa (which have oldCode != newCode or singletons) #NB multiple changes to new code will fail
-keep <-
-  taxonomy$oldCode == taxonomy$newCode |
-  !(duplicated(taxonomy$newCode) |
-      duplicated(taxonomy$newCode, fromLast = TRUE))
+#keep only correct names
+keep <- !is.na(taxonomy0$fullName)
+taxonomy <- setNames(taxonomy0[keep, c("newCode", "fullName")], c("species", "speciesName"))
 
-taxonomy$newCode[keep]
-
-#
-taxonomy <- setNames(taxonomy[keep, c("newCode", "full name")], c("species", "speciesName"))
+#check for duplicates
+any(duplicated(taxonomy$species))
+taxonomy[duplicated(taxonomy$species),]
 
 # split authority from name
 spNames <- strsplit(taxonomy$speciesName, " ")
@@ -49,7 +46,7 @@ taxonomy <- cbind(species = taxonomy$species, nameAuthority)
 spp <- names(dat)
 meta <-c("DestinationSite", "DestinationBlock", "originPlotID", "TTtreat", "destinationPlotID", "turfID", "RTtreat", "GRtreat", "subPlot", "year", "date", "Measure", "recorder", "moss", "lichen", "litter", "soil", "rock", "totalVascular", "totalBryophytes", "totalLichen", "vegetationHeight", "mossHeight", "litterThickness", "comment"  )
 spp <- spp[!spp %in% meta]
-extras <- spp[!spp %in% taxonomy$species]
+extras <- spp[!spp %in% c(taxonomy0$oldCode, taxonomy0$newCode)]
 
 if(length(extras) != 0){
   taxonomy <- rbind(taxonomy, cbind(species = extras, speciesName = extras, authority  = ""))  
@@ -82,7 +79,7 @@ dbWriteTable(con, "turfs", value = turfs, row.names = FALSE, append = TRUE)
 
 #import community and environment data
 source("community/databaseSetup/importcommunity.r")
-import.data(dat)
+import.data(dat, mergedictionary = setNames(taxonomy0[, c("oldCode", "newCode")], c("oldID", "newID")))
 
 dbDisconnect(con)
 
