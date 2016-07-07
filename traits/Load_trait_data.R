@@ -86,7 +86,19 @@ trait.sum <- trait.site %>%
 
 
 # CALCULATE MEAN AND VARIANCE PER TRAIT
-trait.site %>%
-  select(Site, Taxon_TNRS_corrected, SLA_cm2.g, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, LDMC, Wet_Mass_g, Dry_Mass_g, Individual_Number) %>%
-  group_by(Site, Taxon_TNRS_corrected) %>%
-  summarise(meanSLA = mean(SLA_cm2.g), varSLA = var(SLA_cm2.g)) %>%
+traitMeans <- trait.site %>%
+  mutate(Site = factor(Site, levels = c("L", "M", "A", "H"))) %>%
+  select(Site, Taxon_TNRS_corrected, Leaf_Area_cm2, Leaf_Thickness_Ave_mm, SLA_cm2.g, LDMC) %>%
+  gather(key = "trait", value = "value", -Site, -Taxon_TNRS_corrected) %>%
+  group_by(Site, Taxon_TNRS_corrected, trait) %>%
+  summarise(n = n(), mean = mean(value), sd = sd(value))
+
+traitMeans %>%
+  filter(trait =="SLA_cm2.g") %>%
+  group_by(Taxon_TNRS_corrected) %>%
+  filter(n() > 1) %>%
+  ggplot(aes(x = Site, y = mean, ymax = mean + 1.96 * sd, ymin = mean - 1.96 * sd)) +
+  geom_pointrange() +
+  facet_wrap( ~ Taxon_TNRS_corrected)
+  
+
