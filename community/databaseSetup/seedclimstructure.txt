@@ -7,6 +7,10 @@
 -- ----------------------------------------------------------
 
 -- That file uses encoding UTF-8
+-- Run this file with 
+-- source /home/gbsrt/Documents/DATA/transplant/community/databaseSetup/seedclimstructure.txt
+-- from MySQL
+
 DROP DATABASE transplant;
 CREATE DATABASE transplant;
 USE transplant;
