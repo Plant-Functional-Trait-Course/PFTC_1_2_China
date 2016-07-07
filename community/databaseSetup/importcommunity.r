@@ -4,7 +4,7 @@
 #merge subturf taxa
 ####################
 
-import.data<-function(dat){#dat is data.frame from the correctly formatted csv file loaded into R
+import.data<-function(dat, mergedictionary){#dat is data.frame from the correctly formatted csv file loaded into R
   require(dplyr)
   require(plyr)
 
@@ -59,14 +59,14 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
     #TurfCommunity  
   spp <- cbind(dat[, c("turfID", "year")], dat[, (which(names(dat) == "recorder") + 1) : (which(names (dat) == "moss")-1) ])[dat$Measure == "cover%",]
   spp[, 3 : ncol(spp)] <- colwise(as.numeric)(spp[, 3 : ncol(spp)])
-#  notInMerged <- setdiff(names(spp)[-(1:2)], mergedictionary$oldID)
-#  mergedictionary <- rbind(mergedictionary, cbind(oldID = notInMerged, newID = notInMerged))
-#  mergedNames <- mapvalues(names(spp)[-(1:2)], from = mergedictionary$oldID, to = mergedictionary$newID, warn_missing = FALSE)
-#  sppX <- lapply(unique(mergedNames), function(n){
-#    rowSums(spp[, names(spp) == n, drop = FALSE])
-#    })
-#  sppX <- setNames(as.data.frame(sppX), unique(mergedNames))
- # spp <- cbind(spp[, 1:2], sppX)
+  notInMerged <- setdiff(names(spp)[-(1:2)], mergedictionary$oldID)
+  mergedictionary <- rbind(mergedictionary, cbind(oldID = notInMerged, newID = notInMerged))
+  mergedNames <- mapvalues(names(spp)[-(1:2)], from = mergedictionary$oldID, to = mergedictionary$newID, warn_missing = FALSE)
+  sppX <- lapply(unique(mergedNames), function(n){
+    rowSums(spp[, names(spp) == n, drop = FALSE])
+    })
+  sppX <- setNames(as.data.frame(sppX), unique(mergedNames))
+ spp <- cbind(spp[, 1:2], sppX)
     unique(as.vector(sapply(spp[, -(1:2)], as.character)))    #oddity search
     table(as.vector(sapply(spp[, -(1:2)], as.character)), useNA = "ifany") 
 
@@ -103,27 +103,27 @@ import.data<-function(dat){#dat is data.frame from the correctly formatted csv f
      message("subturfcommunity")  
     subspp <- cbind(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ])[dat$Measure != "cover%",]
     subspp[subspp == 0] <- NA
-#    subsppX <- lapply(unique(mergedNames), function(sppname){
-#      species <- subspp[, names(subspp) == sppname, drop = FALSE]
-#      if (ncol(species) == 1) {
-#        return(species)
-#      } else {
-#        apply (species, 1, function(r) {
-#          occurence <- which(!is.na(r))
-#          if(length(occurence) == 0) return(NA)
-#          if(length(occurence) == 1) return(r[occurence])
-#          else {
-#            warning(paste("more than one species observation in same subplot!"))
-#            write.csv(data.frame(filename = n, species = species, occurence = r[occurence]), file = "cooccurence_log.csv", append = TRUE)
-#            return(r[occurence][1])
-#          }
-#        })
-#      }
-#    })
+    subsppX <- lapply(unique(mergedNames), function(sppname){
+      species <- subspp[, names(subspp) == sppname, drop = FALSE]
+      if (ncol(species) == 1) {
+        return(species)
+      } else {
+        apply (species, 1, function(r) {
+          occurence <- which(!is.na(r))
+          if(length(occurence) == 0) return(NA)
+          if(length(occurence) == 1) return(r[occurence])
+          else {
+            warning(paste("more than one species observation in same subplot!"))
+            write.csv(data.frame(filename = n, species = species, occurence = r[occurence]), file = "cooccurence_log.csv", append = TRUE)
+            return(r[occurence][1])
+          }
+        })
+      }
+    })
     
     
-#    subsppX <- setNames(as.data.frame(subsppX), unique(mergedNames))
-#    subspp <- cbind(subspp[, 1:3], subsppX)
+    subsppX <- setNames(as.data.frame(subsppX), unique(mergedNames))
+    subspp <- cbind(subspp[, 1:3], subsppX)
     unique(as.vector(sapply(subspp[, -(1:3)], as.character))) #oddity search
     print(table(as.vector(sapply(subspp[, -(1:3)], as.character)))) #oddity search
     
