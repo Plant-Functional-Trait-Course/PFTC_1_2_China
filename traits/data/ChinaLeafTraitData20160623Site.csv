@@ -762,12 +762,12 @@ Date,Site,Elevation,Taxon_TNRS_corrected,Taxon_written_on_envelopes,Individual_N
 20150820,L,3000,Thalictrum javanicum,Thalictrum_javenicum,4.2,3,4.6567,NA,1,0.021,2,0.11,0.147,0.129,,,,,221.747619,0.68852459,0.0305
 20150820,L,3000,Thalictrum javanicum,Thalictrum_javenicum,4.2,4,6.5207,NA,1,0.039,2,0.151,0.114,0.124,,,,,167.1974359,0.720887246,0.0541
 20150820,L,3000,Thalictrum javanicum,Thalictrum_javenicum,5.2,1,14.9251,NA,1,0.07,2,0.135,0.126,0.097,,,,,213.2157143,0.747863248,0.0936
-,,3000,Trifolium repens,Trifolium_repens,1,1,3.4174,NA,1,0.007,2,0.123,0.158,,,,,,488.2,0.202312139,0.0346
-,,3000,Trifolium repens,Trifolium_repens,1,2,2.4309,NA,1,0.007,2,0.093,0.13,,,,,,347.2714286,0.355329949,0.0197
-,,3000,Trifolium repens,Trifolium_repens,1,3,4.5913,NA,1,0.013,2,0.102,0.093,,,,,,353.1769231,0.288888889,0.045
-,,3000,Trifolium repens,Trifolium_repens,1,4,6.9642,NA,1,0.02,2,0.151,0.111,0.079,,,,,348.21,0.34904014,0.0573
-,,3000,Trifolium repens,Trifolium_repens,1,5,2.9018,NA,1,0.005,2,0.154,,,,,,,580.36,0.212765957,0.0235
-,,3000,Veronica laxa,Veronica_laxa,1,1,2.1214,NA,2,0.0042,1,2.1,,,,,,,505.0952381,0.323076923,0.013
+,L,3000,Trifolium repens,Trifolium_repens,1,1,3.4174,NA,1,0.007,2,0.123,0.158,,,,,,488.2,0.202312139,0.0346
+,L,3000,Trifolium repens,Trifolium_repens,1,2,2.4309,NA,1,0.007,2,0.093,0.13,,,,,,347.2714286,0.355329949,0.0197
+,L,3000,Trifolium repens,Trifolium_repens,1,3,4.5913,NA,1,0.013,2,0.102,0.093,,,,,,353.1769231,0.288888889,0.045
+,L,3000,Trifolium repens,Trifolium_repens,1,4,6.9642,NA,1,0.02,2,0.151,0.111,0.079,,,,,348.21,0.34904014,0.0573
+,L,3000,Trifolium repens,Trifolium_repens,1,5,2.9018,NA,1,0.005,2,0.154,,,,,,,580.36,0.212765957,0.0235
+,L,3000,Veronica laxa,Veronica_laxa,1,1,2.1214,NA,2,0.0042,1,2.1,,,,,,,505.0952381,0.323076923,0.013
 20150820,L,3000,Veronica laxa,Veronica_laxa,1,2,2.7966,NA,2,0.0062,1,0.176,,,,,,,451.0645161,0.364705882,0.017
 20150820,L,3000,Veronica laxa,Veronica_laxa,1,3,1.6906,NA,2,0.0031,1,0.242,,,,,,,545.3548387,0.344444444,0.009
 20150820,L,3000,Veronica laxa,Veronica_laxa,2,1,7.0259,NA,2,0.02,2,0.219,0.47,0.265,0.335,,,,351.295,0.24691358,0.081
@@ -1095,7 +1095,7 @@ Date,Site,Elevation,Taxon_TNRS_corrected,Taxon_written_on_envelopes,Individual_N
 20150820,M,3500,Gentiana crassuloides,Gentiana_crassuloides,5,3,3.4618,0.0005,1,0.0001,1,0.199,,,,,,,34618,0.2,
 20150820,M,3500,Gentiana crassuloides,Gentiana_crassuloides,5,4,3.0824,0.0002,1,0.0001,1,0.198,,,,,,,30824,0.5,
 20150820,M,3500,Gentiana crassuloides,Gentiana_crassuloides,5,5,3.371,0.0002,1,0.0001,1,0.168,,,,,,,33710,0.5,
-20150820,M,3500,Gentiana crassuloides,Gentiana_crassuloides,S,1,2.911,0.062,2,0.0159,1,0.169,,,,,,,183.081761,0.256451613,
+20150820,M,3500,Gentiana crassuloides,Gentiana_crassuloides,1,1,2.911,0.062,2,0.0159,1,0.169,,,,,,,183.081761,0.256451613,
 20150820,M,3500,Gentiana yunnanensis,Gentiana_yunnanensen,1,2,1.8522,0.05,2,0.006,1,0.376,,,,,,,308.7,0.12,
 20150820,M,3500,Gentiana yunnanensis,Gentiana_yunnanensen,1,3,2.1515,0.058,2,0.0098,1,0.393,,,,,,,219.5408163,0.168965517,
 20150820,M,3500,Gentiana yunnanensis,Gentiana_yunnanensen,1,4,2.2789,0.063,2,0.009,1,0.508,,,,,,,253.2111111,0.142857143,
@@ -1458,21 +1458,21 @@ Date,Site,Elevation,Taxon_TNRS_corrected,Taxon_written_on_envelopes,Individual_N
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,1,3,14.913,0.266,2,0.0837,1,0.315,0.353,0.342,0.339,,,,178.172043,0.314661654,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,1,4,9.1631,0.159,2,0.0448,1,0.329,0.405,0.293,,,,,204.5334821,0.281761006,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,1,5,12.0997,0.193,2,0.0622,1,0.362,0.177,0.408,0.44,,,,194.5289389,0.322279793,
-20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,1.jpg,NA,35.6025,NA,2,NA,,,,,,,,,NA,NA,
+20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,1,NA,35.6025,NA,2,NA,,,,,,,,,NA,NA,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2,1,13.9479,0.231,2,0.0575,1,0.274,0.322,0.305,0.29,0.187,,,242.5721739,0.248917749,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2,2,20.1641,0.39,2,0.0978,1,0.381,0.299,0.26,0.381,0.302,,,206.1768916,0.250769231,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2,3,8.2292,0.202,2,0.0499,1,0.359,0.244,0.346,,,,,164.9138277,0.247029703,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2,4,13.2952,0.31,2,0.08,1,0.252,0.323,0.32,0.149,0.267,,,166.19,0.258064516,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2,5,11.3015,0.179,2,0.0544,1,0.314,0.281,0.316,0.296,0.326,,,207.7481618,0.303910615,
-20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2.jpg,NA,20.1641,NA,2,NA,,,,,,,,,NA,NA,
+20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,2,NA,20.1641,NA,2,NA,,,,,,,,,NA,NA,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3,1,13.5811,0.2462,1,0.059,1,0.385,0.658,0.457,0.38,0.48,,,230.1881356,0.239642567,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3,2,6.5044,0.096,1,0.031,1,0.384,0.48,0.406,,,,,209.8193548,0.322916667,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3,3,10.9434,0.1762,1,0.0561,1,0.29,0.379,0.275,,,,,195.0695187,0.318388195,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3,4,11.7746,0.1883,1,0.0611,1,0.376,0.311,,,,,,192.710311,0.324482209,
 20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3,5,9.7425,0.1542,1,0.0455,1,0.262,0.391,0.204,0.433,,,,214.1208791,0.295071336,
-20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3.jpg,NA,8.2292,NA,,NA,,,,,,,,,NA,NA,
-20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,4.jpg,NA,0.2703,NA,,NA,,,,,,,,,NA,NA,
-20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,5.jpg,NA,12.0997,NA,,NA,,,,,,,,,NA,NA,
+20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,3,NA,8.2292,NA,,NA,,,,,,,,,NA,NA,
+20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,4,NA,0.2703,NA,,NA,,,,,,,,,NA,NA,
+20150820,M,3500,Potentilla leuconota,Potentilla_leucolata,5,NA,12.0997,NA,,NA,,,,,,,,,NA,NA,
 20150820,M,3500,Primula deflexa,Primula_deflexa,1,1,6.0316,0.1073,1,0.0178,1,0.342,,,,,,,338.8539326,0.165890028,
 20150820,M,3500,Primula deflexa,Primula_deflexa,1,2,12.8082,0.2558,1,0.037,1,0.508,,,,,,,346.1675676,0.144644253,
 20150820,M,3500,Primula deflexa,Primula_deflexa,1,3,10.1269,0.2103,1,0.0373,1,0.331,,,,,,,271.4986595,0.177365668,
@@ -1682,7 +1682,7 @@ Date,Site,Elevation,Taxon_TNRS_corrected,Taxon_written_on_envelopes,Individual_N
 20150820,A,3850,Ajania tenuifolia,Ajana_tenufolia,2,3,1.7923,0.0184,1,0.0058,1,0.429,,,,,,,309.0172414,0.315217391,
 20150820,A,3850,Ajania tenuifolia,Ajana_tenufolia,2,4,1.7567,0.0221,1,0.003,1,0.268,,,,,,,585.5666667,0.135746606,
 20150820,A,3850,Ajania tenuifolia,Ajana_tenufolia,2,5,1.7171,0.0328,1,0.0052,1,0.277,,,,,,,330.2115385,0.158536585,
-,,3850,Ajania tenuifolia,Ajana_tenufolia,3,1,NA,0.0388,1,0.0102,1,0.297,,,,,,,NA,0.262886598,
+,A,3850,Ajania tenuifolia,Ajana_tenufolia,3,1,NA,0.0388,1,0.0102,1,0.297,,,,,,,NA,0.262886598,
 20150820,A,3850,Ajania tenuifolia,Ajana_tenufolia,3,2,2.1639,0.0367,1,0.0109,1,0.279,,,,,,,198.5229358,0.297002725,
 20150820,A,3850,Ajania tenuifolia,Ajana_tenufolia,3,3,2.2862,0.0374,1,0.0102,1,0.329,,,,,,,224.1372549,0.272727273,
 20150820,A,3850,Ajania tenuifolia,Ajana_tenufolia,3,4,2.1935,0.0294,1,0.0061,1,0.787,,,,,,,359.5901639,0.207482993,
@@ -2126,11 +2126,11 @@ Date,Site,Elevation,Taxon_TNRS_corrected,Taxon_written_on_envelopes,Individual_N
 20150820,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stemophylla_var.ehergens,5,2,4.1512,0.0682,1,0.0168,1,0.68,0.684,,,,,,247.0952381,0.246334311,
 20150820,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stemophylla_var.ehergens,5,3,4.7223,0.0526,1,0.0184,1,0.432,0.597,0.457,,,,,256.6467391,0.349809886,
 20150820,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stemophylla_var.ehergens,5,4,7.473,0.2018,1,0.0386,1,0.432,0.517,,,,,,193.6010363,0.191278494,
-,,3850,Potentilla stemophylla var.ehergens,Potentilla_stemophylla_var.ehergens,5,5,5.7654,0.1301,1,0.0275,1,0.574,0.494,,,,,,209.6509091,0.211375865,
-,,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,1,NA,0.1789,1,0.0455,1,0.625,0.399,0.461,,,,,NA,0.254332029,
-,,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,2,NA,0.1697,1,0.0488,1,0.328,0.562,0.372,0.366,,,,NA,0.287566293,
-,,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,3,NA,0.2517,1,0.075,1,0.312,0.406,0.345,0.413,,,,NA,0.297973778,
-,,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,4,NA,0.3166,1,0.1111,1,0.376,0.589,0.312,0.501,,,,NA,0.350915982,
+,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stemophylla_var.ehergens,5,5,5.7654,0.1301,1,0.0275,1,0.574,0.494,,,,,,209.6509091,0.211375865,
+,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,1,NA,0.1789,1,0.0455,1,0.625,0.399,0.461,,,,,NA,0.254332029,
+,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,2,NA,0.1697,1,0.0488,1,0.328,0.562,0.372,0.366,,,,NA,0.287566293,
+,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,3,NA,0.2517,1,0.075,1,0.312,0.406,0.345,0.413,,,,NA,0.297973778,
+,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,3,4,NA,0.3166,1,0.1111,1,0.376,0.589,0.312,0.501,,,,NA,0.350915982,
 20150820,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,4,1,4.9459,0.0405,1,0.0094,1,0.365,0.287,,,,,,526.1595745,0.232098765,
 20150820,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,4,2,5.8604,0.0402,1,0.0136,1,0.314,0.314,,,,,,430.9117647,0.338308458,
 20150820,A,3850,Potentilla stemophylla var.ehergens,Potentilla_stenophylla_var.Emergens,4,3,5.17,0.0404,1,0.015,1,0.23,0.29,0.241,,,,,344.6666667,0.371287129,
