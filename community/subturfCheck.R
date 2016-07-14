@@ -21,8 +21,15 @@ subturf_thin <- load_subturfcomm(con = con)
 
 subturfChange <- function(dat, turfID, start, end){
   #extract turf & years
-  subturf <- dat[dat$turfID == turfID & (dat$year == start | dat$year == end), ] %>%
-    spread(key = year, value = adult, fill = 0)
+  subturf <- dat[dat$turfID == turfID & (dat$year == start | dat$year == end), ] 
+  
+  #check bothyears present
+  if(!all(c(start, end) %in% subturf$year)){
+    warning("no data found for one year in ", turfID)
+    return()
+  }
+  subturf <- spread(subturf, key = year, value = adult, fill = 0)
+  
   subturf$change <- "absent"
   
   #find s & e = persistence
@@ -42,3 +49,10 @@ subturfChange <- function(dat, turfID, start, end){
 }
 
 subturfChange(dat = subturf_thin, turfID = "L1-C", start = 2012, end = 2013)
+
+sapply(unique(subturf_thin$turfID[subturf_thin$TTtreat == "control"]), function(turfID) {
+  x11()  
+  print(turfID)
+  g <- subturfChange(subturf_thin, turfID = turfID, start = 2012, end = 2013)
+  print(g)
+  })
