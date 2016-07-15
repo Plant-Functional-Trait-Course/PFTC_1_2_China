@@ -96,4 +96,36 @@ cover_thin %>% group_by(destSiteID,originSiteID, TTtreat, turfID, year) %>%
   labs(x = "Origin Site", y = "Turf Richness", fill = "Year")
 ggsave("RichnessPatterns2.png", width = 10)
 
+#persistence, recruitment and loss
 
+##large changes in cover
+changes <- cover_thin %>% 
+  select(originSiteID, turfID, destSiteID, TTtreat, year, species, cover, speciesName) %>%
+  filter(TTtreat %in% c("control", "local")) %>% 
+  spread(key = year, value = cover, fill = 0) %>%
+  gather(key = year, value = cover, -originSiteID, -turfID, -destSiteID, -TTtreat, -species, -speciesName) %>%
+  group_by(turfID, species) %>%
+  mutate(RANGE = diff(range(cover))) %>%
+  spread(key = year, value = cover)
+
+ggplot(changes, aes(x = RANGE)) + geom_histogram() + facet_wrap(~originSiteID)
+
+changes %>% filter(RANGE >= 25) %>% arrange(turfID) %>% as.data.frame()
+
+## sum of covers
+cover_thin %>% 
+  group_by(turfID, year, TTtreat, destSiteID, originSiteID) %>% 
+  summarise(sumCover = sum(cover)) %>%
+  ggplot(aes(x = year, y = sumCover, colour = factor(turfID, levels = sample(unique(turfID))))) +
+  geom_line(show.legend = FALSE) +
+  scale_x_continuous(breaks = unique(cover_thin$year), labels = paste0("`",substr(unique(cover_thin$year), 3, 4))) +
+  facet_grid(originSiteID~TTtreat) +
+  labs(x = "Year", y = "Sum of Covers")
+ggsave("cover.png", width = 10)
+
+
+## persist, recruit, expirate, (recover)
+#markov matrix ? species & climate specific parameters.
+
+plot n subturf * species over different years. Correlation. effect of site?
+overlap - % year t + 1 occupied in year t? effect of n plots? Null model expectation?
