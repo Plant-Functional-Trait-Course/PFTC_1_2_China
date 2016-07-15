@@ -67,4 +67,22 @@ sapply(unique(subturf_thin$turfID[subturf_thin$TTtreat == "control"]), function(
   print(turfID)
   g <- subturfChange(subturf_thin, turfID = turfID, start = 2012, end = 2013)
   print(g)
+  NULL
   })
+
+sapply(unique(subturf_thin$turfID[subturf_thin$TTtreat == "local"]), function(turfID) {
+  x11()  
+  print(turfID)
+  g <- subturfChange(subturf_thin, turfID = turfID, start = 2012, end = 2013)
+  print(g)
+  NULL
+})
+
+
+#richness patterns across years
+cover_thin %>% group_by(destSiteID, TTtreat, turfID, year) %>%
+  summarise(richness = n()) %>%
+  ggplot(aes(x = destSiteID, y = richness, fill = as.factor(year))) +
+    geom_boxplot()+
+    facet_wrap(~TTtreat)
+
