@@ -7,6 +7,7 @@ library(ggplot2)
 
 #source functions
 source("community/R/load_subturfcomm.R")
+source("community/R/load_comm.R")
 
 #make database connection
 con <- dbConnect(RMySQL::MySQL(), group = "transplant")
@@ -15,7 +16,18 @@ con <- dbConnect(RMySQL::MySQL(), group = "transplant")
 #load cover data and metadata
 subturf_thin <- load_subturfcomm(con = con)
 #  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
+cover_thin <-load_comm(con = con)
 
+#check subturf and cover contain same species
+subturf_freq <- subturf_thin %>% 
+  group_by(turfID, species, year) %>%
+  summarise(n = n())
+
+#merge cover and subturf
+mergedCoverFreq <- merge(cover_thin, subturf_freq, all = TRUE)
+
+mergedCoverFreq %>% filter(is.na(cover)) %>% select(turfID, year, species, n)
+mergedCoverFreq %>% filter(is.na(n)) %>% select(turfID, year, species, cover)
 
 #subturf stability
 
