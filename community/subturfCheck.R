@@ -84,5 +84,16 @@ cover_thin %>% group_by(destSiteID, TTtreat, turfID, year) %>%
   summarise(richness = n()) %>%
   ggplot(aes(x = destSiteID, y = richness, fill = as.factor(year))) +
     geom_boxplot()+
-    facet_wrap(~TTtreat)
+    facet_wrap(~TTtreat) +
+    labs(x = "Destination Site", y = "Turf Richness", fill = "Year")
+ggsave("RichnessPatterns.png", width = 10)
+
+cover_thin %>% group_by(destSiteID,originSiteID, TTtreat, turfID, year) %>%
+  summarise(richness = n()) %>%
+  ggplot(aes(x = year, y = richness, colour = factor(turfID, levels = sample(unique(turfID))))) +
+  geom_line(show.legend = FALSE) +
+  facet_grid(originSiteID~TTtreat) +
+  labs(x = "Origin Site", y = "Turf Richness", fill = "Year")
+ggsave("RichnessPatterns2.png", width = 10)
+
 
