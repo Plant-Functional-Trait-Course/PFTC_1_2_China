@@ -28,6 +28,8 @@ load_comm <- function(con, cover = TRUE) {
       cover.thin$TTtreat,
       levels = c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC")
     )
+  cover.thin$originSiteID <- factor(cover.thin$originSiteID, levels = c("L", "M", "A", "H"))
+  cover.thin$destSiteID <- factor(cover.thin$destSiteID, levels = c("L", "M", "A", "H"))
   
   cover.thin
 }
