@@ -116,6 +116,12 @@ changes %>% filter(RANGE >= 25) %>% arrange(turfID) %>% as.data.frame()
 cover_thin %>% 
   group_by(turfID, year, TTtreat, destSiteID, originSiteID) %>% 
   summarise(sumCover = sum(cover)) %>%
+  ungroup() %>%
+  arrange(desc(sumCover))
+  
+  cover_thin %>% 
+  group_by(turfID, year, TTtreat, destSiteID, originSiteID) %>% 
+  summarise(sumCover = sum(cover)) %>%
   ggplot(aes(x = year, y = sumCover, colour = factor(turfID, levels = sample(unique(turfID))))) +
   geom_line(show.legend = FALSE) +
   scale_x_continuous(breaks = unique(cover_thin$year), labels = paste0("`",substr(unique(cover_thin$year), 3, 4))) +
@@ -127,5 +133,5 @@ ggsave("cover.png", width = 10)
 ## persist, recruit, expirate, (recover)
 #markov matrix ? species & climate specific parameters.
 
-plot n subturf * species over different years. Correlation. effect of site?
-overlap - % year t + 1 occupied in year t? effect of n plots? Null model expectation?
+#plot n subturf * species over different years. Correlation. effect of site?
+#overlap - % year t + 1 occupied in year t? effect of n plots? Null model expectation?
