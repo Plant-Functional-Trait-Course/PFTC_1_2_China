@@ -135,3 +135,48 @@ ggsave("cover.png", width = 10)
 
 #plot n subturf * species over different years. Correlation. effect of site?
 #overlap - % year t + 1 occupied in year t? effect of n plots? Null model expectation?
+
+subturfYear <- subturf_thin %>% 
+  filter(TTtreat %in% c("local", "control")) %>%
+  select(turfID, subTurf, year, species, adult, TTtreat) %>%
+  spread(key = year, value = adult, fill = 0)
+
+findPersistance <-function(dat){
+  years <- names(dat)[names(dat) %in% 2000:3000]
+  years <- as.numeric(years)
+  ldply(min(years):max(years), function(y1){
+    ldply(y1:max(years), function(y2){
+      res <- apply(dat[, as.character(y1:y2), drop = FALSE] == 1, 1, all)
+      c(start = y1, end = y2, persist = sum(res))
+    })
+  })
+}
+persist <- findPersistance(subturfYear)
+
+ggplot(persist, aes(x = end, y = persist, colour = as.factor(start))) + 
+  geom_line() + 
+  geom_point(aes( size = ifelse(start == end, 1, NA)), show.legend = FALSE) +
+  scale_y_continuous(limits = c(0, NA))
+
+#NULL model
+#1 reassign species to subplots
+#3 calculate persistance
+#4 repeat and find 95% ci
+NullPersistence <- replicate(100, {
+  subturfYearP <- subturf_thin %>% 
+    filter(TTtreat %in% c("local", "control")) %>%
+    select(turfID, subTurf, year, species, adult, TTtreat) %>%
+    group_by(turfID, year, species, TTtreat) %>%
+    mutate(subTurf = sample(1:25, size = n(), replace = FALSE)) %>%
+    spread(key = year, value = adult, fill = 0)
+  findPersistance(subturfYearP)$persist
+})
+NullPersistence <- t(apply(NullPersistence, 1, quantile, prob = c(0.025, 0.5, 0.975)))
+
+persist <- cbind(persist, NullPersistence)
+
+persist %>% gather(key = "key", value = "value", -start, -end) %>% 
+  ggplot(aes(x = end, y = value, colour = as.factor(start), linetype = key)) + 
+    geom_line() + 
+    geom_point(aes( size = ifelse(start == end, 1, NA)), show.legend = FALSE) +
+    scale_y_continuous(limits = c(0, NA))+
