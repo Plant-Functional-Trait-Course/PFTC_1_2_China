@@ -110,7 +110,7 @@ changes <- cover_thin %>%
 
 ggplot(changes, aes(x = RANGE)) + geom_histogram() + facet_wrap(~originSiteID)
 
-changes %>% filter(RANGE >= 25) %>% arrange(turfID) %>% as.data.frame()
+changes %>% filter(RANGE >= 25) %>% arrange(turfID) %>% select(-originSiteID, -destSiteID) %>% as.data.frame()
 
 ## sum of covers
 cover_thin %>% 
@@ -180,3 +180,4 @@ persist %>% gather(key = "key", value = "value", -start, -end) %>%
     geom_line() + 
     geom_point(aes( size = ifelse(start == end, 1, NA)), show.legend = FALSE) +
     scale_y_continuous(limits = c(0, NA))+
+    scale_linetype_manual(limits = c("persist", "97.5%", "50%", "2.5%"), values = c("solid", "dotted", "dashed", "dotted"))
