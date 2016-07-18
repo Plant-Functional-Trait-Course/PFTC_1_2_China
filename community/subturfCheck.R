@@ -18,6 +18,17 @@ subturf_thin <- load_subturfcomm(con = con)
 #  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
 cover_thin <-load_comm(con = con)
 
+##missing turfs
+subturf_thin %>% 
+  group_by(turfID, year, originSiteID, destSiteID, TTtreat) %>%
+  summarise(n = n()) %>% 
+  spread(key = year, value = n) %>% 
+  gather(key = "year", value = "n", -turfID, -originSiteID, -destSiteID, -TTtreat) %>% 
+  filter(is.na(n)) %>% 
+  mutate(miss = "miss") %>% 
+  spread(key = year, value = miss, fill = "") %>%
+  select(-n)
+
 #check subturf and cover contain same species
 subturf_freq <- subturf_thin %>% 
   group_by(turfID, species, year) %>%
