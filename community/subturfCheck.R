@@ -192,3 +192,39 @@ persist %>% gather(key = "key", value = "value", -start, -end) %>%
     geom_point(aes( size = ifelse(start == end, 1, NA)), show.legend = FALSE) +
     scale_y_continuous(limits = c(0, NA))+
     scale_linetype_manual(limits = c("persist", "97.5%", "50%", "2.5%"), values = c("solid", "dotted", "dashed", "dotted"))
+
+
+##########
+#year on year distances
+
+yearOnYearDist <- function(dat) {
+    ddply(dat, .(turfID, TTtreat, originSiteID), function(x) {
+      years <- sort(unique(x$year))
+      years <- years[1:(length(years) - 1)]
+      ldply(years, function(y) {
+        x <- x[x$year %in% c(y, y + 1),]
+        if (NROW(x) != 2)
+          bray = NA
+        else
+          bray = vegan::vegdist(x[,-(1:which(names(x) == "year"))])
+        data.frame(year = y, bray = unclass(bray))
+      })
+    })
+}
+
+controlDists <- cover_thin %>% 
+  filter(TTtreat %in% c("control", "local")) %>%
+  select(-speciesName) %>%
+  spread(key = species, value = cover, fill = 0) %>%
+  yearOnYearDist()
+
+ggplot(controlDists, aes(x = originSiteID, y = bray)) + geom_boxplot()
+ggplot(controlDists, aes(x = 1, y = bray)) + geom_boxplot() + geom_rug()
+
+allDists <- cover_thin %>% 
+  select(-speciesName) %>%
+  spread(key = species, value = cover, fill = 0) %>%
+  yearOnYearDist()
+
+ggplot(allDists, aes(x = TTtreat, y = bray)) + geom_boxplot()
+ggplot(allDists, aes(x = TTtreat, y = bray, fill = as.factor(year))) + geom_boxplot() 
