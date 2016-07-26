@@ -27,7 +27,8 @@ subturf_thin %>%
   filter(is.na(n)) %>% 
   mutate(miss = "miss") %>% 
   spread(key = year, value = miss, fill = "") %>%
-  select(-n)
+  ungroup() %>%
+  select(-n, -destSiteID)
 
 #check subturf and cover contain same species
 subturf_freq <- subturf_thin %>% 
