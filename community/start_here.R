@@ -5,7 +5,13 @@ library("DBI")# also needs RMySQL installed
 library("dplyr")
 
 #source functions
-fl <- list.files("community/R/", full.names = TRUE)
+if(interactive()){
+  fl <- list.files("community/R/", full.names = TRUE)
+}else{
+  fl <- list.files("R/", full.names = TRUE)
+  
+}
+
 sapply(fl, source)
 
 #make database connection
@@ -44,3 +50,5 @@ turfs <- cover_meta[!duplicated(cover_meta$turfID),]
 
 #remove meta from cover
 cover <- cover[, -(1:which(names(cover) == "year"))]
+
+#save(cover, cover_meta, cover_thin, file = "cover.RData")

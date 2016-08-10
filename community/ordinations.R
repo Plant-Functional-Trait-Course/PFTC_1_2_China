@@ -5,7 +5,11 @@ library("vegan")
 library("ggvegan")#devtools::install_github("gavinsimpson/ggvegan")
 
 #load data
-source("community/start_here.R")
+if(interactive()){
+  source("community/start_here.R")
+} else {
+  source("start_here.R")
+}
 
 #ordination of controls
 control_cover <- cover[cover_meta$TTtreat %in% c("control", "local"), ]
