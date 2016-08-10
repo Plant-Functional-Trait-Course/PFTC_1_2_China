@@ -1,0 +1,51 @@
+---
+title: "Translant Ordinations"
+author: "Richard J. Telford"
+date: "August 10, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, message=FALSE, include = FALSE}
+source("ordinations.R")
+```
+
+## Overall ordination of controls
+
+```{r}
+print(g)
+```
+Note, one lowland turf moves into space characteristic of mid community. Sample needs to be verified.
+
+
+## Hogsete Type plots
+
+Site controls and transplants into that site. Large symbols indicate start year.
+
+### Lowland
+
+```{r}
+hogsete_plot(site = "L", base = g)
+```
+
+
+## Mid 
+
+```{r}
+hogsete_plot(site = "M", base = g)
+```
+
+## Alpine
+
+```{r}
+hogsete_plot(site = "A", base = g)
+```
+
+## High
+
+```{r}
+hogsete_plot(site = "H", base = g)
+```
+
