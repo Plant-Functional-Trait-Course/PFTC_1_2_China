@@ -22,3 +22,11 @@ vignettes/*.pdf
 #data
 *.xls
 *.csv
+*.Rdata
+*.odb
+*.zip
+*.sql
+
+#figures & output
+*.png
+*.html
