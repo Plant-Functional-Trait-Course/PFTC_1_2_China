@@ -29,15 +29,15 @@ fCA <- fortify(CA, display = "sites")
 fCA <- cbind(fCA, cover_meta[cover_meta$TTtreat %in% c("control", "local"), ])
 
 sites <- c("H", "A", "M", "L")
-site_colours <- c("black", "grey50", "pink", "lightblue", "red", "blue", "green")
+treat_colours <- c("black", "grey50", "pink", "lightblue", "red", "blue", "green")
 
 g <-ggplot(fCA, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
   geom_point(aes(size = ifelse(year == min(year), 2, 1))) +
   geom_path() + 
   coord_fixed(ratio = 1) +
   scale_size(range = c(1, 3), guide = "none") +
-  scale_colour_manual(limits = levels(cover_meta$TTtreat), values = site_colours) +
-  scale_fill_manual(limits = levels(cover_meta$TTtreat), values = site_colours) +
+  scale_colour_manual(limits = levels(cover_meta$TTtreat), values = treat_colours) +
+  scale_fill_manual(limits = levels(cover_meta$TTtreat), values = treat_colours) +
   scale_shape_manual(breaks = sites, limits = sites, values = c(24, 22, 23, 25)) +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
   labs(x = "CA1", y = "CA2", colour = "Treatment", fill = "Treatment", shape = "Site")
