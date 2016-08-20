@@ -77,6 +77,9 @@ dbWriteTable(con, "plots", value = rbind(plots, plots1), row.names = FALSE, appe
 turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID", "destinationPlotID")])), c("turfID", "TTtreat", "originPlotID", "destinationPlotID"))
 dbWriteTable(con, "turfs", value = turfs, row.names = FALSE, append = TRUE)
 
+#do taxonomic corrections
+source("community/databaseSetup/doCorrections.r")
+
 #import community and environment data
 source("community/databaseSetup/importcommunity.r")
 import.data(dat, mergedictionary = setNames(taxonomy0[, c("oldCode", "newCode")], c("oldID", "newID")))
