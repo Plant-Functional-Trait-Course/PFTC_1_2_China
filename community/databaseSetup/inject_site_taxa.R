@@ -2,6 +2,7 @@ library("DBI")
 library("RMySQL")
 library("readxl")
 library("plyr")
+library("taxize")
 
 #load csv file
 dat <- read.csv ("community/databaseSetup/data/allsites.csv")
@@ -36,10 +37,14 @@ nameAuthority <-ldply(spNames, function(x){
     authority <- paste(x[-(1:2)], collapse = " ")
   }
   if(is.na(authority)) authority <- ""
-  data.frame(speciesName, authority)
+  data.frame(speciesName, authority, stringsAsFactors = FALSE)
 })
 
-taxonomy <- cbind(species = taxonomy$species, nameAuthority)
+taxonomy <- cbind(species = taxonomy$species, nameAuthority, stringsAsFactors = FALSE)
+
+#taxize to check names correctly spelt
+#get_tsn(searchterm = taxonomy$speciesName)
+#gnr <- gnr_resolve(names = taxonomy$speciesName)
 
 #catch any extras (none now)
 
