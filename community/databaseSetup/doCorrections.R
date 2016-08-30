@@ -16,22 +16,19 @@
 #Designed to be run through inject_site_taxa
 ############
 #global edits - apply to all sites/turfs/years
-global <- read.table("community/databaseSetup/data/globalCorrections.csv", sep = ",", header  = TRUE)
+global <- read.table("community/databaseSetup/data/globalCorrections.csv", sep = ",", header  = TRUE, stringsAsFactors = FALSE)
 global$new <- trimws(global$new)
 #check names in taxonomy stopifnot
 setdiff(global$old, taxonomy$speciesName)
 stopifnot(all(global$old %in% taxonomy$speciesName))
 setdiff(global$new, taxonomy$speciesName)
 stopifnot((global$new %in% taxonomy$speciesName))
-
+stopifnot(all(c(global$old, global$new) %in% taxonomy$speciesName))
 
 
 #convert names to code
-global2 <- merge(global, taxonomy[, 1:2], by.x = "old", by.y = "speciesName")
-global2 <- setNames(global2[, -1], c("new", "old"))
-global2 <- merge(global, taxonomy[, 1:2], by.x = "new", by.y = "speciesName")
-global2 <- setNames(global2[, -1], c("old", "new"))
-global2
+global$old <- mapvalues(global$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+global$new <- mapvalues(global$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 
 combinePA <- function(x){
   x[is.na(x)] <- 0
@@ -49,8 +46,82 @@ dat <- dat[, !names(dat) %in% global$old]
 
 
 #local edits - apply to particular sites/turfs/years
-local <- read.table("community/databaseSetup/data/local.csv")
+local <- read.table("community/databaseSetup/data/localDatacorrections_plots_China.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
+setdiff(local$turfID, dat$turfID)
+local$turfID <- trimws(local$turfID)
+
+#check names
+setdiff(local$old, taxonomy$speciesName)
+setdiff(local$new, taxonomy$speciesName)
+
+stopifnot(all(c(local$old, local$new) %in% taxonomy$speciesName))
+
+#convert names to code
+local$old <- mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+local$new <- mapvalues(local$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+
+merge(local, dat, by.x = c("turfID", "year", "site"), by.y = c("turfID", "year", "DestinationSite"), all.x = TRUE)%>%
+  filter(is.na(DestinationBlock))%>%select(1:9)
+
+##split off specials
+local$special[local$special == ""] <- NA
+special <- local[!is.na(local$special), ]
+local <- local[is.na(local$special), ]
 
 
+
+for(i in 1:nrow(local)) {
+  target <- dat$year == local$year[i] &
+    dat$turfID == local$turfID[i] &
+    dat$DestinationSite == local$site[i]
+  if (sum(target) == 0) {
+    warning(local[i,], "not located")
+    break()
+  } else{
+    old <- dat[target, ]
+    old <- old[old$Measure == "cover%", local$old[i]]
+    if(old == 0 | is.na(old)) {
+      warning(local[i,], "old species not present") 
+    }
+    #cover
+    dat[target & dat$Measure == "cover%", local$new[i]] <- dat[target & dat$Measure == "cover%", local$new[i]] + old    
+    dat[target & dat$Measure == "cover%", local$old[i]] <- 0
+    #pa
+    dat[target & dat$Measure == "presence", local$new[i]] <- combinePA(dat[target & dat$Measure == "presence", unlist(local[i, c("old", "new")])])
+    dat[target & dat$Measure == "presence", local$old[i]] <- 0
+  }
+}
 
 #special edits (manually as hopefully few)
+special$special <- mapvalues(special$special, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+special$special2 <- mapvalues(special$special2, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+special
+
+for(i in 1:nrow(special)) {
+  target <- dat$year == special$year[i] &
+    dat$turfID == special$turfID[i] &
+    dat$DestinationSite == special$site[i]
+  if (sum(target) == 0) {
+    warning(special[i,], "not located")
+    break()
+  } else{
+    old <- dat[target, ]
+    old <- old[old$Measure == "cover%", special$old[i]]
+    if(old == 0 | is.na(old)) {
+      warning(special[i,], " old species not present") 
+    }
+    if(old != special$cover1[i] + special$cover2[i]) {
+      stop(special[i,], " new sum cover not equal to old cover") 
+    }
+    
+    #cover
+    dat[target & dat$Measure == "cover%", special$old[i]] <- 0
+    dat[target & dat$Measure == "cover%", special$special[i]] <- special$cover1[i]
+    dat[target & dat$Measure == "cover%", special$special2[i]] <- special$cover2[i]    
+    #pa
+    warning("PA undefined")
+    #dat[target & dat$Measure == "presence", local$new[i]] <- combinePA(dat[target & dat$Measure == "presence", unlist(local[i, c("old", "new")])])
+    #dat[target & dat$Measure == "presence", local$old[i]] <- 0
+  }
+}
+
