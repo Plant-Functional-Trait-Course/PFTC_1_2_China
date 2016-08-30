@@ -21,14 +21,12 @@ cover_thin <-load_comm(con = con)
 ##missing turfs
 subturf_thin %>% 
   group_by(turfID, year, originSiteID, destSiteID, TTtreat) %>%
-  summarise(n = n()) %>% 
-  spread(key = year, value = n) %>% 
-  gather(key = "year", value = "n", -turfID, -originSiteID, -destSiteID, -TTtreat) %>% 
-  filter(is.na(n)) %>% 
-  mutate(miss = "miss") %>% 
-  spread(key = year, value = miss, fill = "") %>%
+  summarise(n = "") %>% 
+  spread(key = year, value = n, fill = "miss") %>%
   ungroup() %>%
-  select(-n, -destSiteID)
+  filter(drop = rowSums(. == "miss") > 0) %>%
+  select(-originSiteID)
+#write.table(.Last.value, file = "missingTurfs.dat", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #check subturf and cover contain same species
 subturf_freq <- subturf_thin %>% 
