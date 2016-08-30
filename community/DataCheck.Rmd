@@ -1,0 +1,99 @@
+---
+title: "Quality control checks on transplant community data"
+author: "Richard J. Telford"
+date: "August 30, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+#Import data
+```{r, importChunk}
+#load packages
+library("tidyr")
+library("plyr")
+library("DBI")# also needs RMySQL installed
+library("dplyr")
+library("ggplot2")
+
+#source functions
+source("R/load_subturfcomm.R")
+source("R/load_comm.R")
+
+#make database connection
+con <- dbConnect(RMySQL::MySQL(), group = "transplant")
+
+#load cover data and metadata
+subturf_thin <- load_subturfcomm(con = con)
+#  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
+cover_thin <-load_comm(con = con)
+```
+
+#Missing turfs
+
+The following turfs have data missing from at least one year. I know that some of these are yak damaged - it would be good to have this documented somewhere - but others should have data
+
+```{r}
+##missing turfs
+missingturfs <-  subturf_thin %>% 
+  group_by(turfID, year, originSiteID, destSiteID, TTtreat) %>%
+  summarise(n = "") %>% 
+  spread(key = year, value = n, fill = "miss") %>%
+  ungroup() %>%
+  filter(drop = rowSums(. == "miss") > 0) %>%
+  select(-originSiteID)
+
+knitr::kable(missingturfs)
+```
+
+#Missing species
+
+There are some species that are present in the subplot data that are missing from the cover data and vice-versa.
+
+```{r}
+#check subturf and cover contain same species
+subturf_freq <- subturf_thin %>% 
+  group_by(turfID, species, year) %>%
+  summarise(n = n())
+
+#merge cover and subturf
+mergedCoverFreq <- merge(cover_thin, subturf_freq, all = TRUE)
+```
+
+The following species occurences are in subplots, but not in cover (n gives number of subplots)
+```{r}
+inSubplot <- mergedCoverFreq %>% filter(is.na(cover)) %>% select(turfID, year, species, n)
+knitr::kable(inSubplot)
+```
+
+The following species are in the cover data, but not in the suplots
+
+```{r}
+inCover <- mergedCoverFreq %>% filter(is.na(n)) %>% select(turfID, year, species, cover)
+knitr::kable(inCover)
+```
+
+#Non-integer cover values
+
+In seedclim, cover is estimated to integer percent. In the transplant data, there are many non-integer values.
+
+```{r nonIntegerChunk}
+nonInt <- cover_thin %>% 
+  filter(cover != round(cover)) %>% 
+  group_by(cover) %>% 
+  summarise(n_occurrences = n())
+knitr::kable(nonInt)
+```
+
+Many of these are probably correct, but some, such as, `r max(cover_thin$cover[cover_thin$cover != round(cover_thin$cover)])` may be data-entry errors.
+
+These are the examples with a cover greater than 5%.
+```{r}
+nonInt2 <- cover_thin %>% filter(cover > 5 & cover != round(cover)) %>% select(turfID, species, cover)
+knitr::kable(nonInt2)
+```
+
+Please can you check these, and initiate proof reading if required.
+
