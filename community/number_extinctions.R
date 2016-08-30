@@ -1,7 +1,3 @@
-set.seed(42)
-data.frame(x = rep(1:3, each = 10), y = sample(letters[1:10], replace = TRUE, size = 30)) %>% 
-  
-
 #immigrants and extinction
 
 #find number of immigrant/extinct
