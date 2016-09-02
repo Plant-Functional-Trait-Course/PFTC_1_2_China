@@ -62,7 +62,7 @@ allsites <- lapply(flist, function(fl){
 #    dat$destinationPlotID <- meta    
 
     #find destination site/block/plot
-    sitetreat <-  gsub("[[:digit:]]-", "",meta) #remove block info
+    sitetreat <-  gsub("[[:digit:]]-", "", meta) #remove block info
     destSitetreat <- mapvalues(sitetreat, from = originDestination$origin, to = originDestination$destination, warn_missing = FALSE)
     dat$destinationPlotID <- paste0(substr(destSitetreat, 1, 1), substr(meta,2, 3), dat$TTtreat)
     dat$DestinationSite <- substr(destSitetreat, 1, 1)
@@ -83,7 +83,7 @@ allsites <- lapply(flist, function(fl){
     names(dat) <- mapvalues(names(dat), from = taxonomy$oldCode, to = taxonomy$newCode, warn_missing = FALSE) 
     
     #deal with multiple columns
-    multiple <- count(names(dat))
+    multiple <- plyr::count(names(dat))
     multiple <- multiple$x[multiple$freq > 1]
     if(length(multiple) > 0) {
       sppX <- lapply(multiple, function(sp) {
