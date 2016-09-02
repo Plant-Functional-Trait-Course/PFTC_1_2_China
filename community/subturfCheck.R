@@ -26,7 +26,8 @@ subturf_thin %>%
   ungroup() %>%
   filter(drop = rowSums(. == "miss") > 0) %>%
   select(-originSiteID)
-#write.table(.Last.value, file = "missingTurfs.dat", sep = "\t", quote = FALSE, row.names = FALSE)
+
+write.table(.Last.value, file = "missingTurfs.dat", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #check subturf and cover contain same species
 subturf_freq <- subturf_thin %>% 
@@ -37,6 +38,7 @@ subturf_freq <- subturf_thin %>%
 mergedCoverFreq <- merge(cover_thin, subturf_freq, all = TRUE)
 
 mergedCoverFreq %>% filter(is.na(cover)) %>% select(turfID, year, species, n)
+
 mergedCoverFreq %>% filter(is.na(n)) %>% select(turfID, year, species, cover)
 
 #subturf stability
@@ -120,7 +122,7 @@ changes <- cover_thin %>%
 
 ggplot(changes, aes(x = RANGE)) + geom_histogram() + facet_wrap(~originSiteID)
 
-changes %>% filter(RANGE >= 25) %>% arrange(turfID) %>% select(-originSiteID, -destSiteID) %>% as.data.frame()
+changes %>% ungroup() %>% filter(RANGE >= 25) %>% arrange(turfID) %>% select(-originSiteID, -destSiteID, -RANGE, -species) %>% as.data.frame()
 
 ## sum of covers
 cover_thin %>% 
@@ -138,6 +140,9 @@ cover_thin %>%
   facet_grid(originSiteID~TTtreat) +
   labs(x = "Year", y = "Sum of Covers")
 ggsave("cover.png", width = 10)
+
+#species dropouts  - not working properly
+cover_thin %>% filter(TTtreat %in% c("local", "control")) %>% group_by(species, year) %>% summarise(n = n()) %>% spread(key = year, value = n, fill = 0) %>% ungroup() %>% mutate(max = apply(.[,-1], 1, max), min = apply(.[,-1], 1, min), variability = (max - min)/(max + 10)) %>% arrange(desc(variability)) %>% select(-max, -min, - variability) %>% head(30)
 
 
 ## persist, recruit, expirate, (recover)
