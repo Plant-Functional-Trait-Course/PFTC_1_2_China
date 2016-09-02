@@ -83,7 +83,7 @@ turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID",
 dbWriteTable(con, "turfs", value = turfs, row.names = FALSE, append = TRUE)
 
 #do taxonomic corrections
-source("community/databaseSetup/doCorrections.r")
+source("community/databaseSetup/doCorrections.R")
 
 #import community and environment data
 source("community/databaseSetup/importcommunity.r")
