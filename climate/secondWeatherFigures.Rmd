@@ -1,0 +1,166 @@
+---
+title: "Second plots"
+author: "Richard J. Telford"
+date: "September 13, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library("ggplot2")
+library("dplyr")
+library("tidyr")
+library("lubridate")
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE)
+load("weather.Rdata")
+```
+
+
+## Missing files?
+
+```{r}
+weather %>% ungroup() %>% mutate(file  = reorder(file, dateTime, min, na.rm = TRUE)) %>% ggplot(aes(x = dateTime, y = file)) + geom_line() + facet_wrap(~site,  scales = "free_y") + labs(x = "", y = "")
+```
+
+Gaps in coverage in all sites. Especially large in sites A and M. Are there some missing files?
+
+## Tair
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tair, colour = site, group = file)) + geom_path()
+```
+
+Looks reasonable after correcting for F/°C confusion.
+
+
+## Tsoil0
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tsoil0, colour = site, group = file)) + geom_path()
+```
+
+Variance at site H is not constant. 
+
+## Tsoil5
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tsoil5, colour = site, group = file)) + geom_path()
+```
+
+Only site L has reasonable data. Here the high fewquency variance declines with time. Is this a real effect (fence effect?) or a logger error.
+
+## Tsoil20
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tsoil20, colour = site, group = file)) + geom_path()
+```
+
+# Temperature by site
+```{r}
+weather %>%
+  select(file, dateTime, site, Tair, Tsoil0, Tsoil5, Tsoil20) %>%
+  gather(key = depth, value = Temperature, -file, -dateTime, -site) %>%
+  mutate(depth = factor(depth, levels = c("Tair", "Tsoil0", "Tsoil5", "Tsoil20"))) %>%
+  ggplot(aes(x = dateTime, y = Temperature, colour = depth, group = file)) +
+    geom_path() +
+    facet_wrap(~site)
+```
+
+
+
+## rain
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = rain, colour = site, group = file)) + geom_path() + facet_wrap(~site, scales = "free_y")
+```
+
+This plot is strange as it shows maximal precipitation in winter, which should be the dry season at all sites other than A. The units are reported to be inches, but this is clearly implausible. Even mm would be implausible except at A. There are few zeroes in the data, except at A, and a strong relationship with wind.
+
+```{r}
+weather %>%
+  ggplot(aes(x = windSpeed, y = rain, colour = site)) + 
+    geom_point() +
+    facet_wrap(~site, scales = "free_y") + 
+    xlim(c(NA, 25)) 
+```
+
+The rain logger appears to be showing wind * 2 rather than rain at all sites except A.
+
+In the previous version of the climate logger files, rain was correct.
+
+## Water content 5
+
+Soil water content has been limited to > 0 and < 1. Site H is dubious in 2016.
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = waterContent5, colour = site, group = file)) + 
+  geom_path( )
+```
+
+
+## Water content20
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = waterContent20, colour = site, group = file)) + 
+  geom_path()
+```
+
+
+Does the ranking of water content up the mountain make sense?
+
+## RH
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = RH, colour = site, group = file)) + geom_path( )
+```
+
+## windSpeed
+
+Different files have different values for windspeed. This is probably another unit confusion. Units are all reported to be miles per hour. 1 m/s = 2.2 miles per hour.
+
+```{r}
+weather %>% select(dateTime, file, site, windSpeed) %>% filter(format(dateTime, "%Y-%m") == "2013-11", site == "H") %>% 
+  ggplot(aes(x = dateTime, y = windSpeed, colour = file)) + geom_path()
+```
+
+This probably accounts for the decline in windspeed in 2016.
+
+## windDirection
+
+Wind direction at site A is proportional to windspeed
+
+```{r}
+weather %>% filter(site == "A") %>% ggplot(aes(x = windSpeed, y = windDirection)) + geom_point()
+```
+
+This is analogous to the error in rain at the sites except A.
+
+
+## UV
+
+UV logger at A is absent. At H it is bad.
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = UV, colour = site, group  = file)) + geom_path() + facet_wrap(~site)
+```
+
+## Monthly
+
+Months with less than 3 weeks worth of data have been excluded.
+
+```{r}
+load("monthly_climate.Rdata")
+
+ggplot(monthly, aes(x = month, y = value, colour = site)) + 
+  geom_line() + 
+  facet_wrap(~variable, scale = "free_y")
+```
+              
+## monthly temperature by site
+
+```{r}
+monthly %>% filter(grepl("^T", variable)) %>% 
+  ggplot(aes(x = month, y = value, colour = variable)) + 
+  geom_path() + facet_wrap(~site)
+```
+
+Soil temperatures are surprisingly warm, but I only have seedclim data to compare to. Easy to explain warm winter temperatures. 
