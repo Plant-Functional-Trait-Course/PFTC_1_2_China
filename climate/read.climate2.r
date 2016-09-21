@@ -172,14 +172,6 @@ weather <- weather %>%
 
 #remove minimal variance in Tsoil0 Toil5
 
-weather %>% group_by(file) %>%
-  mutate(sd = sd(soil5, na.rm = TRUE)) %>%
-  summarise(sd = sd(Tsoil5, na.rm = TRUE)) %>% print(n = 100)
-
-weather %>% group_by(file) %>%
-#  mutate(sd = sd(soil0, na.rm = TRUE)) %>%
-  summarise(sd = sd(Tsoil0, na.rm = TRUE)) %>% print(n = 100)
-
 weather <- weather %>% 
   group_by(file) %>%
   mutate(sd = sd(Tsoil5, na.rm = TRUE)) %>% #Tsoil5
@@ -262,12 +254,15 @@ weather %>% filter(site == "A") %>% ggplot(aes(x = windSpeed, y = windDirection,
 #UV
 ggplot(weather, aes(x = dateTime, y = UV, colour = site, group  = file)) + geom_path() + facet_wrap(~site)
 
-## delete non-preciptation data from sites other than A, non-windDirection data from A
+## delete
 weather <- weather %>% 
+  #non-preciptation data from sites other than A
   mutate(rain = ifelse(site == "A", rain, NA)) %>%
-  mutate(windDirection = ifelse(site == "A", NA, windDirection))
-
-
+  #non-windDirection data from A
+  mutate(windDirection = ifelse(site == "A", NA, windDirection)) %>%
+  # delete bad UV from H
+  mutate(UV = ifelse(site == "H", UV, NA))
+  
 
 
 #remove duplicates - start with last file 
@@ -301,4 +296,16 @@ monthly <- left_join(full_grid, monthly) %>%tbl_df()
 
 save(monthly, file = "climate/monthly_climate.Rdata")
 
-ggplot(monthly, aes(x = month, y = value, colour = site)) + geom_line() + facet_wrap(~variable, scale = "free_y")
+####Annual mean####
+annual1 <- monthly %>% 
+  mutate(month = month(month, label = TRUE, abbr = FALSE)) %>%
+  group_by(variable, site, month) %>%
+  summarise(meanV = mean(value, na.rm = TRUE), n = sum(!is.na(value)))
+
+#check data for all months
+annual1 %>% filter(n >0) %>% 
+  group_by(site, variable) %>% 
+  summarise(n = n()) %>% 
+  filter (n < 12) # should be empty
+
+annual1 %>% group_by(site, variable) %>% summarise(mean = mean(meanV))
