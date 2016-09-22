@@ -261,7 +261,7 @@ weather <- weather %>%
   #non-windDirection data from A
   mutate(windDirection = ifelse(site == "A", NA, windDirection)) %>%
   # delete bad UV from H
-  mutate(UV = ifelse(site == "H", UV, NA))
+  mutate(UV = ifelse(site == "H", NA, UV))
   
 
 
@@ -308,4 +308,13 @@ annual1 %>% filter(n >0) %>%
   summarise(n = n()) %>% 
   filter (n < 12) # should be empty
 
-annual1 %>% group_by(site, variable) %>% summarise(mean = mean(meanV))
+annual <- annual1 %>% 
+  group_by(site, variable) %>% 
+  summarise(value = mean(meanV)) %>%
+  mutate(value = ifelse(variable == "rain", value * 12, value)) # rain should be sum not mean
+
+
+annual %>% spread(key = variable, value = value)
+
+#
+save(monthly, annual, file = paste0("climate/month_annual", Sys.Date(), ".Rdata"))
