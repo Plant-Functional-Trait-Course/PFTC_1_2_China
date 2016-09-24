@@ -4,6 +4,7 @@
 library("readxl")
 library("openxlsx")
 library("dplyr")
+library("tidyr")
 
 #get file list
 
@@ -29,6 +30,11 @@ otcc <- plyr::ldply(fl, function(f){
 save(otcc, file = "climate/otcc.Rdata")
 summary(otcc)
 
+#site names & file as factor
+otcc$site <- factor(otcc$site, levels = c("H", "A", "M", "L"))
+otcc$file <- reorder(otcc$file, otcc$date, min)
+
+
 #clean 
 otcc <- otcc %>% 
   #no real data before 2013
@@ -48,10 +54,32 @@ otcc <- otcc %>%
     waterContent20 = ifelse(waterContent20 > 0, waterContent20, NA),
     waterContent5 = ifelse(waterContent5 > 0, waterContent5, NA),
     waterContent0 = ifelse(waterContent0 > 0, waterContent0, NA)
-  )
-  
+  ) %>%
+  #remove duplicates
+  distinct(site, dateTime, .keep_all = TRUE)
+
+####monthly OTC####
+
+otc_month <- otcc %>%
+  mutate(month = lubridate::ymd(format(dateTime, "%Y-%m-15"))) %>%
+  select(-dateTime, -file) %>%
+  gather(key = variable, value = value, -site, -month) %>%
+  group_by(site, month, variable) %>%
+  filter(!is.na(value)) %>%
+  summarise(meanV = mean(value), sumV = sum(value), n = n()) %>%
+  mutate(value = ifelse(variable == "rain", sumV, meanV)) %>%
+  filter(n > 6 * 24 * 7 * 3) %>% #at least three weeks of data
+  select(-meanV, -sumV, -n)
+
+# add missing months
+full_grid <- expand.grid(variable = unique(otc_month$variable), site = unique(otc_month$site), month = seq(min(otc_month$month), max(otc_month$month), by = "month"))
+
+otc_month <- left_join(full_grid, otc_month) %>% tbl_df()
+
 
 #some plots
+ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + facet_wrap(~variable, scales = "free_y")
+
 ggplot(otcc, aes(x = dateTime, y = Tair)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = RH)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = Tsoil0)) + geom_path() + facet_wrap(~site)
@@ -60,3 +88,6 @@ ggplot(otcc, aes(x = dateTime, y = Tsoil20)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent20)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent5)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent0)) + geom_path() + facet_wrap(~site)
+ggplot(otcc, aes(x = dateTime, y = PAR)) + geom_path() + facet_wrap(~site)
+
+ggplot(otcc, aes(x = dateTime, y = file, group = file)) + geom_path() + facet_wrap(~site, scale = "free_y")
