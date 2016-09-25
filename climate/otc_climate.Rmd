@@ -1,0 +1,26 @@
+---
+title: "OTC climate"
+author: "Richard J. Telford"
+date: "September 24, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
+load("otcc.Rdata")
+load("otcc_month.Rdata")
+load("month_annual2016-09-21.Rdata")
+
+library("ggplot2")
+#library()
+```
+
+## 
+
+plots from otc
+
+
+##Monthly OTC
+
+
+##Comparison monthly OTC with 
