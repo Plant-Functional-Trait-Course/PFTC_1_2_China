@@ -12,7 +12,7 @@ load("otcc_month.Rdata")
 load("month_annual2016-09-21.Rdata")
 
 library("ggplot2")
-#library()
+library("dplyr")
 ```
 
 ## 
@@ -22,5 +22,31 @@ plots from otc
 
 ##Monthly OTC
 
+```{r}
+ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + geom_point(size = 0.1) + facet_wrap(~variable, scales = "free_y")
+```
 
-##Comparison monthly OTC with 
+##Comparison OTC with external weather
+
+```{r}
+
+all_month <- rbind(
+  cbind(logger = "OTC", otc_month),
+  cbind(logger = "Site", monthly)
+)
+
+g <- all_month %>% filter(variable == "Tsoil0") %>% 
+  ggplot(aes(x = month, y = value, colour = logger)) + 
+    geom_path() + 
+    geom_point(size = 0.1) +
+    facet_wrap(~site)
+
+g
+
+g %+% (all_month %>% filter(variable == "Tsoil5"))
+g %+% (all_month %>% filter(variable == "Tsoil20"))
+g %+% (all_month %>% filter(variable == "Tair"))
+g %+% (all_month %>% filter(variable == "waterContent0"))
+g %+% (all_month %>% filter(variable == "waterContent5"))
+g %+% (all_month %>% filter(variable == "waterContent20"))
+g %+% (all_month %>% filter(variable == "RH"))
