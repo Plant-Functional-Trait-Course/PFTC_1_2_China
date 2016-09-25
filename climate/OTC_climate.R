@@ -76,6 +76,8 @@ full_grid <- expand.grid(variable = unique(otc_month$variable), site = unique(ot
 
 otc_month <- left_join(full_grid, otc_month) %>% tbl_df()
 
+save(otc_month, file = "otc_month.Rdata")
+
 
 #some plots
 ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + facet_wrap(~variable, scales = "free_y")
