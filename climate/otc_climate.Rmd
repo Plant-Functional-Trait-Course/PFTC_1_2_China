@@ -7,36 +7,76 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
-load("otcc.Rdata")
-load("otcc_month.Rdata")
+load("otcc_clean.Rdata")
+load("otc_month.Rdata")
 load("month_annual2016-09-21.Rdata")
 
 library("ggplot2")
 library("dplyr")
 ```
 
-## 
+# Raw data
 
-plots from otc
+I have cleaned away the worst spikes in the data and removed duplicates. The data are mostly recorded every ten minutes, but in the first file at each site, data are recorded every minute, at least for a while. I have left these values in the data.
 
+## Temperature
 
-##Monthly OTC
+Strange that maximum air temperatures are basically constant all year round. Perhaps because winters have less cloud cover.
+
+```{r}
+ggplot(otcc, aes(x = dateTime, y = Tair30, colour = site)) + geom_path() + facet_wrap(~site)
+ggplot(otcc, aes(x = dateTime, y = Tsoil0, colour = site)) + geom_path() + facet_wrap(~site)
+ggplot(otcc, aes(x = dateTime, y = Tsoil5, colour = site)) + geom_path() + facet_wrap(~site)
+ggplot(otcc, aes(x = dateTime, y = Tsoil20, colour = site)) + geom_path() + facet_wrap(~site)
+```
+
+## Water content
+
+Some of these data may be good, but I'm not sure which.
+```{r}
+ggplot(otcc, aes(x = dateTime, y = waterContent0, colour = site)) + geom_path() + facet_wrap(~site)
+ggplot(otcc, aes(x = dateTime, y = waterContent5, colour = site)) + geom_path() + facet_wrap(~site)
+ggplot(otcc, aes(x = dateTime, y = waterContent20, colour = site)) + geom_path() + facet_wrap(~site)
+```
+
+## RH
+
+```{r}
+ggplot(otcc, aes(x = dateTime, y = RH, colour = site)) + geom_path() + facet_wrap(~site)
+```
+
+##PAR
+
+Lots of bad data.
+
+```{r}
+ggplot(otcc, aes(x = dateTime, y = PAR, colour = site)) + geom_path() + facet_wrap(~site)
+
+```
+
+#Monthly OTC
+
+Monthly estimates are given when there is at least three weeks worth of data. (the 1-minute observations may affect this slightly).
 
 ```{r}
 ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + geom_point(size = 0.1) + facet_wrap(~variable, scales = "free_y")
 ```
 
-##Comparison OTC with external weather
+#Comparison OTC with external weather
+
+
+## Temperature
+
+Air and surface temperatures are typically higher in the OTC. Note that the air temperatures are not (as I understand) properly comparable as the OTC air temperature sensor is at a different height to the site air temperature sensor. Soil temperatures are similar.
 
 ```{r}
-
 all_month <- rbind(
-  cbind(logger = "OTC", otc_month),
-  cbind(logger = "Site", monthly)
+  cbind(sensor = "OTC", otc_month),
+  cbind(sensor = "Site", monthly)
 )
 
 g <- all_month %>% filter(variable == "Tsoil0") %>% 
-  ggplot(aes(x = month, y = value, colour = logger)) + 
+  ggplot(aes(x = month, y = value, colour = sensor)) + 
     geom_path() + 
     geom_point(size = 0.1) +
     facet_wrap(~site)
@@ -45,8 +85,31 @@ g
 
 g %+% (all_month %>% filter(variable == "Tsoil5"))
 g %+% (all_month %>% filter(variable == "Tsoil20"))
-g %+% (all_month %>% filter(variable == "Tair"))
+g %+% (all_month %>% filter(variable == "Tair30" | variable == "Tair"))
+```
+
+## Water content
+
+Some of the water content data are obviously bad. Some may be good, but I have no idea which. 
+
+```{r}
 g %+% (all_month %>% filter(variable == "waterContent0"))
 g %+% (all_month %>% filter(variable == "waterContent5"))
 g %+% (all_month %>% filter(variable == "waterContent20"))
+```
+
+## RH
+
+RH data are mostly reasonable. Typically lower humidity in the OTC than outside, perhaps because of the slightly warmer temperature.
+
+```{r}
 g %+% (all_month %>% filter(variable == "RH"))
+```
+
+## PAR
+
+PAR measurements fall at all sites. Parts of the data might be good,but overall they are not credible. Perhaps the loggers are broken or dirty. 
+
+```{r}
+g %+% (all_month %>% filter(variable == "PAR"))
+```
