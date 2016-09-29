@@ -1,0 +1,112 @@
+---
+title: "First plots"
+author: "Richard J. Telford"
+date: "September 13, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+load("weather_unclean.Rdata")
+```
+
+
+## Tair
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tair, colour = site, group = file)) + geom_path()
+```
+
+? Unit confusion. Files all report to by in F (!) but some of the data make much more sense if the are in °C.
+
+
+## Tsoil0
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tsoil0, colour = site, group = file)) + geom_path()
+```
+
+## Tsoil5
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tsoil5, colour = site, group = file)) + geom_path()
+```
+
+Clear logger failure on this and the next plot. Possibly also unit confusion.
+
+## Tsoil20
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = Tsoil20, colour = site, group = file)) + geom_path()
+```
+
+## rain
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = rain, colour = site, group = file)) + geom_path()
+```
+
+This plot is strange as it shows maximal precipitation in winter, which should be the dry season. The declining trend in precipitation needs to be confirmed with external data. File says data are in inches - seems unlikely to have up to `r max(weather$rain, na.rm = TRUE)` inches in ten minutes.
+
+## Water content 5
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = waterContent5, colour = site, group = file)) + geom_path( )
+```
+
+Some clear logger failures in the water content plots.
+
+## Water content20
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = waterContent20, colour = site, group = file)) + geom_path()
+```
+
+With thresholds to cut away most egregiously wrong data
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = waterContent20, colour = site, group = file)) + geom_path() + ylim(-0.5, 0.75)
+```
+
+Does the ranking of water content up the mountain make sense?
+
+## RH
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = RH, colour = site, group = file)) + geom_path( )
+```
+
+## windSpeed
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = windSpeed, colour = site, group = file)) + geom_path()
+```
+
+
+## windDirection
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = windDirection, colour = site, group = file)) + geom_path()
+```
+
+## solarRadiation
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = solarRadiation, colour = site, group = file)) + geom_path()
+```
+
+This and the next plot appear to have an aphysical hard upper limit.
+
+## PAR
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = PAR, colour = site, group = file)) + geom_path()
+```
+
+## UV
+
+```{r}
+ggplot(weather, aes(x = dateTime, y = UV, colour = site, group = file)) + geom_path()
+```
+              

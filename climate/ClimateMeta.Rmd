@@ -1,0 +1,138 @@
+---
+title: "Transplant Climate Metadata"
+author: "Richard J. Telford"
+date: "September 24, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
+```
+
+```{r loadStuff, echo = FALSE}
+#Load libraries
+library("ggplot2")
+library("dplyr")
+library("tidyr")
+
+#load data
+load("otc_month.Rdata")
+load("month_annual2016-09-21.Rdata")
+```
+
+## Overview
+
+There are climate loggers at the four TRANSPLANT sites, running from `r format(min(monthly$month), "%B %Y")`. Data are recorded (usually) every 10 minutes. Each site has sensors recording the following variables (units and variable name given in brackets)
+
+ - Air temperature at (?) 2 m (°C, Tair).
+ - Soil surface temperatures (°C, Tsoil0)
+ - Soil temperatures at 5 and 20 cm depth (°C, Tsoil5, Tsoil20)
+ - Relative humidity at (?) 2 m (%, RH)
+ - Soil moisture at 0, 5 and 20 cm depth (m^3^/m^3^, waterContent0,waterContent5, waterContent20)
+ - Precipitation (probably mm, rain)
+ - Wind speed (corrupt, windSpeed)
+ - Wind direction (°, windDirection)
+ - Solar radiation (W/m², solarRadiation)
+ - Photosynthetically active radiation (uE, PAR)"PAR""solarRadiation"    
+ - UV radiation (umolm^-2^s, UV)
+ 
+In addition, there are logger within the Open Top Chamber recording  
+
+ - Air temperature at (?) 30 cm (°C, Tair30).
+ - Soil surface temperatures (°C, Tsoil0)
+ - Soil temperatures at 5 and 20 cm depth (°C, Tsoil5, Tsoil20)
+ - Relative humidity at (?) 2 m (%, RH)
+ - Soil moisture at 0, 5 and 20 cm depth (m^3^/m^3^, waterContent0,waterContent5, waterContent20)
+ - Photosynthetically active radiation (uE, PAR)"PAR""solarRadiation"    
+
+Logger and sensor make/model details are not currently available.
+
+Monthly and annual mean data for each station are available.
+
+Data are subject to change when issues described below are fixed. 
+
+## Data processing
+
+The data was provided in excel files, with the site and OTC data formatted differently.
+
+Code for reading the data from the excel files is in files 'read.climate2.r' and 'OTC_climate.R'. These are archived versions of the code; the working version of the code in the TRANSPLANT github repository.
+
+Essentially, both files search the specified data directory for excel files and then loop through the list of file, extracting the contents of each and combining them into a large data.frame. Various steps are then taken to remove unambiguiously erroneous data and duplicate measurements before calculating monthly and then annual means (sums for precipitation).
+
+Data for a month are given only if there is at least three weeks worth of data (ie 3 * 7 * 24 * 6 observations). To calculate annual means/sums, means were first calculate for each month so that uneven amount of data for different times of the year did not bias the results.
+
+The site climate data files were corrupt, so the code is far more complex than would otherwise have been the case. The OTC files were malformatted, so the fast `readxl` package could not be used, and the very slow `gdata::read.xls` had to be used instead.
+
+Data cleaning removed impossible values (temperatures of 100 °C), data with implausibly low variance and data that were otherwise impossible. Much data was lost in this process, including
+
+ - Precipitation at all sites except A (because the values were derived from windspeed)
+ - Wind direction at site A (because the values were derived from windspeed)
+ - Much soil temperature data (impossible values or implausible variance)
+ - UV data from site H (spurious trend)
+
+The remaining data still has some issues
+
+ - temperature data has spikes. These will make minimal difference to monthly or annual means, but need to be cleaned before high resolution data can be used
+ - some soil temperature data has changes to the high-frequency variance over time. This probably doesn't affect the monthly or annual means. 
+ - Water content data are dubious. Some of the data look good, but other have spurious trends or lack characteristic features such as a drop in apparent mositure during winter. Offsets between the sensors at different depths and under the OTC may reflect poor calibration or real variability. Use these data with extreme caution.
+ - Wind speed data have a mix of units, which probably largely determines the trend in windspeed. Until this problem is fixed, use these data with extreme caution (and ignore the trend).
+ 
+## Importing the data
+
+The data are provided in .Rdata files. These can be read into R with the `load` command, and ensures that dates etc are correct. The data are in a tidy format: one row - one observation. This code will load the data and packages needed to plot them.
+ 
+```{r loadStuff, eval = FALSE} 
+```
+
+## Annual means
+```{r}
+knitr::kable(
+  x = annual %>% spread(key = variable, value = value),
+  digits = 1)
+```
+
+
+## Plotting the data
+
+Monthly site data
+
+```{r}
+ggplot(monthly, aes(x = month, y = value, colour = site)) + geom_path() + geom_point(size = 0.1) + facet_wrap(~variable, scales = "free_y")
+```
+
+Monthly OTC data
+
+```{r}
+ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + geom_point(size = 0.1) + facet_wrap(~variable, scales = "free_y")
+```
+
+
+##Comparison OTC with external weather
+
+
+### Temperature
+
+Air and surface temperatures are typically higher in the OTC. Note that the air temperatures are not (as I understand) properly comparable as the OTC air temperature sensor is at a different height to the site air temperature sensor. Soil temperatures are similar.
+
+```{r}
+all_month <- rbind(
+  cbind(sensor = "OTC", otc_month),
+  cbind(sensor = "Site", monthly)
+)
+
+g <- all_month %>% filter(variable == "Tsoil0") %>% 
+  ggplot(aes(x = month, y = value, colour = sensor)) + 
+    geom_path() + 
+    geom_point(size = 0.1) +
+    facet_wrap(~site)
+
+g
+
+g %+% (all_month %>% filter(variable == "Tsoil5"))
+g %+% (all_month %>% filter(variable == "Tsoil20"))
+g %+% (all_month %>% filter(variable == "Tair30" | variable == "Tair"))
+```
+
+## About
+
+The file `ClimateMeta.html` was generated from the rmarkdown file `ClimateMeta.Rmd` using `knitr`. Provided the data files are in the same directory as the rmarkdown file, the html document can be re-created. 
