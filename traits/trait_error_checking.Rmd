@@ -1,0 +1,94 @@
+---
+title: "Trait error checking"
+author: "Richard J. Telford"
+date: "November 5, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+#Some quick error checks on the 2016 trait data
+
+```{r loadData}
+#load libraries
+library(ggplot2)
+library(readr)
+library(dplyr)
+
+traits <- read_csv("data/2016_ChinaLeafTraitData_FlaggedErrors_11042016.csv")
+problems(traits)#table entries that are incorrect mode for column (ie characters in numeric column). "Unknown" is actual entry in data.
+#convert to numeric (has "too small")
+traits$Leaf_Thickness_1_mm <- as.numeric(traits$Leaf_Thickness_1_mm)
+```
+
+
+## Leaf thicknesses
+Some rather thick leaves.
+
+```{r}
+ggplot(traits, aes(x = Leaf_Thickness_1_mm, y = Leaf_Thickness_2_mm)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, colour = "red")
+```
+
+##Leaf thickness 3 against leaf thickness 1
+
+Clear outliers
+```{r}
+ggplot(traits, aes(x = Leaf_Thickness_1_mm, y = Leaf_Thickness_3_mm)) + 
+  geom_point() +  
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_abline(slope = 1, intercept = 0, colour = "red") #!!!
+```
+
+## Leaf dry mass against wet mass
+
+Highly likely that points above green line are out by a factor of 1000 (i.e. mg rather than grams). Points between green and red lines (and slightly below this) are suspect.
+
+```{r}
+ggplot(traits, aes(x = Wet_Mass_g, y = Dry_Mass_g)) + 
+  geom_point() + 
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_abline(slope = 1, intercept = 0, colour = "red") +#!!!
+  geom_abline(slope = 1, intercept = 1, colour = "green") #!!!
+```  
+  
+Correcting points where `log10(Dry_Mass_g) > log10(Wet_Mass_g) + 1` by dividing by 1000. Points that are still above the 1:1 (red) line are suspect, as are some of the small leaves and those below the cloud. NB increased variance expected with small leaves.
+```{r}
+traits %>%
+  mutate(Dry_Mass_g = ifelse(log10(Dry_Mass_g) < log10(Wet_Mass_g) + 1, Dry_Mass_g, Dry_Mass_g/1000)) %>%
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g)) + geom_point() +
+  scale_x_log10()+
+  scale_y_log10() +
+  geom_abline(slope = 1, intercept = 0, colour = "red") +#!!!
+  geom_abline(slope = 1, intercept = 1, colour = "green") 
+```
+
+##Leaf wet mass vs area
+
+Some clearly problematic leaves
+```{r}
+ggplot(traits, aes(x = Wet_Mass_g, y = Cropped_Leaf_Area)) + 
+  geom_point() +  
+  scale_x_log10() +
+  scale_y_log10()
+```
+
+##Duplicated envelope names
+
+Duplicate values in one (or both) of the raw data files in the `left_join`.
+
+```{r duplicateNames}
+traits %>% 
+  group_by(Full_Envelope_Name) %>% 
+  summarise(n = n()) %>% 
+  filter(n > 1) %>%
+  arrange(desc(n)) %>%
+  print(n = 200)
+```
+
+
