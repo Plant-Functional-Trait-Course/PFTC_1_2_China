@@ -159,7 +159,7 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     finalNrowSTurfCommunity <- dbGetQuery(con, "select count(*) as n from subTurfCommunity")
     
     #check correct number rows
-    stopifnot(nrow(sppT) == finalNrowSTurfCommunity - initNrowSTurfCommunity)
+    stopifnot(nrow(spp0) == finalNrowSTurfCommunity - initNrowSTurfCommunity)
 
 }
 
