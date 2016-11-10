@@ -26,8 +26,8 @@ stopifnot(all(c(global$old, global$new) %in% taxonomy$speciesName))
 
 
 #convert names to code
-global$old <- mapvalues(global$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
-global$new <- mapvalues(global$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+global$old <- plyr::mapvalues(global$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+global$new <- plyr::mapvalues(global$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 
 stopifnot(all(global$old %in% names(dat)))
 (newTaxa <- setdiff(global$new, names(dat)))
@@ -66,8 +66,8 @@ local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
 stopifnot(all(c(local$old, local$new) %in% c("", taxonomy$speciesName)))
 
 #convert names to code
-local$old <- mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
-local$new <- mapvalues(local$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+local$old <- plyr::mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+local$new <- plyr::mapvalues(local$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 
 merge(local, dat, by.x = c("turfID", "year", "site"), by.y = c("turfID", "year", "DestinationSite"), all.x = TRUE)%>%
   filter(is.na(DestinationBlock))%>%select(1:9)
@@ -156,8 +156,8 @@ dat$dummyTaxon <- NULL
 
 
 #special edits (manually as hopefully few)
-special$special <- mapvalues(special$special, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
-special$special2 <- mapvalues(special$special2, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+special$special <- plyr::mapvalues(special$special, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+special$special2 <- plyr::mapvalues(special$special2, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 special
 
 for(i in 1:nrow(special)) {
