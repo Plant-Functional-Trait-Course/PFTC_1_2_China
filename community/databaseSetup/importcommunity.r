@@ -81,29 +81,19 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
       spp2 <- spp2[spp2$cover > 0, ]
       spp2
     })
+  initNrowTurfCommunity <- dbGetQuery(con, "select count(*) as n from turfCommunity")
   dbWriteTable(con, "turfCommunity", sppT, row.names=FALSE, append = TRUE)
+  finalNrowTurfCommunity <- dbGetQuery(con, "select count(*) as n from turfCommunity")
   
+  #check correct number rows
+  stopifnot(nrow(sppT) == finalNrowTurfCommunity - initNrowTurfCommunity)
+
   
-     #Check rows query for TurfCommunity :
- print( sum(sapply(spp[,3:ncol(spp)], function(x) as.numeric(as.character(x)))>0, na.rm=TRUE))   #Check expected number of rows added
-   
-  print(
-  if(dat$year[1] != 2009){
-    tmp <- dbGetQuery(con, paste('SELECT sites.siteID FROM (((sites INNER JOIN blocks ON sites.siteID = blocks.siteID) INNER JOIN plots ON blocks.blockID = plots.blockID) INNER JOIN turfs ON plots.plotID = turfs.destinationPlotID) INNER JOIN turfCommunity ON turfs.turfID = turfCommunity.turfID WHERE ( ((turfCommunity.year)=',dat$year[1],')); ', sep = ""))
-    sum(tolower(substring(tmp, 0,3)) == tolower(substring(as.character(dat$OriginSite[1]), 0,3)))#Check for 2011 and 2013 data: 
-  }else{
-    tmp <- dbGetQuery(con, paste('SELECT sites.siteID FROM (((sites INNER JOIN blocks ON sites.siteID = blocks.siteID) INNER JOIN plots ON blocks.blockID = plots.blockID) INNER JOIN turfs ON plots.plotID = turfs.originPlotID) INNER JOIN turfCommunity ON turfs.turfID = turfCommunity.turfID WHERE ( ((turfCommunity.year)=',dat$year[1],')); ', sep = ""))
-    sum(tolower(substring(tmp, 0,3)) == tolower(substring(as.character(dat$OriginSite[1]), 0,3))) #Check for 2009 data:
-  } )
-  
-  
-  
-                                              
-     #subTurfCommunity  
-     message("subturfcommunity")  
-    subspp <- cbind(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ])[dat$Measure != "cover%",]
-    subspp[subspp == 0] <- NA
-    subsppX <- lapply(unique(mergedNames), function(sppname){
+  #subTurfCommunity  
+  message("subturfcommunity")  
+  subspp <- cbind(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ])[dat$Measure != "cover%",]
+  subspp[subspp == 0] <- NA
+  subsppX <- lapply(unique(mergedNames), function(sppname){
       species <- subspp[, names(subspp) == sppname, drop = FALSE]
       if (ncol(species) == 1) {
         return(species)
@@ -164,20 +154,12 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
       tmpSp$seedlings[tmpSp$seedlings == 0 & tmpSp$juvenile == 1] <- 1
     spp0[spp0$species %in% seedlingSp,] <- tmpSp
     
-    dbWriteTable(con, "subTurfCommunity", spp0, row.names = FALSE, append = TRUE)
+    initNrowSTurfCommunity <- dbGetQuery(con, "select count(*) as n from subTurfCommunity")
+    dbWriteTable(con, "subTurfCommunity", spp0, row.names=FALSE, append = TRUE)
+    finalNrowSTurfCommunity <- dbGetQuery(con, "select count(*) as n from subTurfCommunity")
     
-    
-   #Check rows query for subTurfCommunity :
-  print(sum(sapply(subspp[,4:ncol(subspp)], function(x) as.character(x)) != "", na.rm=TRUE) )  #Check expected number of rows added  )
-  
-  print(if(dat$year[1] != 2009){
-    tmp <- dbGetQuery(con, paste('SELECT sites.siteID FROM (((sites INNER JOIN blocks ON sites.siteID = blocks.siteID) INNER JOIN plots ON blocks.blockID = plots.blockID) INNER JOIN turfs ON plots.plotID = turfs.destinationPlotID) INNER JOIN subTurfCommunity ON turfs.turfID = subTurfCommunity.turfID WHERE ( ((subTurfCommunity.year)=',dat$year[1],')); ', sep = ""))
-     sum(tolower(substring(tmp, 0,3)) == tolower(substring(as.character(dat$OriginSite[1]), 0,3)))#Check actual number of rows added for 2011 and 2012 data:
-    } else{
-    tmp <- dbGetQuery(con, paste('SELECT sites.siteID FROM (((sites INNER JOIN blocks ON sites.siteID = blocks.siteID) INNER JOIN plots ON blocks.blockID = plots.blockID) INNER JOIN turfs ON plots.plotID = turfs.originPlotID) INNER JOIN subTurfCommunity ON turfs.turfID = subTurfCommunity.turfID WHERE ( ((subTurfCommunity.year)=',dat$year[1],')); ', sep = ""))
-     sum(tolower(substring(tmp, 0,3)) == tolower(substring(as.character(dat$OriginSite[1]), 0,3)))#Check actual number of rows added for 2009 data:
-  } ) 
-  
+    #check correct number rows
+    stopifnot(nrow(sppT) == finalNrowSTurfCommunity - initNrowSTurfCommunity)
 
 }
 
