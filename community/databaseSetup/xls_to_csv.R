@@ -1,9 +1,8 @@
 #packages
 library("readxl")
-library("plyr")
 
 #list of xls files
-flist <- dir("community/databaseSetup/data/", pattern = "*.xls$", full.names = TRUE)
+flist <- dir("community/databaseSetup/data/", pattern = "*.xls$", full.names = TRUE, recursive = TRUE)
 
 #what do we have
 sapply(flist, excel_sheets)
@@ -80,7 +79,7 @@ allsites <- lapply(flist, function(fl){
     names(dat) <- make.names(names(dat))
     extras <- setdiff(names(dat), taxonomy$oldCode)
     taxonomy <- rbind(taxonomy, cbind(oldCode = extras, newCode = extras))
-    names(dat) <- mapvalues(names(dat), from = taxonomy$oldCode, to = taxonomy$newCode, warn_missing = FALSE) 
+    names(dat) <- plyr::mapvalues(names(dat), from = taxonomy$oldCode, to = taxonomy$newCode, warn_missing = FALSE) 
     
     #deal with multiple columns
     multiple <- plyr::count(names(dat))
@@ -92,7 +91,7 @@ allsites <- lapply(flist, function(fl){
       sppX <- setNames(as.data.frame(sppX), multiple)
       dat <- cbind(dat[!names(dat) %in% multiple], sppX)
     }
-    stopifnot(all(table(names(dat)) == 1))
+    stopifnot(all(table(names(dat)) == 1))#check no duplicates
     dat
   })
   do.call(rioja::Merge, args = onesite)
@@ -102,7 +101,7 @@ allsites <- do.call(rioja::Merge, args = allsites)
 
 
 #sort columns so all species together
-metaNames <- c("DestinationSite", "DestinationBlock", "originPlotID", "TTtreat", "destinationPlotID", "turfID", "subPlot", "year", "date", "Measure", "recorder")
+metaNames <- c("DestinationSite", "DestinationBlock", "originPlotID", "TTtreat", "RTtreat", "destinationPlotID", "turfID", "subPlot", "year", "date", "Measure", "recorder")
 
 envNames <- c("moss", "lichen", "litter", "soil", "rock", "totalVascular", "totalBryophytes", "totalLichen", "vegetationHeight", "mossHeight", "litterThickness", "comment")
 
@@ -113,6 +112,14 @@ sppNames
 allsites <- allsites[,  c(metaNames, sppNames, envNames)]
 
 names(allsites)
+
+#check for odditities
+allsites[, sppNames] %>% tidyr::gather(key = spp, value = cover) %>% mutate(cover = as.character(cover)) %>% filter(!is.na(cover)) %>% mutate(cover = trimws(cover))%>% filter(!grepl("^\\d+(?:\\.\\d+)?$", cover))
+
+#trim anywhite space
+allsites <- plyr::colwise(trimws)(allsites)
+#ensure numeric
+allsites[, sppNames] <- plyr::colwise(as.numeric)(allsites[, sppNames])
 
 ##write data to csv file
 write.csv(allsites, file = "community/databaseSetup/data/allsites.csv", row.names = FALSE)
