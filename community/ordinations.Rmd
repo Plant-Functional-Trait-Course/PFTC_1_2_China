@@ -1,5 +1,5 @@
 ---
-title: "Translant Ordinations"
+title: "Transplant Ordinations"
 author: "Richard J. Telford"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: html_document
