@@ -30,19 +30,25 @@ con <- dbConnect(RMySQL::MySQL(), group = "transplant")
 subturf_thin <- load_subturfcomm(con = con)
 #  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
 cover_thin <-load_comm(con = con)
+
+#merge cover amd subturf
+
+subturf_cover_thin <- left_join(subturf_thin, cover_thin)
+
 ```
 
 #Subturf maps
 
 ```{r, fig.height=11, fig.width = 7}
-plyr::d_ply(subturf_thin, .(turfID), function(df){
+plyr::d_ply(subturf_cover_thin, .(turfID), function(df){
   print(
-  ggplot(df, aes(x = subTurf %/% 5, y = subTurf %% 5)) +
+  ggplot(df, aes(x = subTurf %/% 5, y = subTurf %% 5, fill = cover)) +
     geom_tile() +
     facet_grid(species ~ year) +
     ggtitle(paste(df$turfID[1], "subturf map")) +
     scale_x_continuous(expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0)) +
+    scale_fill_distiller(type = "div", palette = "RdYlBu") + 
     theme(
       axis.text = element_blank(), 
       axis.title = element_blank(), 
