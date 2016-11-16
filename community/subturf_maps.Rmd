@@ -42,13 +42,14 @@ subturf_cover_thin <- left_join(subturf_thin, cover_thin)
 ```{r, fig.height=11, fig.width = 7}
 plyr::d_ply(subturf_cover_thin, .(turfID), function(df){
   print(
-  ggplot(df, aes(x = subTurf %/% 5, y = subTurf %% 5, fill = cover)) +
+  ggplot(df, aes(x = subTurf %/% 5, y = subTurf %% 5, fill = cover, colour = "outline")) +
     geom_tile() +
     facet_grid(species ~ year) +
     ggtitle(paste(df$turfID[1], "subturf map")) +
     scale_x_continuous(expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0)) +
-    scale_fill_distiller(type = "div", palette = "RdYlBu") + 
+    scale_fill_distiller(type = "seq", palette = "Greens", direction = 1) + 
+    scale_colour_manual(values = "black", guide = "none") + 
     theme(
       axis.text = element_blank(), 
       axis.title = element_blank(), 
