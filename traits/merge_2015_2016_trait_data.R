@@ -160,6 +160,11 @@ traits <- traits %>%
   mutate(Error_SLA_greater_500 = SLA_cm2.g > 500) %>%
   mutate(Error_SLA_lessthan_5 = SLA_cm2.g <5)
     
+## fix some species names
+traits <- traits %>% 
+  mutate(TNRS_Corrected_Plant_species = stringi::stri_trim(TNRS_Corrected_Plant_species)) %>% 
+  mutate(TNRS_Corrected_Plant_species = recode(TNRS_Corrected_Plant_species, `Potentilla stemophylla var.ehergens` = "Potentilla stenophylla var. emergens", `Codonopsis foetens subsp. Nervosa` = "Codonopsis foetens subsp. nervosa"))
+
 
 #### plots ####
 ggplot(traits, aes(x = Wet_Mass_g, y = Dry_Mass_g)) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
