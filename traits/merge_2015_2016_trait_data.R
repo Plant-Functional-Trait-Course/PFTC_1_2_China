@@ -62,12 +62,15 @@ mass2015 <- plyr::ldply(fl, function(x){
   x
 })
 
-mass2015 <- mass2015 %>% mutate(Leaf_Thickness_1_mm = as.numeric(Leaf_Thickness_1_mm), Dry_Mass_g_2015 = as.numeric(Dry_Mass_g_2015), Dry_Mass_g_2016 = as.numeric(Dry_Mass_g_2016))
+mass2015 <- mass2015 %>% 
+  mutate(Leaf_Thickness_1_mm = as.numeric(Leaf_Thickness_1_mm), Dry_Mass_g_2015 = as.numeric(Dry_Mass_g_2015), Dry_Mass_g_2016 = as.numeric(Dry_Mass_g_2016)) %>%
+  mutate(Project = "LOCAL")
+  
+##Import other 2015 trait files here
 
-names(mass2015)
 
 
-
+#some plots
 library(ggplot2)
 ggplot(mass2015, aes(Dry_Mass_g_2015, Dry_Mass_g_2016)) + geom_point()
 ggplot(mass2015, aes(Wet_Mass_g, Dry_Mass_g_2016)) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
@@ -120,53 +123,51 @@ traits2016 <- traits2016 %>%
   
 
 ###Correct dry mass that appear to be in mg
-
+traits2016 <- traits2016 %>%
+  mutate(Dry_Mass_was_probably_mg = log10(Dry_Mass_g) > log10(Wet_Mass_g) + 1) %>% #dry mass more than 10X wet mass
+  mutate(Dry_Mass_g = ifelse(log10(Dry_Mass_g) < log10(Wet_Mass_g) + 1, Dry_Mass_g, Dry_Mass_g/1000))
 
 #### Merge 2015 & 2016 data ####
+#make new columns to match
+mass2015 <- mass2015 %>% 
+  rename(Elevation_m = Elevation, Dry_Mass_g = Dry_Mass_g_2016) %>%
+  rename(TNRS_Corrected_Plant_species = Taxon_TNRS_corrected) %>%
+  rename(Individual_Plant_Number = Individual_Number) %>%
+  rename(Location = Plot) %>% # ALL NA!
+  mutate(Location = as.character(Location)) %>% #to keep code below happy
+  select(-Dry_Mass_g_2015, -Dry_Mass_WeighingScale, -Wet_Mass_WeighingScale) %>%
+  mutate(Dry_Mass_was_probably_mg = FALSE) %>%
+  mutate(TNRS_genus = gsub("^(\\w+)\\s.*$", "\\1", TNRS_Corrected_Plant_species)) %>%
+  mutate(TNRS_species = gsub("^(\\w+)\\s(.*)$", "\\2", TNRS_Corrected_Plant_species))
+  
+traits2016 <- traits2016 %>%
+  rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
+  rename(Leaf_Number = Leaf_number) %>%
+  rename(Taxon_written_on_envelopes = Plant.species) %>%
+  mutate(Leaf_Thickness_1_mm = as.numeric(Leaf_Thickness_1_mm)) %>%
+  select(-X, -X.1)
 
+traits <- bind_rows(traits2016, mass2015)
+names(traits)
 
+#### recalculate LDMC & SLA ####
+traits <- traits %>%
+  mutate(SLA_cm2.g = Leaf_Area_cm2/Dry_Mass_g) %>%
+  mutate(LDMC = Dry_Mass_g/Wet_Mass_g) %>%
+  mutate(Leaf_Thickness_Ave_mm = rowSums(select(traits, matches("Leaf_Thickness_._mm")), na.rm = TRUE)) %>%
+  #FLAGS
+  mutate(Error_wet_equal_lessthan_dry = Dry_Mass_g >= Wet_Mass_g) %>%
+  mutate(Error_SLA_greater_500 = SLA_cm2.g > 500) %>%
+  mutate(Error_SLA_lessthan_5 = SLA_cm2.g <5)
+    
 
-newNames2 <- read_delim(file = "old, new
-V-number,
-Date, Date
-Site, Site
-Plot,
-Elevation, Elevation_m
-Taxon_TNRS_correcte d, TNRS_Corrected_Plant_species
-Taxon_written_on_envelopes, Envelope_Plant_species
-Individual_Number,
-Leaf_Number, Leaf_number
-Leaf_Area_cm2,
-Wet_Mass_g,
-Wet_Mass_WeighingScale,
-Dry_Mass_WeighingScale,
-Leaf_Thickness_1_mm, Leaf_Thickness_1_mm
-Leaf_Thickness_2_mm, Leaf_Thickness_2_mm
-Leaf_Thickness_3_mm, Leaf_Thickness_3_mm
-Leaf_Thickness_4_mm,
-Leaf_Thickness_5_mm,
-Leaf_Thickness_6_mm,
-Dry_Mass_g_2015,
-Dry_Mass_g_2016, Dry_Mass_g
-Leaf_Thickness_Ave_mm,
-)
- [1] "Full_Envelope_Name"                   "Date.x"                              
- [3] "Elevation_m"                          "Site.x"                              
- [5] "Location.x"                           "Project.x"                           
- [7] "Plant.species"                        "TNRS_Corrected_Plant_species"        
- [9] "TNRS_genus"                           "TNRS_species"                        
-[11] "TNRS_family"                          "Individual_plant_number"             
-[13] "Leaf_number.x"                        "Wet_Mass_g"                          
-[15] "Dry_Mass_g"                           "Dry_Mass_g_Multiple2"                
-[17] "Dry_Mass_g_Multiple3"                 "Leaf_Thickness_1_mm"                 
-[19] "Leaf_Thickness_2_mm"                  "Leaf_Thickness_3_mm"                 
-[21] "Notes"                                "X"                                   
-[23] "X.1"                                  "Entire_File_Name"                    
-[25] "Date.y"                               "Elevation"                           
-[27] "Site.y"                               "Location.y"                          
-[29] "Project.y"                            "Taxon"                               
-[31] "Individual_number"                    "Leaf_number.y"                       
-[33] "Cropped_Leaf_Area"                    "Uncropped_Leaf_Area"                 
-[35] "Difference_.Uncropped_minus_Cropped." "SLA_cm2.g"                           
-[37] "LDMC"                                 "Error_wet_equal_lessthan_dry"        
-[39] "Error_SLA_greater_500"                "Error_SLA_lessthan_5"  
+#### plots ####
+ggplot(traits, aes(x = Wet_Mass_g, y = Dry_Mass_g)) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
+
+ggplot(traits, aes(x = Dry_Mass_g, y = Leaf_Area_cm2, colour = grepl(2015, Date))) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
+
+ggplot(traits, aes(x = Leaf_Area_cm2, y = SLA_cm2.g, colour = grepl(2015, Date))) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
+ggplot(traits, aes(x = SLA_cm2.g, colour = grepl(2015, Date))) + geom_histogram() + scale_x_log10() + geom_vline(xintercept = 500)
+
+#### Save output
+save(traits, file = "traits/transplant_traits_2015_2016_20161124.Rdata")
