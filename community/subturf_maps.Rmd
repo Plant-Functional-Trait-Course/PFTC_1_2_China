@@ -42,7 +42,7 @@ subturf_cover_thin <- left_join(subturf_thin, cover_thin)
 ```{r, fig.height=11, fig.width = 7}
 plyr::d_ply(subturf_cover_thin, .(turfID), function(df){
   print(
-  ggplot(df, aes(x = subTurf %/% 5, y = subTurf %% 5, fill = cover, colour = "outline")) +
+  ggplot(df, aes(x = (subTurf - 1) %/% 5, y = (subTurf - 1) %% 5, fill = cover, colour = "outline")) +
     geom_tile() +
     facet_grid(species ~ year) +
     ggtitle(paste(df$turfID[1], "subturf map")) +
