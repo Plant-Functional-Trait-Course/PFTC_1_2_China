@@ -80,3 +80,16 @@ hogsete_plot(site = "L", base = g, transplant = FALSE)
 hogsete_plot(site = "M", base = g, transplant = FALSE)
 hogsete_plot(site = "A", base = g, transplant = FALSE)
 hogsete_plot(site = "H", base = g, transplant = FALSE)  
+
+
+#### ---- differentWarming
+
+keep <- cover_meta$TTtreat %in% c("warm1", "control", "local", "OTC")
+ord_comm <- cover[keep, ]
+ord_comm <- ord_comm[, colSums(ord_comm > 0) > 1]
+
+ord <- cca(ord_comm)
+ford <- fortify(ord, display = "sites")
+ford <- cbind(ford, cover_meta[keep, ])
+
+g %+% ford
