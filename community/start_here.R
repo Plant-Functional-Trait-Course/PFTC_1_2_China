@@ -1,6 +1,5 @@
 #load packages
 library("tidyr")
-library("plyr")
 library("DBI")# also needs RMySQL installed
 library("dplyr")
 

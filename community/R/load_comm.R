@@ -7,7 +7,6 @@
 
 load_comm <- function(con, cover = TRUE) {
   require("tidyr")
-  require("plyr")
   require("DBI")
   
   ##cover data
@@ -19,7 +18,7 @@ load_comm <- function(con, cover = TRUE) {
   cover.thin <- dbGetQuery(con, coverQ)
   
   #recode TTtreat
-  cover.thin$TTtreat <- mapvalues(
+  cover.thin$TTtreat <- plyr::mapvalues(
       cover.thin$TTtreat,
       from = c("C", "O", "1", "2", "3", "4", "OTC")  ,
       to  = c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC")
