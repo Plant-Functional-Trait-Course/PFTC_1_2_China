@@ -1,14 +1,13 @@
 #
 #load libraries
-
-library("readxl")
+# intall packages plyr and gdata is required
 library("openxlsx")
 library("dplyr")
 library("tidyr")
 
 #get file list
 
-fl <- dir(path = "climate/data/OTCs/", pattern = "xls$", recursive = TRUE, full.names = TRUE)
+fl <- dir(path = "/Volumes/SILVER/transplant_climate/data/OTCs/", pattern = "xls$", recursive = TRUE, full.names = TRUE)
 
 #loop over file list and extract data
 
@@ -26,6 +25,7 @@ otcc <- plyr::ldply(fl, function(f){
  ot$dateTime <- as.POSIXct(ot$dateTime, format = "%Y-%m-%d %H:%M", tz = "Asia/Shanghai")
   ot
 })
+
 
 save(otcc, file = "climate/otcc.Rdata")
 #load(file = "climate/otcc.Rdata")
