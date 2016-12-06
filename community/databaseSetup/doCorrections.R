@@ -51,9 +51,11 @@ for(i in 1:nrow(global)){
 dat <- dat[, !names(dat) %in% global$old]
 
 
+message("Swe.mac not deleted")
 
 #local edits - apply to particular sites/turfs/years
 local <- read.table("community/databaseSetup/data/localDatacorrections_plots_China.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
+local <- local[!is.na(local$old), ]#remove extra rows
 setdiff(local$turfID, dat$turfID)
 local$turfID <- trimws(local$turfID)#zap trailing space
 
@@ -63,7 +65,7 @@ setdiff(local$new, taxonomy$speciesName)
 local[local == "Potentilla stenophylla"] <- "Potentilla stenophylla var. emergens"
 local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
 
-stopifnot(all(c(local$old, local$new) %in% c("", taxonomy$speciesName)))
+stopifnot(all(c(local$old, local$new) %in% c("", taxonomy$speciesName, taxonomy$species)))
 
 #convert names to code
 local$old <- plyr::mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
@@ -196,3 +198,18 @@ dat$Pru.his[target] <- dat$Pru.his[dat$Measure == "Presence" & dat$turfID == "L1
 
 dat$Aju.dec[target] <- NA#Aju.dec is wiped
 
+###corrections to percent values 
+perc_subplot <- readxl::read_excel("community/databaseSetup/data/cover correction.xlsx")
+
+perc <- perc_subplot[!is.na(perc_subplot$`should be`), ]
+
+for(i in 1:nrow(perc)){
+  dat[dat$year == perc$year[i] & dat$turfID == perc$`#turf`[i] & dat$Measure == "cover%", perc$species[i]] <- perc$`should be`[i]
+}
+
+###additional subplots
+subplot <- perc_subplot[!is.na(perc_subplot$`updated #subplot`), ]
+
+for(i in 1:nrow(subplot)){
+  dat[dat$year == subplot$year[i] & dat$turfID == subplot$`#turf`[i] & dat$Measure == "Presence" & as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated #subplot`[i], ",")[[1]]), subplot$species[i]] <- 1
+}
