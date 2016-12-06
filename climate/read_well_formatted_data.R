@@ -12,20 +12,31 @@ plyr::ldply(fl, function(file){
 
 
 dat <- plyr::ldply(fl, function(file){
+  print(file)
+  
+  #read file
   dat <- read_csv(file, skip = 1)
+  
+  #get site
+  site <- gsub(".*YJG(?:-|_)([LMAH]).*", "\\1", file, perl = TRUE)
+  stopifnot(!is.na(site))
+  dat$site <- site
+
+  #get file
+  dat$file <- basename(file)
   
   #rename columns
   names(dat)[grep("Date Time", names(dat))] <- "dateTime"
-  names(dat)[grep("Wind Speed", names(dat))] <- "Wind_Speed"
-  names(dat)[grep("Wind Direction", names(dat))] <- "Wind_Direction"
+  names(dat)[grep("Wind Speed", names(dat))] <- "windSpeed"
+  names(dat)[grep("Wind Direction", names(dat))] <- "windDirection"
   names(dat)[grep("UV, umolm", names(dat))] <- "UV"
-  names(dat)[grep("Solar Radiation", names(dat))] <- "Solar_Radiation"
+  names(dat)[grep("Solar Radiation", names(dat))] <- "solarRadiation"
   names(dat)[grep("RH", names(dat))] <- "RH"
-  names(dat)[grep("Rain", names(dat))] <- "Rain"
+  names(dat)[grep("Rain", names(dat))] <- "rain"
   names(dat)[grep("Pressure", names(dat))] <- "Pressure"
   names(dat)[grep("PAR", names(dat))] <- "PAR"  
-  names(dat)[grep("Gust Speed", names(dat))] <- "Gust_Speed"
-  names(dat)[grep("Voltage", names(dat))] <- "Voltage"
+  names(dat)[grep("Gust Speed", names(dat))] <- "gustSpeed"
+  names(dat)[grep("Voltage", names(dat))] <- "Batt"
 
   #more complex for temperature and soil moisture
   names(dat)[grepl("Temp, °C", names(dat)) & grepl("T-20", names(dat))] <- "Tsoil20"
