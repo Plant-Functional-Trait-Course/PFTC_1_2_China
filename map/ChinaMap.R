@@ -35,10 +35,8 @@ ggplot() +
 # GONGGA MOUNTAIN MAP
 # Read data with raster
 files <- list.files(path = "/Volumes/SILVER/transplant_DEM", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
-s <- stack(files)
 f1 <- raster(files[1])
 f2 <- raster(files[2])
-plot(f2)
 
 gongga.spdf <- as(f1, "SpatialPixelsDataFrame")
 gongga.df <- as.data.frame(gongga.spdf)
@@ -46,6 +44,7 @@ gongga2.spdf <- as(f2, "SpatialPixelsDataFrame")
 gongga2.df <- as.data.frame(gongga2.spdf)
 name <- c("elev", "x", "y")
 elev.gongga <- rbind(setNames(gongga.df, name), setNames(gongga2.df, name))
+
 # Crop
 gongga <- elev.gongga %>% filter(x > 101.95, x < 102.05, y > 29.8, y < 30)
 dim(gongga)
