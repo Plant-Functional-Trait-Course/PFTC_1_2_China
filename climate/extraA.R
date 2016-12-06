@@ -23,3 +23,4 @@ ggplot(extraA, aes(x = dateTime, y = Tsoil10)) + geom_path()
 ggplot(extraA, aes(x = dateTime, y = waterContent20)) + geom_path() 
 ggplot(extraA, aes(x = dateTime, y = waterContent10)) + geom_path() 
 
+save(extraA, file = "extraA_climate.Rdata")
