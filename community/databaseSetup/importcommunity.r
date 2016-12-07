@@ -6,7 +6,6 @@
 
 import.data<-function(dat, mergedictionary){#dat is data.frame from the correctly formatted csv file loaded into R
   require(dplyr)
-  require(plyr)
 
     dat <- dat[!is.na(dat$originPlotID),]
     head(dat)
@@ -58,10 +57,10 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
   
     #TurfCommunity  
   spp <- cbind(dat[, c("turfID", "year")], dat[, (which(names(dat) == "recorder") + 1) : (which(names (dat) == "moss")-1) ])[dat$Measure == "cover%",]
-  spp[, 3 : ncol(spp)] <- colwise(as.numeric)(spp[, 3 : ncol(spp)])
+  spp[, 3 : ncol(spp)] <- plyr::colwise(as.numeric)(spp[, 3 : ncol(spp)])
   notInMerged <- setdiff(names(spp)[-(1:2)], mergedictionary$oldID)
   mergedictionary <- rbind(mergedictionary, cbind(oldID = notInMerged, newID = notInMerged))
-  mergedNames <- mapvalues(names(spp)[-(1:2)], from = mergedictionary$oldID, to = mergedictionary$newID, warn_missing = FALSE)
+  mergedNames <- plyr::mapvalues(names(spp)[-(1:2)], from = mergedictionary$oldID, to = mergedictionary$newID, warn_missing = FALSE)
   sppX <- lapply(unique(mergedNames), function(n){
     rowSums(spp[, names(spp) == n, drop = FALSE])
     })
@@ -70,7 +69,7 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     unique(as.vector(sapply(spp[, -(1:2)], as.character)))    #oddity search
     table(as.vector(sapply(spp[, -(1:2)], as.character)), useNA = "ifany") 
 
-  sppT <- ldply(as.list(3:ncol(spp)),function(nc){
+  sppT <- plyr::ldply(as.list(3:ncol(spp)),function(nc){
       sp <- spp[, nc]
       cf <- grep("cf", sp, ignore.case = TRUE)
       sp <- gsub("cf", "", sp, ignore.case = TRUE)
@@ -121,7 +120,7 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     #Find oddities in dataset:
     tmp <- sapply(subspp, function(z){a <- which(z == "f"); if(length(a) > 0){subspp[a, 1:3]} else NULL})
     tmp[!sapply(tmp, is.null)]
-    spp0 <- ldply(as.list(4:ncol(subspp)), function(nc){
+    spp0 <- plyr::ldply(as.list(4:ncol(subspp)), function(nc){
       sp <- subspp[,nc ]
       spp2 <- data.frame(turfID = subspp$turfID, year = subspp$year, subTurf = subspp$subPlot, species = names(subspp)[nc], seedlings = 0, juvenile = 0, adult = 0, fertile = 0, vegetative = 0, dominant = 0, cf = 0)
       spp2$cf[grep("cf",sp, ignore.case = TRUE)] <- 1
