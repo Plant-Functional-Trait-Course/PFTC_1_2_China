@@ -1,7 +1,6 @@
 library("DBI")
 library("RMySQL")
 library("readxl")
-library("plyr")
 library("taxize")
 
 #load csv file
@@ -28,7 +27,7 @@ taxonomy[duplicated(taxonomy$species),]
 
 # split authority from name
 spNames <- strsplit(taxonomy$speciesName, " ")
-nameAuthority <-ldply(spNames, function(x){
+nameAuthority <- plyr::ldply(spNames, function(x){
   if(any(grepl("var.", x, fixed = TRUE))){
     speciesName <- paste(x[1:4], collapse = " ")
     authority <- paste(x[-(1:4)], collapse = " ")
