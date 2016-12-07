@@ -62,7 +62,7 @@ allsites <- lapply(flist, function(fl){
 
     #find destination site/block/plot
     sitetreat <-  gsub("[[:digit:]]-", "", meta) #remove block info
-    destSitetreat <- mapvalues(sitetreat, from = originDestination$origin, to = originDestination$destination, warn_missing = FALSE)
+    destSitetreat <- plyr::mapvalues(sitetreat, from = originDestination$origin, to = originDestination$destination, warn_missing = FALSE)
     dat$destinationPlotID <- paste0(substr(destSitetreat, 1, 1), substr(meta,2, 3), dat$TTtreat)
     dat$DestinationSite <- substr(destSitetreat, 1, 1)
     dat$DestinationBlock <- substr(dat$destinationPlotID, 1, 2)#assuming transplant from block1 go to block 1
