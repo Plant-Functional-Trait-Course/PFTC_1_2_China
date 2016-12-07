@@ -1,0 +1,46 @@
+---
+title: "cover > maximum possible cover"
+author: "Richard J. Telford"
+date: "November 16, 2016"
+output: html_document
+---
+
+```{r importChunk, echo = FALSE, message = FALSE}
+#load packages
+library("tidyr")
+library("plyr")
+library("DBI")# also needs RMySQL installed
+library("dplyr")
+library("ggplot2")
+
+#source functions
+source("R/load_subturfcomm.R")
+source("R/load_comm.R")
+
+#make database connection
+con <- dbConnect(RMySQL::MySQL(), group = "transplant")
+
+#load cover data and metadata
+subturf_thin <- load_subturfcomm(con = con)
+#  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
+cover_thin <-load_comm(con = con)
+
+#merge cover amd subturf
+
+subturf_cover_thin <- left_join(subturf_thin, cover_thin)
+
+```
+
+Each of the 25 subturfs covers 4% of the turf.
+
+The maximum possible cover possible is equal to the number of occupied subturfs times 4 %. Some species have a much higher cover, suggesting that either cover is over estimated or not all the subturfs have been counted.
+
+Below I show species that have a cover greater than 1.25 times the maximum possible cover (this avoids reporting species with small discrepancies, for example cover = 5 in one subturf.)
+
+```{r}
+out <- subturf_cover_thin %>% 
+  group_by(year, turfID, species, cover) %>% 
+  summarise(maxPos = n() * 4) %>% 
+  filter(cover > (maxPos * 1.25)) 
+knitr::kable(out)
+```
