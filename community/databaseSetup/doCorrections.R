@@ -55,13 +55,13 @@ message("Swe.mac not deleted")
 
 #local edits - apply to particular sites/turfs/years
 local <- read.table("community/databaseSetup/data/localDatacorrections_plots_China.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
-local <- local[!is.na(local$old), ]#remove extra rows
+local <- local[local$new != "" | local$special != "", ]#remove extra rows
 setdiff(local$turfID, dat$turfID)
 local$turfID <- trimws(local$turfID)#zap trailing space
 
 #check names
-setdiff(local$old, taxonomy$speciesName)
-setdiff(local$new, taxonomy$speciesName)
+setdiff(local$old, c(taxonomy$speciesName, taxonomy$species))
+setdiff(local$new, c(taxonomy$speciesName, taxonomy$species))
 local[local == "Potentilla stenophylla"] <- "Potentilla stenophylla var. emergens"
 local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
 
