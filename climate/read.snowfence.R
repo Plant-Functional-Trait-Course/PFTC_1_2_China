@@ -8,7 +8,7 @@ library("readxl")
 
 # Function to read in snowfence data
 ReadExcelSheets <- function(sheet){
-  dat <- read_excel("/Volumes/SILVER/transplant_climate/data/Snowfence/SoilTempratureMoisture_Gongga.xlsx", sheet = sheet, col_names = TRUE, col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "text")) # read excel file
+  dat <- read_excel("/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/Snowfence/SoilTempratureMoisture_Gongga.xlsx", sheet = sheet, col_names = TRUE, col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "text")) # read excel file
   dat$distance <- substr(colnames(dat)[2],1,2) # grab first two characters
   names(dat) <- c("dateTime", "Tsoil5", "Tsoil10", "Tsoil20", "waterContent5", "waterContent10", "waterContent20", "Notes", "distance")
   dat
@@ -28,7 +28,7 @@ snowfence2 <- snowfence %>%
   mutate(Tsoil20 = ifelse(Tsoil20 > 25 | Tsoil20 < -10, NA, Tsoil20)) %>% 
   mutate(Tsoil5 = ifelse(Tsoil5 > 25 | Tsoil5 < -10, NA, Tsoil5)) %>% 
   mutate(Tsoil10 = ifelse(Tsoil10 > 25 | Tsoil10 < -10, NA, Tsoil10)) %>% 
-  mutate(waterContent0 = ifelse(waterContent0 > 1000 , NA, waterContent0))
+  mutate(waterContent5 = ifelse(waterContent5 > 1000 , NA, waterContent5))
   
 #summary(snowfence2)  
 ggplot(snowfence2, aes(x = dateTime, y = Tsoil5)) + geom_line() + facet_wrap(~distance) 
@@ -39,8 +39,8 @@ dim(snowfence)
 
 
 ### SNOWDEPTH DATA
-snowdepth <- read_excel("/Volumes/SILVER/transplant_climate/data/Snowfence/SnowDepth_Gongga.xlsx", col_names = TRUE, col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "date"))
-snowdepth$dateTime <- ymd_hms(snowdepth, tz = "Asia/Shanghai"))
+snowdepth <- read_excel("/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/Snowfence/SnowDepth_Gongga.xlsx", col_names = TRUE, col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "date"))
+snowdepth$dateTime <- ymd_hms(snowdepth, tz = "Asia/Shanghai")
 head(snowdepth)
 summary(snowdepth)
 
