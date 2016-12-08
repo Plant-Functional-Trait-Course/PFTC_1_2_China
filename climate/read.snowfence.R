@@ -10,7 +10,7 @@ library("readxl")
 ReadExcelSheets <- function(sheet){
   dat <- read_excel("/Volumes/SILVER/transplant_climate/data/Snowfence/SoilTempratureMoisture_Gongga.xlsx", sheet = sheet, col_names = TRUE, col_types = c("date", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "text")) # read excel file
   dat$distance <- substr(colnames(dat)[2],1,2) # grab first two characters
-  names(dat) <- c("dateTime", "Tsoil0", "Tsoil5", "Tsoil20", "waterContent0", "waterContent5", "waterContent20", "Notes", "distance")
+  names(dat) <- c("dateTime", "Tsoil5", "Tsoil10", "Tsoil20", "waterContent5", "waterContent10", "waterContent20", "Notes", "distance")
   dat
 }
 
@@ -27,10 +27,12 @@ snowfence <- snowfence %>%
 snowfence2 <- snowfence %>% 
   mutate(Tsoil20 = ifelse(Tsoil20 > 25 | Tsoil20 < -10, NA, Tsoil20)) %>% 
   mutate(Tsoil5 = ifelse(Tsoil5 > 25 | Tsoil5 < -10, NA, Tsoil5)) %>% 
-  mutate(Tsoil0 = ifelse(Tsoil0 > 25 | Tsoil0 < -10, NA, Tsoil0))
+  mutate(Tsoil10 = ifelse(Tsoil10 > 25 | Tsoil10 < -10, NA, Tsoil10)) %>% 
+  mutate(waterContent0 = ifelse(waterContent0 > 1000 , NA, waterContent0))
   
 #summary(snowfence2)  
-ggplot(snowfence2, aes(x = dateTime, y = Tsoil0)) + geom_line() + facet_wrap(~distance) + geom_vline(xintercept = as.numeric(ymd_hms("2016-03-01 00:00:01")), color = "red") + geom_vline(xintercept = as.numeric(ymd_hms("2016-05-01 00:00:01")), color = "blue")
+ggplot(snowfence2, aes(x = dateTime, y = Tsoil5)) + geom_line() + facet_wrap(~distance) 
++ geom_vline(xintercept = as.numeric(ymd_hms("2016-03-01 00:00:01")), color = "red") + geom_vline(xintercept = as.numeric(ymd_hms("2016-05-01 00:00:01")), color = "blue")
 
 head(snowfence)
 dim(snowfence)
@@ -42,8 +44,7 @@ snowdepth$dateTime <- ymd_hms(snowdepth, tz = "Asia/Shanghai"))
 head(snowdepth)
 summary(snowdepth)
 
-ggplot(snowdepth, aes(x = TIMESTAMP, y = Air_Temp)) + geom_line()
-+ ylim(-0.25,0.5) + scale_x_datetime(date_breaks = "month") + theme(axis.text.x = element_text(angle = 90))
+ggplot(snowdepth, aes(x = TIMESTAMP, y = Snow_Depth_2_Control)) + geom_line() + ylim(-0.25,1.4) + scale_x_datetime(date_breaks = "month") + theme(axis.text.x = element_text(angle = 90))
 
 
 
