@@ -2,7 +2,7 @@
 library("readr")
 
 #get_list of files
-fl <- dir(path = "climate/data/2016/", pattern = "csv$", full.names = TRUE)
+fl <- dir(path = "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/WellFormatted", pattern = "csv$", full.names = TRUE)
 
 
 plyr::ldply(fl, function(file){
