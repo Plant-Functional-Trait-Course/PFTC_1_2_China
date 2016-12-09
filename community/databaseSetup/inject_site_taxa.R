@@ -4,7 +4,7 @@ library("readxl")
 library("taxize")
 
 #load csv file
-dat <- read.csv ("community/databaseSetup/data/allsites.csv")
+dat <- read.csv("community/databaseSetup/data/allsites.csv")
 
 #make connection to transplant database
 
