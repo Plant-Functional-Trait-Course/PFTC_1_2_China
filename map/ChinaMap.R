@@ -34,7 +34,10 @@ ggplot() +
 
 # GONGGA MOUNTAIN MAP
 # Read data with raster
-files <- list.files(path = "/Volumes/SILVER/transplant_DEM", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
+library("osmar")
+
+
+files <- list.files(path = "map/data/", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
 f1 <- raster(files[1])
 f2 <- raster(files[2])
 
@@ -46,10 +49,14 @@ name <- c("elev", "x", "y")
 elev.gongga <- rbind(setNames(gongga.df, name), setNames(gongga2.df, name))
 
 # Crop
-gongga <- elev.gongga %>% filter(x > 101.95, x < 102.05, y > 29.8, y < 30)
+gongga <- elev.gongga %>% filter(x > 102, x < 102.05, y > 29.82, y < 29.92)
 dim(gongga)
 ggplot() +
   geom_raster(data = gongga, aes(x=x, y=y, fill = elev)) +
   coord_equal() +
-  scale_fill_gradient(low = "grey0", high = "grey100", limits=c(0,7000)) + 
-  geom_point(aes(x=long, y=lat, colour  = "red"), data = coords, size=2)
+  scale_fill_gradient(low = "grey0", high = "grey100") + 
+  geom_point(aes(x=long, y=lat), colour  = "red", data = coords, size=2) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(x = "", y = "")
+  
