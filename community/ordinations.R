@@ -88,8 +88,9 @@ keep <- cover_meta$TTtreat %in% c("warm1", "control", "local", "OTC")
 ord_comm <- cover[keep, ]
 ord_comm <- ord_comm[, colSums(ord_comm > 0) > 1]
 
-ord <- cca(ord_comm)
-ford <- fortify(ord, display = "sites")
+ord <- metaMDS(ord_comm)
+ford <- scores(ord, display = "sites")
+colnames(ford) <- c("Dim1", "Dim2")
 ford <- cbind(ford, cover_meta[keep, ])
 
 g %+% ford
