@@ -31,7 +31,7 @@ snowfence2 <- snowfence %>%
   mutate(waterContent5 = ifelse(waterContent5 > 1000 , NA, waterContent5))
   
 #summary(snowfence2)  
-ggplot(snowfence2, aes(x = dateTime, y = Tsoil5)) + geom_line() + facet_wrap(~distance) 
+ggplot(snowfence2, aes(x = dateTime, y = Tsoil10)) + geom_line() + facet_wrap(~distance) 
 + geom_vline(xintercept = as.numeric(ymd_hms("2016-03-01 00:00:01")), color = "red") + geom_vline(xintercept = as.numeric(ymd_hms("2016-05-01 00:00:01")), color = "blue")
 
 head(snowfence)
