@@ -37,36 +37,44 @@ otcc$file <- reorder(otcc$file, otcc$date, min)
 
 
 # Check spikes in each season
-otcc %>%
+otcc2 %>%
   mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
   mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
                          ifelse(nummonth %in% c(3,4,5), "Spring", 
                                 ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
   mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
-  group_by(site, season, year(dateTime)) %>% summarise(min = min(Tair30, na.rm = TRUE), max = max(Tsoil0, na.rm = TRUE)) %>%
-  print(n=60)
+  group_by(site, season, year(dateTime)) %>% summarise(min = min(Tsoil5, na.rm = TRUE), max = max(Tsoil5, na.rm = TRUE)) %>%
+  print(n=63)
 
 
 #clean 
 otcc2 <- otcc %>% 
-  # add season
+  # add season to check remove spikes in different parts of the year
   mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
   mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
                          ifelse(nummonth %in% c(3,4,5), "Spring", 
                                 ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
   mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
-  group_by(site, season, year(dateTime)) %>% summarise(min = min(Tair30, na.rm = TRUE), max = max(Tsoil0, na.rm = TRUE))
   #no real data before 2013
   filter(dateTime > "2013-01-01") %>%
   #max possible TAir30 == 40, min == -25
   mutate(Tair30 = ifelse(Tair30 < 40 & Tair30 > -25, Tair30, NA)) %>%
-  mutate(Tair30 = ifelse(season %in% c("Summer", "Autumn") & Tsoil0 < -3, NA, Tsoil0)) %>%
+  mutate(Tair30 = ifelse(season == "Summer" & Tair30 < -4, NA, Tair30)) %>%
+  mutate(Tair30 = ifelse(season == "Autumn" & Tair30 < -15, NA, Tair30)) %>%
+  mutate(Tair30 = ifelse(season == "Spring" & site == "M" & Tair30 < -13, NA, Tair30)) %>%
+  mutate(Tair30 = ifelse(season == "Winter" & site == "M" & Tair30 < -22, NA, Tair30)) %>%
   #relative humidity should have max 1 (0-1 scale) & move to percent
   mutate(RH = ifelse(RH < 1, RH * 100, NA)) %>%
   #tsoil0 threshold -10 removes most spikes
   mutate(Tsoil0 = ifelse(Tsoil0 > -10, Tsoil0, NA))  %>%
+  mutate(Tsoil0 = ifelse(season == "Summer" & Tsoil0 < -3, NA, Tsoil0)) %>%
+  mutate(Tsoil0 = ifelse(season == "Spring" & Tsoil0 < -7.8, NA, Tsoil0)) %>%
+  mutate(Tsoil0 = ifelse(season == "Autumn" & site == "L" & Tsoil0 < 1.41, NA, Tsoil0)) %>%
+  mutate(Tsoil0 = ifelse(season == "Winter" & site == "A" & Tsoil0 < -8.7, NA, Tsoil0)) %>%
   #tsoil5 threshold -6 removes most spikes
   mutate(Tsoil5 = ifelse(Tsoil5 > -6, Tsoil5, NA)) %>%
+  mutate(Tsoil5 = ifelse(season == "Summer" & Tsoil5 < -3, NA, Tsoil5)) %>%
+  mutate(Tsoil5 = ifelse(season == "Autumn" & Tsoil5 < -4, NA, Tsoil5)) %>%
   #tsoil20 threshold -6 removes most spikes
   mutate(Tsoil20 = ifelse(Tsoil20 > -6, Tsoil20, NA)) %>%
   #soil moisture > 0
@@ -104,11 +112,13 @@ save(otc_month, file = "climate/otc_month.Rdata")
 library("ggplot2")
 ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + facet_wrap(~variable, scales = "free_y")
 
-dateline <- c("2013-06-01 00:00:01", "2013-09-01 00:00:01", "2013-12-01 00:00:01", "2014-03-01 00:00:01", "2014-06-01 00:00:01", "2014-09-01 00:00:01", "2014-12-01 00:00:01", "2015-03-01 00:00:01", "2015-06-01 00:00:01", "2015-09-01 00:00:01", "2015-12-01 00:00:01", "2016-03-01 00:00:01", "2016-06-01 00:00:01", "2016-09-01 00:00:01")
-ggplot(otcc2, aes(x = dateTime, y = Tair30)) + geom_path() + facet_wrap(~site) + geom_vline(xintercept = as.numeric(ymd_hms(dateline)), color = "red") 
+# To add lines between the seasons
+#dateline <- c("2013-06-01 00:00:01", "2013-09-01 00:00:01", "2013-12-01 00:00:01", "2014-03-01 00:00:01", "2014-06-01 00:00:01", "2014-09-01 00:00:01", "2014-12-01 00:00:01", "2015-03-01 00:00:01", "2015-06-01 00:00:01", "2015-09-01 00:00:01", "2015-12-01 00:00:01", "2016-03-01 00:00:01", "2016-06-01 00:00:01", "2016-09-01 00:00:01")
+#+ geom_vline(xintercept = as.numeric(ymd_hms(dateline)), color = "red")
+ggplot(otcc, aes(x = dateTime, y = Tair30)) + geom_path() + facet_wrap(~site)  
 ggplot(otcc, aes(x = dateTime, y = RH)) + geom_path() + facet_wrap(~site)
-ggplot(otcc, aes(x = dateTime, y = Tsoil0)) + geom_path() + facet_wrap(~site)
-ggplot(otcc, aes(x = dateTime, y = Tsoil5)) + geom_path() + facet_wrap(~site)
+ggplot(otcc2, aes(x = dateTime, y = Tsoil0)) + geom_path() + facet_wrap(~site) 
+ggplot(otcc, aes(x = dateTime, y = Tsoil5)) + geom_path() + facet_wrap(~site) 
 ggplot(otcc, aes(x = dateTime, y = Tsoil20)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent20)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent5)) + geom_path() + facet_wrap(~site)
