@@ -7,7 +7,7 @@ library("tidyr")
 
 #get file list
 
-fl <- dir(path = "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/OTCs/", pattern = "xls$", recursive = TRUE, full.names = TRUE)
+fl <- dir(path = "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/OTCs", pattern = "xls$", recursive = TRUE, full.names = TRUE)
 
 #loop over file list and extract data
 
@@ -36,12 +36,31 @@ otcc$site <- factor(otcc$site, levels = c("H", "A", "M", "L"))
 otcc$file <- reorder(otcc$file, otcc$date, min)
 
 
+# Check spikes in each season
+otcc %>%
+  mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
+  mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
+                         ifelse(nummonth %in% c(3,4,5), "Spring", 
+                                ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
+  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
+  group_by(site, season, year(dateTime)) %>% summarise(min = min(Tair30, na.rm = TRUE), max = max(Tsoil0, na.rm = TRUE)) %>%
+  print(n=60)
+
+
 #clean 
-otcc <- otcc %>% 
+otcc2 <- otcc %>% 
+  # add season
+  mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
+  mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
+                         ifelse(nummonth %in% c(3,4,5), "Spring", 
+                                ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
+  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
+  group_by(site, season, year(dateTime)) %>% summarise(min = min(Tair30, na.rm = TRUE), max = max(Tsoil0, na.rm = TRUE))
   #no real data before 2013
   filter(dateTime > "2013-01-01") %>%
-  #max possible TAir30 == 50, min == -25
-  mutate(Tair30 = ifelse(Tair30 < 50 & Tair30 > -25, Tair30, NA))%>%
+  #max possible TAir30 == 40, min == -25
+  mutate(Tair30 = ifelse(Tair30 < 40 & Tair30 > -25, Tair30, NA)) %>%
+  mutate(Tair30 = ifelse(season %in% c("Summer", "Autumn") & Tsoil0 < -3, NA, Tsoil0)) %>%
   #relative humidity should have max 1 (0-1 scale) & move to percent
   mutate(RH = ifelse(RH < 1, RH * 100, NA)) %>%
   #tsoil0 threshold -10 removes most spikes
@@ -85,7 +104,8 @@ save(otc_month, file = "climate/otc_month.Rdata")
 library("ggplot2")
 ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + facet_wrap(~variable, scales = "free_y")
 
-ggplot(otcc, aes(x = dateTime, y = Tair30)) + geom_path() + facet_wrap(~site)
+dateline <- c("2013-06-01 00:00:01", "2013-09-01 00:00:01", "2013-12-01 00:00:01", "2014-03-01 00:00:01", "2014-06-01 00:00:01", "2014-09-01 00:00:01", "2014-12-01 00:00:01", "2015-03-01 00:00:01", "2015-06-01 00:00:01", "2015-09-01 00:00:01", "2015-12-01 00:00:01", "2016-03-01 00:00:01", "2016-06-01 00:00:01", "2016-09-01 00:00:01")
+ggplot(otcc2, aes(x = dateTime, y = Tair30)) + geom_path() + facet_wrap(~site) + geom_vline(xintercept = as.numeric(ymd_hms(dateline)), color = "red") 
 ggplot(otcc, aes(x = dateTime, y = RH)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = Tsoil0)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = Tsoil5)) + geom_path() + facet_wrap(~site)
