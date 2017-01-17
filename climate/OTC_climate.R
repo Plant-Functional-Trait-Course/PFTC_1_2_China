@@ -36,19 +36,8 @@ otcc$site <- factor(otcc$site, levels = c("H", "A", "M", "L"))
 otcc$file <- reorder(otcc$file, otcc$date, min)
 
 
-# Check spikes in each season
-otcc2 %>%
-  mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
-  mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
-                         ifelse(nummonth %in% c(3,4,5), "Spring", 
-                                ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
-  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
-  group_by(site, season, year(dateTime)) %>% summarise(min = min(Tsoil5, na.rm = TRUE), max = max(Tsoil5, na.rm = TRUE)) %>%
-  print(n=63)
-
-
 #clean 
-otcc2 <- otcc %>% 
+otcc <- otcc %>% 
   # add season to check remove spikes in different parts of the year
   mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
   mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
@@ -74,7 +63,7 @@ otcc2 <- otcc %>%
   #tsoil5 threshold -6 removes most spikes
   mutate(Tsoil5 = ifelse(Tsoil5 > -6, Tsoil5, NA)) %>%
   mutate(Tsoil5 = ifelse(season == "Summer" & Tsoil5 < -3, NA, Tsoil5)) %>%
-  mutate(Tsoil5 = ifelse(season == "Autumn" & Tsoil5 < -4, NA, Tsoil5)) %>%
+  mutate(Tsoil5 = ifelse(season == "Autumn" & site == "L" & Tsoil5 < 2, NA, Tsoil5)) %>%
   #tsoil20 threshold -6 removes most spikes
   mutate(Tsoil20 = ifelse(Tsoil20 > -6, Tsoil20, NA)) %>%
   #soil moisture > 0
@@ -84,21 +73,18 @@ otcc2 <- otcc %>%
     waterContent0 = ifelse(waterContent0 > 0, waterContent0, NA)
   ) %>%
   #remove duplicates
+  select(-nummonth, -season) %>% 
   distinct(site, dateTime, .keep_all = TRUE)
 
 save(otcc, file = "climate/otcc_clean.Rdata")
-####monthly OTC####
 
-otc_month <- otcc %>%
-  mutate(month = lubridate::ymd(format(dateTime, "%Y-%m-15"))) %>%
-  select(-dateTime, -file) %>%
-  gather(key = variable, value = value, -site, -month) %>%
-  group_by(site, month, variable) %>%
-  filter(!is.na(value)) %>%
-  summarise(meanV = mean(value), sumV = sum(value), n = n()) %>%
-  mutate(value = ifelse(variable == "rain", sumV, meanV)) %>%
-  filter(n > 6 * 24 * 7 * 3) %>% #at least three weeks of data
-  select(-meanV, -sumV, -n)
+
+####monthly OTC####
+# prepare data
+otcc <- otcc %>% 
+  select(-file)
+
+otc_month <- CalcMonthlyData(otcc)
 
 # add missing months
 full_grid <- expand.grid(variable = unique(otc_month$variable), site = unique(otc_month$site), month = seq(min(otc_month$month), max(otc_month$month), by = "month"))
@@ -117,8 +103,8 @@ ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + face
 #+ geom_vline(xintercept = as.numeric(ymd_hms(dateline)), color = "red")
 ggplot(otcc, aes(x = dateTime, y = Tair30)) + geom_path() + facet_wrap(~site)  
 ggplot(otcc, aes(x = dateTime, y = RH)) + geom_path() + facet_wrap(~site)
-ggplot(otcc2, aes(x = dateTime, y = Tsoil0)) + geom_path() + facet_wrap(~site) 
-ggplot(otcc, aes(x = dateTime, y = Tsoil5)) + geom_path() + facet_wrap(~site) 
+ggplot(otcc, aes(x = dateTime, y = Tsoil0)) + geom_path() + facet_wrap(~site) 
+ggplot(otcc, aes(x = dateTime, y = Tsoil5)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = Tsoil20)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent20)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent5)) + geom_path() + facet_wrap(~site)
