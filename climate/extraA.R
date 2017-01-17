@@ -1,7 +1,7 @@
 #read extra site A data (another site in the vicinity of site A)
 
 #import data
-#f <- "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/OTCs/extraSiteA/climate data_3800m_YJG.xls"
+#f <- "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/extraSiteA/climate data_3800m_YJG.xls"
 f <- "climate/data/extraSiteA/climate data_3800m_YJG.xls"
 
 col_names <-c("dateTime", "waterContent20", "Tsoil20", "waterContent10", "Tsoil10", "RH", "Tair25", "PAR")
