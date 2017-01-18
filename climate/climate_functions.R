@@ -22,8 +22,6 @@ CalcMonthlyData<-function(dd){
 }
 
 
-
-
 #### CALCULATE YEARLY VALUES FROM MONTHLY DATA ####
 # dd = data, should only contain
 # month
@@ -44,5 +42,20 @@ CalcYearlyData<-function(dd){
   return(dd)
 }
   
-otc_yearly <- CalcYearlyData(otc_month)
+
+#### ZOOM INN PLOT FUNCTION ####
+ZoomIntoPlot <- function(dd, use.gather, date1, date2, site, variable){
+  if(use.gather == "yes"){
+    dd <- dd %>% 
+      gather(key = variable, value = value, -dateTime, -site) %>% 
+      filter(dateTime > date1, dateTime < date2, site == "site", variable == "variable")
+  }
+  else if(use.gather == "no"){
+    dd <- dd %>% 
+      filter(dateTime > date1, dateTime < date2, site == "site", variable == "variable")
+  }
+  
+  ggplot(dd, aes(x = dateTime, y = value)) + geom_line()
+}
+
 
