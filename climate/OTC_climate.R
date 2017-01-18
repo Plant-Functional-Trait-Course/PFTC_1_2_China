@@ -94,6 +94,10 @@ otc_month <- left_join(full_grid, otc_month) %>% tbl_df()
 save(otc_month, file = "climate/otc_month.Rdata")
 
 
+#### yearly OTC
+otc_year <- CalcYearlyData(otc_month)
+
+
 #some plots
 library("ggplot2")
 ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + facet_wrap(~variable, scales = "free_y")
@@ -115,3 +119,40 @@ ggplot(otcc, aes(x = dateTime, y = file, group = file)) + geom_path() + facet_wr
 
 #minute resolution
 otcc %>% group_by(site, file) %>% mutate(d = c(NA, diff(dateTime)) == 1) %>% ggplot(aes(x = dateTime, y = file, colour = d, size = d)) + geom_point() + facet_wrap(~site)
+
+
+### Correlations
+# within sites
+ggplot(otcc, aes(x = Tair30, y = Tsoil0)) + geom_line() + facet_wrap(~ site)
+ggplot(otcc, aes(x = Tair30, y = Tsoil5)) + geom_line() + facet_wrap(~ site)
+ggplot(otcc, aes(x = Tsoil0, y = Tsoil5)) + geom_line() + facet_wrap(~ site)
+
+# between sites
+otcc %>% 
+  select(dateTime, site, Tair30, Tsoil0, Tsoil5) %>% 
+  gather(key = variable, value = value, -dateTime, -site) %>% 
+  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + facet_grid(site ~ variable)
+
+
+### Daily variation
+diff <- otcc %>% 
+  mutate(day = ymd(format(dateTime, "%Y-%m-%d"))) %>%
+  select(day, site, Tair30, Tsoil0, Tsoil5) %>% 
+  gather(key = variable, value = value, -day, -site) %>% 
+  group_by(day, site, variable) %>% 
+  summarise(min = min(value), max = max(value), diff = max - min)
+
+ggplot(diff, aes(x = day, y = diff)) + geom_line() + facet_grid(site ~ variable)
+
+
+# Variation between loggers within site
+diff.logger <- otcc %>% 
+  select(dateTime, site, Tair30, Tsoil0, Tsoil5) %>% 
+  mutate(T30_0 = Tair30 - Tsoil0, T30_5 = Tair30 - Tsoil5, T0_5 = Tsoil0 - Tsoil5) 
+  
+ggplot(diff.logger, aes(x = dateTime, y = T30_0)) + geom_line() + facet_wrap(~site)
+ggplot(diff.logger, aes(x = dateTime, y = T30_5)) + geom_line() + facet_wrap(~site)
+ggplot(diff.logger, aes(x = dateTime, y = T0_5)) + geom_line() + facet_wrap(~site)
+
+
+
