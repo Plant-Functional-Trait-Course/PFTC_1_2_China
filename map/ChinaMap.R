@@ -35,7 +35,15 @@ ggplot() +
 # GONGGA MOUNTAIN MAP
 # Read data with raster
 library("osmar")
+raw <- readLines("map/map")
+moxihen <- as_osmar(xmlParse(raw))
+moxihen_lines <- as_sp(moxihen)$lines
+moxihen_lines <- as.data.frame(moxihen_lines)
 
+
+
+plot(moxihen)
+points(coords$long, coords$lat, col = 2, pch = 16)
 
 files <- list.files(path = "map/data/", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
 f1 <- raster(files[1])
@@ -58,5 +66,4 @@ ggplot() +
   geom_point(aes(x=long, y=lat), colour  = "red", data = coords, size=2) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
-  labs(x = "", y = "")
-  
+  labs(x = "Longitude E", y = "Latitude N")
