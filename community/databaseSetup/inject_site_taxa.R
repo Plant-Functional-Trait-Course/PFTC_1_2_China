@@ -1,10 +1,18 @@
 library("DBI")
-library("RMySQL")
+#library("RMySQL")
+library("RSQLite")
 library("readxl")
 library("taxize")
 
 #load csv file
 dat <- read.csv("community/databaseSetup/data/allsites.csv")
+
+# make database
+file.remove("community/data/transplant.sqlite")
+con <- dbConnect(SQLite(), dbname = "community/data/transplant.sqlite")
+
+#set up structure (may need editing into SQLite dialect)
+dbExecute(db, readChar("community/databaseSetup/seedclimstructure.txt", nchar = 100000) )
 
 #make connection to transplant database
 

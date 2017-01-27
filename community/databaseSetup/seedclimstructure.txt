@@ -11,9 +11,9 @@
 -- source /home/gbsrt/Documents/DATA/transplant/community/databaseSetup/seedclimstructure.txt
 -- from MySQL
 
-DROP DATABASE transplant;
-CREATE DATABASE transplant;
-USE transplant;
+-- DROP DATABASE transplant;
+-- CREATE DATABASE transplant;
+-- USE transplant;
 
 CREATE TABLE `sites`
  (
