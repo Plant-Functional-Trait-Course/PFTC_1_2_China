@@ -1,8 +1,10 @@
 #packages
 library("readxl")
+library("assertthat")
+library("dplyr")
 
 #list of xls files
-flist <- dir("community/databaseSetup/data/", pattern = "*.xls$", full.names = TRUE, recursive = TRUE)
+flist <- dir("community/databaseSetup/data", pattern = "*.xls$", full.names = TRUE, recursive = TRUE)
 
 #what do we have
 sapply(flist, excel_sheets)
@@ -39,12 +41,15 @@ originDestination <- read.table(header = TRUE, stringsAsFactors = FALSE, text = 
 
 #read taxonomy file
 taxonomy <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
-taxonomy <- taxonomy[, c("oldCode", "newCode")]
+taxonomy <- taxonomy[, names(taxonomy) != ""]#zap blank columns
+taxonomy <- taxonomy %>% 
+  filter(!is.na(fullName)) %>% # I hate excel
+  select(oldCode, newCode)
                                 
 #import data, process and export to CSV
-allsites <- lapply(flist, function(fl){
+allsites <- plyr::ldply(flist, function(fl){
   print(fl)
-  onesite <- lapply(excel_sheets(fl), function(sheet){
+  onesite <- plyr::ldply(excel_sheets(fl), function(sheet){
     print(sheet)
     dat <- read_excel(fl, sheet = sheet)
 
@@ -69,7 +74,9 @@ allsites <- lapply(flist, function(fl){
     
 
     #delete empty columns
-    dat <- dat[, colSums(!is.na(dat))>0] # currently also removes GRtreat and RTtreat
+    to_delete <- which(colSums(!is.na(dat)) == 0)
+    to_delete <- to_delete[names(to_delete) != "comment"]
+    dat <- dat[, -to_delete] # currently also removes GRtreat and RTtreat
     
     #year
     dat$year[is.na(dat$year)] <- dat$year[which(is.na(dat$year))-1]#fill blanks in year with row above
@@ -80,7 +87,7 @@ allsites <- lapply(flist, function(fl){
     extras <- setdiff(names(dat), taxonomy$oldCode)
     taxonomy <- rbind(taxonomy, cbind(oldCode = extras, newCode = extras))
     names(dat) <- plyr::mapvalues(names(dat), from = taxonomy$oldCode, to = taxonomy$newCode, warn_missing = FALSE) 
-    
+  
     #deal with multiple columns
     multiple <- plyr::count(names(dat))
     multiple <- multiple$x[multiple$freq > 1]
@@ -91,13 +98,24 @@ allsites <- lapply(flist, function(fl){
       sppX <- setNames(as.data.frame(sppX), multiple)
       dat <- cbind(dat[!names(dat) %in% multiple], sppX)
     }
-    stopifnot(all(table(names(dat)) == 1))#check no duplicates
+    assert_that(all(table(names(dat)) == 1))#check no duplicates
+    
+    #assume correction file if no comments
+    if(is.null(dat$comment)){
+      dat$comment <- "correction"
+    }
+    
+    #check date in date format
+    if(class(dat$date)[1] == "numeric"){
+      dat$date <- as.POSIXct(dat$date, origin = "1900-1-01")
+    }
+      
     dat
   })
-  do.call(rioja::Merge, args = onesite)
-  
+#  do.call(rioja::Merge, args = onesite)
+  onesite
 })
-allsites <- do.call(rioja::Merge, args = allsites)
+#allsites <- do.call(rioja::Merge, args = allsites)
 
 
 #sort columns so all species together
@@ -114,7 +132,12 @@ allsites <- allsites[,  c(metaNames, sppNames, envNames)]
 names(allsites)
 
 #check for odditities
-allsites[, sppNames] %>% tidyr::gather(key = spp, value = cover) %>% mutate(cover = as.character(cover)) %>% filter(!is.na(cover)) %>% mutate(cover = trimws(cover))%>% filter(!grepl("^\\d+(?:\\.\\d+)?$", cover))
+allsites[, sppNames] %>% 
+  tidyr::gather(key = spp, value = cover) %>%
+  mutate(cover = as.character(cover)) %>% 
+  filter(!is.na(cover)) %>% 
+  mutate(cover = trimws(cover)) %>% 
+  filter(!grepl("^\\d+(?:\\.\\d+)?$", cover))
 
 #trim anywhite space
 allsites <- plyr::colwise(trimws)(allsites)
