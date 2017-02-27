@@ -1,36 +1,59 @@
 library("DBI")
-#library("RMySQL")
 library("RSQLite")
 library("readxl")
 library("taxize")
+library("dplyr")
+library("assertthat")
+
+#function to add data to database - padding for missing columns
+dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE, ...){
+  #get extra columns from DB
+  allCols <- dbGetQuery(con, paste("select * from", table))
+  value <- bind_rows(value, allCols)
+  
+  #add to database
+  dbWriteTable(con, table, value = value, row.names = row.names, append = append, ...)
+}
+
 
 #load csv file
-dat <- read.csv("community/databaseSetup/data/allsites.csv")
+dat <- read.csv("community/databaseSetup/data/allsites.csv", stringsAsFactors = FALSE)
 
 # make database
-file.remove("community/data/transplant.sqlite")
+if(file.exists("community/data/transplant.sqlite")){
+  file.remove("community/data/transplant.sqlite")
+}
 con <- dbConnect(SQLite(), dbname = "community/data/transplant.sqlite")
 
 #set up structure (may need editing into SQLite dialect)
-dbExecute(db, readChar("community/databaseSetup/seedclimstructure.txt", nchar = 100000) )
+
+setup <- readChar("community/databaseSetup/seedclimstructure.txt", nchar = 100000)
+sapply(paste("CREATE", strsplit(setup, "CREATE")[[1]][-(1:2)]), dbExecute, conn = con)
+
+dbListTables(con)
+
+
 
 #make connection to transplant database
 
-con <- dbConnect(RMySQL::MySQL(), group = "transplant")
 
 
 
 #taxa - replace with full info
 
 taxonomy0 <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
-taxonomy0 <- taxonomy0[, c("oldCode", "newCode", "fullName")]
+taxonomy0 <- taxonomy0[, names(taxonomy0) != ""]#zap blank columns
+#taxonomy0 <- taxonomy0[, c("oldCode", "newCode", "fullName")]
 
 #keep only correct names
-keep <- !is.na(taxonomy0$fullName)
-taxonomy <- setNames(taxonomy0[keep, c("newCode", "fullName")], c("species", "speciesName"))
+taxonomy <- taxonomy0 %>%
+  filter(!is.na(fullName), is.na(keep)) %>% # drop blank row and unwanted duplicate taxa
+  select(-keep, -oldCode) %>%
+  rename(species = newCode, speciesName = fullName) %>%
+  mutate(Family = trimws(Family))
 
 #check for duplicates
-any(duplicated(taxonomy$species))
+assert_that(!any(duplicated(taxonomy$species)))
 taxonomy[duplicated(taxonomy$species),]
 
 # split authority from name
@@ -44,10 +67,10 @@ nameAuthority <- plyr::ldply(spNames, function(x){
     authority <- paste(x[-(1:2)], collapse = " ")
   }
   if(is.na(authority)) authority <- ""
-  data.frame(speciesName, authority, stringsAsFactors = FALSE)
+  data_frame(speciesName, authority)
 })
 
-taxonomy <- cbind(species = taxonomy$species, nameAuthority, stringsAsFactors = FALSE)
+taxonomy <- bind_cols(select(taxonomy, species), nameAuthority)
 
 #taxize to check names correctly spelt
 #get_tsn(searchterm = taxonomy$speciesName)
@@ -61,33 +84,32 @@ spp <- spp[!spp %in% meta]
 extras <- spp[!spp %in% c(taxonomy0$oldCode, taxonomy0$newCode)]
 
 if(length(extras) != 0){
-  taxonomy <- rbind(taxonomy, cbind(species = extras, speciesName = extras, authority  = ""))  
+  taxonomy <- bind_rows(taxonomy, bind_cols(species = extras, speciesName = extras, authority  = ""))  
   warning("Not found in species list: ", paste(extras, collapse = " "))
 }
 
-
 #add to database
-dbWriteTable(con, "taxon", value = as.data.frame(taxonomy), row.names = FALSE, append = TRUE)
+dbPadWriteTable(con, table = "taxon", value = taxonomy)
 
 dbGetQuery(con, "select * from taxon;")
 
 
 #sites
 sites <- data.frame(siteID = unique(dat$DestinationSite))
-dbWriteTable(con, "sites", value = sites, row.names = FALSE, append = TRUE)
+dbPadWriteTable(con, table = "sites", value = sites)
 
 #blocks
 blocks <- setNames(data.frame(unique(dat[, c("DestinationBlock", "DestinationSite")])), c("blockID", "siteID"))
-dbWriteTable(con, "blocks", value = blocks, row.names = FALSE, append = TRUE)
+dbPadWriteTable(con, "blocks", value = blocks)
 
 #plots
 plots <- setNames(data.frame(unique(dat[, c("destinationPlotID", "DestinationBlock")])), c("plotID", "blockID"))
 plots1 <- data.frame(plotID = unique(dat$"originPlotID"), blockID = substr(unique(dat$"originPlotID"), 1, 2))
-dbWriteTable(con, "plots", value = rbind(plots, plots1), row.names = FALSE, append = TRUE)
+dbPadWriteTable(con, "plots", value = unique(rbind(plots, plots1)))
 
 #turfs
 turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID", "destinationPlotID")])), c("turfID", "TTtreat", "originPlotID", "destinationPlotID"))
-dbWriteTable(con, "turfs", value = turfs, row.names = FALSE, append = TRUE)
+dbPadWriteTable(con, "turfs", value = turfs)
 
 #do taxonomic corrections
 source("community/databaseSetup/doCorrections.R")
