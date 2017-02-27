@@ -8,6 +8,8 @@ coords <- data.frame(site = c("L", "M", "A", "H"),
                     long = c(102.0343, 102.036, 102.0173, 102.0118))
 
 ### CHINA MAP
+#### Get Wolrdclim elevation data ####
+elev <- getData('worldclim', var='alt', res=2.5)
 e <- extent(75,125,10,55)
 elev.china <- crop(elev, e)
 
@@ -18,15 +20,16 @@ elev.china.df <- as.data.frame(elev.china.spdf)
 
 # plot China map
 border <- map_data("world")
-ggplot() +
+ChinaMap <- ggplot() +
   geom_raster(data = elev.china.df, aes(x=x, y=y, fill = alt)) +
   geom_map(aes(map_id = region), data = border, map = border, fill = NA, color = "white") +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
   coord_equal() +
-  scale_fill_gradient(low = "grey0", high = "grey100", limits=c(0,7000)) + 
-  geom_point(aes(x=long, y=lat, colour  = "red"), data = coords, size=3, show.legend = FALSE) +
-  annotate("text", x = 77, y = 54, label = "a)", size= 4, color = "white") +
+  scale_fill_gradient(name = "Elevation", low = "grey0", high = "grey100", limits=c(0,7000)) + 
+  geom_point(aes(x=long, y=lat, colour  = "red"), data = coords, size=2, show.legend = FALSE) +
+  annotate("text", x = 76.5, y = 52, label = "A)", size= 5, color = "white") +
+  labs(x = "", y = "") +
   theme_minimal()
 
 # change to theme_map
@@ -34,18 +37,11 @@ ggplot() +
 
 # GONGGA MOUNTAIN MAP
 # Read data with raster
-library("osmar")
-raw <- readLines("map/map")
-moxihen <- as_osmar(xmlParse(raw))
-moxihen_lines <- as_sp(moxihen)$lines
-moxihen_lines <- as.data.frame(moxihen_lines)
 
+#files <- list.files(path = "map/data/", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
 
+files <- list.files(path = "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/Map", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
 
-plot(moxihen)
-points(coords$long, coords$lat, col = 2, pch = 16)
-
-files <- list.files(path = "map/data/", pattern='\\.bil$', recursive = TRUE, full.names = TRUE)
 f1 <- raster(files[1])
 f2 <- raster(files[2])
 
@@ -59,11 +55,30 @@ elev.gongga <- rbind(setNames(gongga.df, name), setNames(gongga2.df, name))
 # Crop
 gongga <- elev.gongga %>% filter(x > 102, x < 102.05, y > 29.82, y < 29.92)
 dim(gongga)
-ggplot() +
+GonggaMap <- ggplot() +
   geom_raster(data = gongga, aes(x=x, y=y, fill = elev)) +
   coord_equal() +
-  scale_fill_gradient(low = "grey0", high = "grey100") + 
+  scale_fill_gradient(name = "Elevation", low = "grey0", high = "grey100") + 
   geom_point(aes(x=long, y=lat), colour  = "red", data = coords, size=2) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
-  labs(x = "Longitude E", y = "Latitude N")
+  annotate("text", x = 102.002, y = 29.915, label = "B)", size= 5, color = "white") +
+  labs(x = "", y = "") +
+  theme(aspect.ratio=1/1)
+
+# overlay roads etc from open street map - not worked out how to do this.
+library("osmar")
+raw <- readLines("map/map")
+moxihen <- as_osmar(xmlParse(raw))
+moxihen_lines <- as_sp(moxihen)$lines
+moxihen_lines <- as.data.frame(moxihen_lines)
+plot(moxihen)
+points(coords$long, coords$lat, col = 2, pch = 16)
+
+
+
+
+
+library("grid")
+library("gridExtra")
+grid.arrange(ChinaMap, GonggaMap, ncol = 2)
