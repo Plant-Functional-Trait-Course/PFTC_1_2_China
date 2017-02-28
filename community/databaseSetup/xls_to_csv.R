@@ -112,11 +112,10 @@ allsites <- plyr::ldply(flist, function(fl){
       
     dat
   })
-#  do.call(rioja::Merge, args = onesite)
   onesite
 })
-#allsites <- do.call(rioja::Merge, args = allsites)
 
+assert_that(!any(is.na(dat$turfID)))# check for missing values
 
 #sort columns so all species together
 metaNames <- c("DestinationSite", "DestinationBlock", "originPlotID", "TTtreat", "RTtreat", "destinationPlotID", "turfID", "subPlot", "year", "date", "Measure", "recorder")
