@@ -32,9 +32,11 @@ vignettes/*.pdf
 *.xlsx
 !globalCorrections.csv
 !localDatacorrections_plots_China.csv
+!cover_correction.csv
 *.xlsx#
 *.rar
 *.sqlite
+*.dat
 
 #rasters & shapefiles
 *.bil
