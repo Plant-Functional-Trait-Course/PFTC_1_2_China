@@ -115,7 +115,7 @@ allsites <- plyr::ldply(flist, function(fl){
   onesite
 })
 
-assert_that(!any(is.na(dat$turfID)))# check for missing values
+assert_that(!any(is.na(allsites$turfID)))# check for missing values
 
 #sort columns so all species together
 metaNames <- c("DestinationSite", "DestinationBlock", "originPlotID", "TTtreat", "RTtreat", "destinationPlotID", "turfID", "subPlot", "year", "date", "Measure", "recorder")
