@@ -5,7 +5,7 @@
 ####################
 
 import.data<-function(dat, mergedictionary){#dat is data.frame from the correctly formatted csv file loaded into R
-  require(dplyr)
+  require("assertthat")
 
     dat <- dat[!is.na(dat$originPlotID),]
     head(dat)
@@ -21,51 +21,62 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     turf
     names(turf)
     
-    alreadyIn <- dbGetQuery(con,"select turfId from turfs")$turfId
+    alreadyIn <- dbGetQuery(con,"select turfID from turfs")$turfID
     newTurfs <- turf[!as.character(turf$turfID) %in% alreadyIn,] #find which turfs IDs are not already in database
     
-    if(nrow(newTurfs) > 0) dbWriteTable(con, "turfs", newTurfs, row.names = FALSE, append = TRUE)
+    if(nrow(newTurfs) > 0) {
+      dbPadWriteTable(con, "turfs", newTurfs)
+    }
     nrow(turf)
     nrow(newTurfs)
     
     message("done turfs")                                  
     
     #subTurf env
-    subturfEnv <- dat[dat$Measure != "cover%", c("turfID", "subPlot", "year", "moss", "lichen", "litter", "soil", "rock", "comment")]
-    names(subturfEnv)[2] <- "subTurf"
+    subturfEnv <- dat %>% 
+      filter(Measure != "cover%") %>% 
+      select(turfID, subPlot, year, moss, lichen, litter, soil, rock, comment) %>%
+      rename(subTurf = subPlot) %>%
+      mutate(subTurf = as.numeric(subTurf)) %>%
+      filter(is.na(comment) | comment != "correction")
+            
+    assert_that(all(dat$turfID %in% subturfEnv$turfID))
+             
       if(!is.null(dat$missing)){
          bad = dat$missing[dat$Measure != "cover%"]
          bad[is.na(bad)] <- ""
-        subturfEnv <- cbind(subturfEnv, bad = bad)
+        subturfEnv$bad <- bad
       } else{
-        subturfEnv <- cbind(subturfEnv, bad = "")    
+        subturfEnv$bad <-  ""    
       }
     subturfEnv 
-    dbWriteTable(con, "subTurfEnvironment", subturfEnv, row.names = FALSE, append = TRUE)
+    dbPadWriteTable(con, "subTurfEnvironment", subturfEnv)
     nrow(subturfEnv)
     
-    #TurfEnv
-    turfEnv <- dat[dat$Measure == "cover%", c("turfID","year",  "moss", "lichen", "litter", "soil", "rock", "totalVascular","totalBryophytes", "totalLichen", "vegetationHeight", "mossHeight", "litterThickness", "comment", "recorder", "date")]
-    if(any(nchar(as.character(turfEnv$comment[!is.na(turfEnv$comment)])) > 255)) {
-      stop ("more than 255 characters in a comment field in turfEnv")
-    }
-    dbWriteTable(con, "turfEnvironment", turfEnv, row.names = FALSE, append = TRUE)
+    #TurfEnv    
+    turfEnv <- dat %>% 
+    filter(Measure == "cover%") %>% 
+      select(turfID, year, moss, lichen, litter, soil, rock, totalVascular, totalBryophytes, totalLichen, vegetationHeight, mossHeight, litterThickness, comment, recorder, date) %>%
+      filter(is.na(comment) | comment != "correction")
+
+    assert_that(!any(nchar(as.character(turfEnv$comment[!is.na(turfEnv$comment)])) > 255))
+    dbPadWriteTable(con, "turfEnvironment", turfEnv)
   nrow(turfEnv)   
   
   #Mergedistionary
 #  mergedictionary <- dbGetQuery(con,"SELECT * FROM mergedictionary")  
   
     #TurfCommunity  
-  spp <- cbind(dat[, c("turfID", "year")], dat[, (which(names(dat) == "recorder") + 1) : (which(names (dat) == "moss")-1) ])[dat$Measure == "cover%",]
+  spp <- bind_cols(dat[, c("turfID", "year")], dat[, (which(names(dat) == "recorder") + 1) : (which(names (dat) == "moss")-1) ])[dat$Measure == "cover%",]
   spp[, 3 : ncol(spp)] <- plyr::colwise(as.numeric)(spp[, 3 : ncol(spp)])
   notInMerged <- setdiff(names(spp)[-(1:2)], mergedictionary$oldID)
-  mergedictionary <- rbind(mergedictionary, cbind(oldID = notInMerged, newID = notInMerged))
+  mergedictionary <- bind_rows(mergedictionary, data_frame(oldID = notInMerged, newID = notInMerged))
   mergedNames <- plyr::mapvalues(names(spp)[-(1:2)], from = mergedictionary$oldID, to = mergedictionary$newID, warn_missing = FALSE)
   sppX <- lapply(unique(mergedNames), function(n){
     rowSums(spp[, names(spp) == n, drop = FALSE])
     })
-  sppX <- setNames(as.data.frame(sppX), unique(mergedNames))
- spp <- cbind(spp[, 1:2], sppX)
+  sppX <- as_data_frame(setNames(sppX, unique(mergedNames)))
+  spp <- bind_cols(spp[, 1:2], sppX)
     unique(as.vector(sapply(spp[, -(1:2)], as.character)))    #oddity search
     table(as.vector(sapply(spp[, -(1:2)], as.character)), useNA = "ifany") 
 
@@ -74,27 +85,27 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
       cf <- grep("cf", sp, ignore.case = TRUE)
       sp <- gsub("cf", "", sp, ignore.case = TRUE)
       sp <- gsub("\\*", "", sp, ignore.case = TRUE)
-      spp2 <- data.frame(turfID = spp$turfID, year = spp$year, species = names(spp)[nc], cover = as.numeric(sp), cf = 0)
+      spp2 <- data_frame(turfID = spp$turfID, year = spp$year, species = names(spp)[nc], cover = as.numeric(sp), cf = 0)
       spp2$cf[cf] <- 1
       spp2 <- spp2[!is.na(spp2$cover), ]
       spp2 <- spp2[spp2$cover > 0, ]
       spp2
     })
   initNrowTurfCommunity <- dbGetQuery(con, "select count(*) as n from turfCommunity")
-  dbWriteTable(con, "turfCommunity", sppT, row.names=FALSE, append = TRUE)
+  dbPadWriteTable(con, "turfCommunity", sppT)
   finalNrowTurfCommunity <- dbGetQuery(con, "select count(*) as n from turfCommunity")
   
   #check correct number rows
-  stopifnot(nrow(sppT) == finalNrowTurfCommunity - initNrowTurfCommunity)
+  assert_that(nrow(sppT) == finalNrowTurfCommunity - initNrowTurfCommunity)
 
   
   #subTurfCommunity  
   message("subturfcommunity")  
-  subspp <- cbind(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ])[dat$Measure != "cover%",]
+  subspp <- bind_cols(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ])[dat$Measure != "cover%",]
   subspp[subspp == 0] <- NA
   subsppX <- lapply(unique(mergedNames), function(sppname){
-      species <- subspp[, names(subspp) == sppname, drop = FALSE]
-      if (ncol(species) == 1) {
+      species <- subspp[, names(subspp) == sppname]
+      if (NCOL(species) == 1) {
         return(species)
       } else {
         apply (species, 1, function(r) {
@@ -111,9 +122,8 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     })
     
     
-    subsppX <- setNames(as.data.frame(subsppX), unique(mergedNames))
-    subspp <- cbind(subspp[, 1:3], subsppX)
-    unique(as.vector(sapply(subspp[, -(1:3)], as.character))) #oddity search
+    subsppX <- bind_cols(setNames(subsppX, unique(mergedNames)))
+    subspp <- bind_cols(subspp[, 1:3], subsppX)
     print(table(as.vector(sapply(subspp[, -(1:3)], as.character)))) #oddity search
     
     
@@ -122,7 +132,7 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     tmp[!sapply(tmp, is.null)]
     spp0 <- plyr::ldply(as.list(4:ncol(subspp)), function(nc){
       sp <- subspp[,nc ]
-      spp2 <- data.frame(turfID = subspp$turfID, year = subspp$year, subTurf = subspp$subPlot, species = names(subspp)[nc], seedlings = 0, juvenile = 0, adult = 0, fertile = 0, vegetative = 0, dominant = 0, cf = 0)
+      spp2 <- data_frame(turfID = subspp$turfID, year = subspp$year, subTurf = subspp$subPlot, species = names(subspp)[nc], seedlings = 0, juvenile = 0, adult = 0, fertile = 0, vegetative = 0, dominant = 0, cf = 0)
       spp2$cf[grep("cf",sp, ignore.case = TRUE)] <- 1
       spp2$fertile[grep("F",sp, ignore.case = FALSE)] <- 1
       spp2$dominant[grep("D",sp, ignore.case = TRUE)] <- 1       
@@ -154,7 +164,7 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
     spp0[spp0$species %in% seedlingSp,] <- tmpSp
     
     initNrowSTurfCommunity <- dbGetQuery(con, "select count(*) as n from subTurfCommunity")
-    dbWriteTable(con, "subTurfCommunity", spp0, row.names=FALSE, append = TRUE)
+    dbPadWriteTable(con, "subTurfCommunity", spp0)
     finalNrowSTurfCommunity <- dbGetQuery(con, "select count(*) as n from subTurfCommunity")
     
     #check correct number rows
