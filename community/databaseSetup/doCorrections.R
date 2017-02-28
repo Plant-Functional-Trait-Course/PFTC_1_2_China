@@ -1,4 +1,4 @@
-#implement corrections
+#Implement corrections
 #could be applied at several stages in pipeline from excel files to analysis. 
 #want to have database corrected, so don't need to always remember to apply corrections
 #complicated by the need to add co-occuring synonyms.
@@ -22,14 +22,14 @@ global$new <- trimws(global$new)
 setdiff(global$old, taxonomy$speciesName)
 setdiff(global$new, taxonomy$speciesName)
 
-stopifnot(all(c(global$old, global$new) %in% taxonomy$speciesName))
+assert_that(all(c(global$old, global$new) %in% taxonomy$speciesName))
 
 
 #convert names to code
 global$old <- plyr::mapvalues(global$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 global$new <- plyr::mapvalues(global$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 
-stopifnot(all(global$old %in% names(dat)))
+assert_that(all(global$old %in% names(dat)))
 (newTaxa <- setdiff(global$new, names(dat)))
 #add extra columns to dat
 newTaxa <- as.data.frame(setNames(as.list(rep(NA, length(newTaxa))), newTaxa))
@@ -51,9 +51,9 @@ for(i in 1:nrow(global)){
 dat <- dat[, !names(dat) %in% global$old]
 
 
-message("Swe.mac not deleted")
+message("Swe.mac not deleted")#?
 
-#local edits - apply to particular sites/turfs/years
+#### local edits - apply to particular sites/turfs/years
 local <- read.table("community/databaseSetup/data/localDatacorrections_plots_China.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
 local <- local[local$new != "" | local$special != "", ]#remove extra rows
 setdiff(local$turfID, dat$turfID)
@@ -65,7 +65,7 @@ setdiff(local$new, c(taxonomy$speciesName, taxonomy$species))
 local[local == "Potentilla stenophylla"] <- "Potentilla stenophylla var. emergens"
 local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
 
-stopifnot(all(c(local$old, local$new) %in% c("", taxonomy$speciesName, taxonomy$species)))
+assert_that(all(c(local$old, local$new) %in% c("", taxonomy$speciesName, taxonomy$species)))
 
 #convert names to code
 local$old <- plyr::mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
@@ -200,7 +200,7 @@ dat$Pru.his[target] <- dat$Pru.his[dat$Measure == "Presence" & dat$turfID == "L1
 
 dat$Aju.dec[target] <- NA#Aju.dec is wiped
 
-###corrections to percent values 
+####corrections to percent values 
 perc_subplot <- readxl::read_excel("community/databaseSetup/data/cover correction.xlsx")
 
 perc <- perc_subplot[!is.na(perc_subplot$`should be`), ]
@@ -209,7 +209,7 @@ for(i in 1:nrow(perc)){
   dat[dat$year == perc$year[i] & dat$turfID == perc$`#turf`[i] & dat$Measure == "cover%", perc$species[i]] <- perc$`should be`[i]
 }
 
-###additional subplots
+####additional subplots
 subplot <- perc_subplot[!is.na(perc_subplot$`updated #subplot`), ]
 
 for(i in 1:nrow(subplot)){
