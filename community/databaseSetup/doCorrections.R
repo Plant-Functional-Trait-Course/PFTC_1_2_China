@@ -213,17 +213,17 @@ dat$Pru.his[target] <- dat$Pru.his[dat$Measure == "Presence" & dat$turfID == "L1
 dat$Aju.dec[target] <- NA#Aju.dec is wiped
 
 ####corrections to percent values 
-perc_subplot <- readxl::read_excel("community/databaseSetup/data/cover correction.xlsx")
+perc_subplot <- read.csv("community/databaseSetup/data/cover_correction.csv", comment = "", stringsAsFactors = FALSE)
 
-perc <- perc_subplot[!is.na(perc_subplot$`should be`), ]
+perc <- perc_subplot[!is.na(perc_subplot$`should.be`), ]
 
 for(i in 1:nrow(perc)){
-  dat[dat$year == perc$year[i] & dat$turfID == perc$`#turf`[i] & dat$Measure == "cover%", perc$species[i]] <- perc$`should be`[i]
+  dat[dat$year == perc$year[i] & dat$turfID == perc$`X.turf`[i] & dat$Measure == "cover%", perc$species[i]] <- perc$`should.be`[i]
 }
 
 ####additional subplots
-subplot <- perc_subplot[!is.na(perc_subplot$`updated #subplot`), ]
+subplot <- perc_subplot[!is.na(perc_subplot$`updated..subplot`), ]
 
 for(i in 1:nrow(subplot)){
-  dat[dat$year == subplot$year[i] & dat$turfID == subplot$`#turf`[i] & dat$Measure == "Presence" & as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated #subplot`[i], ",")[[1]]), subplot$species[i]] <- 1
+  dat[dat$year == subplot$year[i] & dat$turfID == subplot$`X.turf`[i] & dat$Measure == "Presence" & as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated..subplot`[i], ",")[[1]]), subplot$species[i]] <- 1
 }
