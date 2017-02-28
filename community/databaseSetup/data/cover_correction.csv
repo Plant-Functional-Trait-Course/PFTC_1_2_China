@@ -1,0 +1,35 @@
+year,#turf,species,old cover,should be,updated #subplot
+2012,A1-1,Fes.spp,35.5,5,
+2012,M3-C,Pot.leu,20,12,
+2012,M3-O,Pot.leu,30,,"7,8,11,14,16,17,18,19,22,23"
+2012,M7-1,Pot.leu,8,,"9,13,14,15,19"
+2014,A1-O,Ger.pyl,68,18,
+2014,A3-OTC,Sor.hoo,8,,"18,19,22,23,24"
+2014,H5-1,Pol.viv,25,15,
+2014,H6-3,Swe.mac,35,20,
+2014,L5-O,Car.spp,80,40,
+2014,L7-O,Pot.leu,30,,"1,2,6,7,11,12,16,17,21,22"
+2014,M3-2,Pol.viv,13,,"19,20,21,23,24"
+2014,M6-2,Ari.par,8,,"17,18,23"
+2015,A7-C,Ger.pyl,45,15,
+2015,H1-OTC,Sau.cet,20,5,
+2015,H4-3,Car.spp,13,,"1,2,3,6,7"
+2015,M1-O,Pla.asi,34,,"6,7,8,11,12,13,16,17,18,21,22,23"
+2015,M5-OTC,Ari.par,6,,"3,4,8"
+2015,M6-1,Ari.par,12,,"4,5,9,10"
+2015,M6-OTC,Fes.spp,12,,"16,17,21,22,24"
+,,,,,
+2012,L4-OTC,Cli.pol,,2 ,
+2014,H5-C,Cya.hus,,1 ,
+2013,L2-O,Geu.ale,,2 ,
+2012,M1-OTC,Jun.him,,3 ,
+2014,A1-O,Jun.leu,,1 ,
+2015,H4-C,Par.spp,,1 ,
+2015,A2-O,Ped.sim,,3 ,
+2015,H5-1,Poa.spp,,2 ,
+2012,M3-O,Pot.leu,,30 ,
+2015,L1-2,Ran.tan,,1 ,
+2012,H5-C,Rho.fas,,2 ,
+2012,M1-OTC,Swe.mac,,10 ,
+2014,M3-O,Swe.mac,,8 ,
+2014,H1-3,Ver.sze,,4 ,
