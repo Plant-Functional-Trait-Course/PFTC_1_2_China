@@ -19,6 +19,9 @@ vignettes/*.pdf
 .httr-oauth
 .Rproj.user
 
+#markdown cache
+*_cache/
+
 #data
 *.xls
 *.csv
@@ -27,8 +30,21 @@ vignettes/*.pdf
 *.zip
 *.sql
 *.xlsx
+!globalCorrections.csv
+!localDatacorrections_plots_China.csv
+*.xlsx#
+*.rar
+*.sqlite
+
+#rasters & shapefiles
+*.bil
+*.blw
+*.hdr
+*.prj
 
 #figures & output
 *.png
 *.html
 *.pdf
+*.jpeg
+.my.cnf
