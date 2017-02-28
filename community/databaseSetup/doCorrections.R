@@ -1,3 +1,5 @@
+library("tibble")
+
 #Implement corrections
 #could be applied at several stages in pipeline from excel files to analysis. 
 #want to have database corrected, so don't need to always remember to apply corrections
@@ -58,10 +60,13 @@ local <- read.table("community/databaseSetup/data/localDatacorrections_plots_Chi
 local <- local[local$new != "" | local$special != "", ]#remove extra rows
 setdiff(local$turfID, dat$turfID)
 local$turfID <- trimws(local$turfID)#zap trailing space
+assert_that(all(local$turfID %in% dat$turfID))
 
 #check names
 setdiff(local$old, c(taxonomy$speciesName, taxonomy$species))
 setdiff(local$new, c(taxonomy$speciesName, taxonomy$species))
+local[local == "Kob.pgy"] <- "Kob.pyg"
+local[local == "pol.cya"] <- "Pol.cya"
 local[local == "Potentilla stenophylla"] <- "Potentilla stenophylla var. emergens"
 local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
 
@@ -71,7 +76,7 @@ assert_that(all(c(local$old, local$new) %in% c("", taxonomy$speciesName, taxonom
 local$old <- plyr::mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 local$new <- plyr::mapvalues(local$new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 
-merge(local, dat, by.x = c("turfID", "year", "site"), by.y = c("turfID", "year", "DestinationSite"), all.x = TRUE)%>%
+full_join(local, dat, by = c("turfID" = "turfID", "year" = "year", "site" = "DestinationSite"))%>%
   filter(is.na(DestinationBlock))%>%select(1:9)
 
 ##split off specials
@@ -92,6 +97,9 @@ local$old[local$old == "Par.pus"] <- "Par.spp"
 #remove duplicate corrections
 local %>% ungroup() %>% group_by(turfID, year, old) %>% mutate(n = n()) %>% filter (n >1) %>% arrange(turfID)# duplicates
 local <- unique(local)
+
+#check for reversed corrections, chaining
+inner_join(rownames_to_column(local), rownames_to_column(local), by = c("turfID" = "turfID", "year" = "year", "new" = "old"), suffix = c(".v1", ".v2"))
 
 ##make sure corrections are in correct order so that
 # b -> c
