@@ -134,6 +134,10 @@ swaps <- rbind(swaps1, swaps2, swaps3)
 
 local <- rbind(local, swaps)
 
+#number of cases
+local %>% ungroup() %>% select(old, new) %>% count(old, new)
+
+
 #add dummy taxon
 dat$dummyTaxon <- NA
 
