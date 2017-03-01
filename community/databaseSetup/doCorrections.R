@@ -221,16 +221,24 @@ perc_subplot <- perc_subplot[!is.na(perc_subplot$year), ]
 assert_that(all(perc_subplot$X.turf %in% dat$turfID))#check no bad turfs
 assert_that(all(perc_subplot$species %in%  taxonomy$species))#check no bad turfs
 
+dat$comment[is.na(dat$comment)] <- "" #cannot have NAs for logical test below
 
 perc <- perc_subplot[!is.na(perc_subplot$`should.be`), ]
 
 for(i in 1:nrow(perc)){
-  dat[dat$year == perc$year[i] & dat$turfID == perc$`X.turf`[i] & dat$Measure == "cover%", perc$species[i]] <- perc$`should.be`[i]
+  dat[dat$year == perc$year[i] &
+        dat$turfID == perc$`X.turf`[i] &
+        dat$Measure == "cover%" & 
+        dat$comment != "correction", perc$species[i]] <- perc$`should.be`[i] # don't 'correct' corrections
 }
 
 ####additional subplots
 subplot <- perc_subplot[!is.na(perc_subplot$`updated..subplot`), ]
 
 for(i in 1:nrow(subplot)){
-  dat[dat$year == subplot$year[i] & dat$turfID == subplot$`X.turf`[i] & dat$Measure == "Presence" & as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated..subplot`[i], ",")[[1]]), subplot$species[i]] <- 1
+  dat[dat$year == subplot$year[i] &
+        dat$turfID == subplot$`X.turf`[i] &
+        dat$Measure == "Presence" & 
+        as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated..subplot`[i], ",")[[1]]) &
+        dat$comment != "correction", subplot$species[i]] <- 1
 }
