@@ -215,6 +215,13 @@ dat$Aju.dec[target] <- NA#Aju.dec is wiped
 ####corrections to percent values 
 perc_subplot <- read.csv("community/databaseSetup/data/cover_correction.csv", comment = "", stringsAsFactors = FALSE)
 
+#zap blank rows
+perc_subplot <- perc_subplot[!is.na(perc_subplot$year), ]
+
+assert_that(all(perc_subplot$X.turf %in% dat$turfID))#check no bad turfs
+assert_that(all(perc_subplot$species %in%  taxonomy$species))#check no bad turfs
+
+
 perc <- perc_subplot[!is.na(perc_subplot$`should.be`), ]
 
 for(i in 1:nrow(perc)){
