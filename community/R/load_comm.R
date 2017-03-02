@@ -12,7 +12,7 @@ load_comm <- function(con, cover = TRUE) {
   ##cover data
   coverQ <-
     "SELECT `sites`.`siteID` AS originSiteID, `blocks`.`blockID` AS originBlockID, `plots`.`plotID` AS originPlotID, `turfs`.`turfID`, `plots_1`.`plotID` AS destPlotID, `blocks_1`.`blockID` AS destBlockID, `sites_1`.`siteID` AS destSiteID, `turfs`.`TTtreat`, `turfCommunity`.`year`, `turfCommunity`.`species`, `turfCommunity`.`cover`, `taxon`.`speciesName`
-  FROM `transplant`.`blocks` AS `blocks`, `transplant`.`sites` AS `sites`, `transplant`.`plots` AS `plots`, `transplant`.`turfs` AS `turfs`, `transplant`.`turfCommunity` AS `turfCommunity`, `transplant`.`plots` AS `plots_1`, `transplant`.`blocks` AS `blocks_1`, `transplant`.`sites` AS `sites_1`, `transplant`.`taxon` AS `taxon`
+  FROM `blocks`, `sites`, `plots`, `turfs`, `turfCommunity`, `plots` AS `plots_1`, `blocks` AS `blocks_1`, `sites` AS `sites_1`, `taxon`
   WHERE `blocks`.`siteID` = `sites`.`siteID` AND `plots`.`blockID` = `blocks`.`blockID` AND `turfs`.`originPlotID` = `plots`.`plotID` AND `turfCommunity`.`turfID` = `turfs`.`turfID` AND `turfs`.`destinationPlotID` = `plots_1`.`plotID` AND `blocks_1`.`siteID` = `sites_1`.`siteID` AND `plots_1`.`blockID` = `blocks_1`.`blockID` AND `turfCommunity`.`species` = `taxon`.`species`;"
   
   cover.thin <- dbGetQuery(con, coverQ)
