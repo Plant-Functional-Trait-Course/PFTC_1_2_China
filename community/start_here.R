@@ -1,6 +1,6 @@
 #load packages
 library("tidyr")
-library("DBI")# also needs RMySQL installed
+library("DBI")# also needs RSQLite installed
 library("dplyr")
 
 #source functions
@@ -14,21 +14,7 @@ if(interactive()){
 sapply(fl, source)
 
 #make database connection
-# uses username, password, host etc (including sock) information from file .my.cnf that should be in your root directory. 
-#See http://www.inside-r.org/packages/cran/rmysql/docs/MySQL
-#for Macs see here http://stackoverflow.com/questions/10757169/mysql-my-cnf-location
-# put my.cnf file here: /etc
-# My .my.cnf looks like this (without the comments)
-# [transplant]
-# user = gbsrt
-# password = b5b5b5
-# host = localhost
-# port = 3306
-# database = transplant
-# socket = /Applications/MAMP/tmp/mysql/mysql.sock # (MAMP users only)
-
-
-con <- dbConnect(RMySQL::MySQL(), group = "transplant")
+con <- dbConnect(RSQLite::SQLite(), dbname = "community/data/transplant.sqlite")
 
 
 #load cover data and metadata
