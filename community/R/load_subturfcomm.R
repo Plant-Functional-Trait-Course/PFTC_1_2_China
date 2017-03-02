@@ -12,9 +12,9 @@ load_subturfcomm <- function(con, cover = TRUE) {
   
   ##cover data
   subturfQ <-
-    "SELECT `sites`.`siteID` AS originSiteID, `blocks`.`blockID` AS originBlockID, `plots`.`plotID` AS originPlotID, `turfs`.`turfID`, `plots_1`.`plotID` AS destPlotID, `blocks_1`.`blockID` AS destBlockID, `sites_1`.`siteID` AS destSiteID, `turfs`.`TTtreat`, `subTurfCommunity`.`year`, `subTurfCommunity`.`subTurf`, `subTurfCommunity`.`species`, `subTurfCommunity`.`adult`, `taxon`.`speciesName`
-  FROM `transplant`.`blocks` AS `blocks`, `transplant`.`sites` AS `sites`, `transplant`.`plots` AS `plots`, `transplant`.`turfs` AS `turfs`, `transplant`.`subTurfCommunity` AS `subTurfCommunity`, `transplant`.`plots` AS `plots_1`, `transplant`.`blocks` AS `blocks_1`, `transplant`.`sites` AS `sites_1`, `transplant`.`taxon` AS `taxon`
-  WHERE `blocks`.`siteID` = `sites`.`siteID` AND `plots`.`blockID` = `blocks`.`blockID` AND `turfs`.`originPlotID` = `plots`.`plotID` AND `subTurfCommunity`.`turfID` = `turfs`.`turfID` AND `turfs`.`destinationPlotID` = `plots_1`.`plotID` AND `blocks_1`.`siteID` = `sites_1`.`siteID` AND `plots_1`.`blockID` = `blocks_1`.`blockID` AND `subTurfCommunity`.`species` = `taxon`.`species`;"
+    "SELECT sites.siteID AS originSiteID, blocks.blockID AS originBlockID, plots.plotID AS originPlotID, turfs.turfID, plots_1.plotID AS destPlotID, blocks_1.blockID AS destBlockID, sites_1.siteID AS destSiteID, turfs.TTtreat, subTurfCommunity.year, subTurfCommunity.subTurf, subTurfCommunity.species, subTurfCommunity.adult, taxon.speciesName
+  FROM blocks, sites, plots, turfs, subTurfCommunity, plots AS plots_1, blocks AS blocks_1, sites AS sites_1,  taxon
+  WHERE blocks.siteID = sites.siteID AND plots.blockID = blocks.blockID AND turfs.originPlotID = plots.plotID AND subTurfCommunity.turfID = turfs.turfID AND turfs.destinationPlotID = plots_1.plotID AND blocks_1.siteID = sites_1.siteID AND plots_1.blockID = blocks_1.blockID AND subTurfCommunity.species = taxon.species;"
   
   subturf.thin <- dbGetQuery(con, subturfQ)
   
