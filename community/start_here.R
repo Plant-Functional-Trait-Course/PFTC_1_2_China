@@ -5,16 +5,17 @@ library("dplyr")
 
 #source functions
 if(interactive()){
-  fl <- list.files("community/R/", full.names = TRUE)
+  path <- "community/"
 }else{
-  fl <- list.files("R/", full.names = TRUE)
-  
+  path <- ""
 }
+
+fl <- list.files(paste0(path, "R/"), full.names = TRUE)
 
 sapply(fl, source)
 
 #make database connection
-con <- dbConnect(RSQLite::SQLite(), dbname = "community/data/transplant.sqlite")
+con <- dbConnect(RSQLite::SQLite(), dbname = paste0(path, "data/transplant.sqlite"))
 
 
 #load cover data and metadata
