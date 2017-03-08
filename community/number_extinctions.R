@@ -28,18 +28,20 @@ controlturf <- turfs %>%
   select(turfID, destSiteID, destBlockID) %>%
   rename(controlTurfID = turfID)
 
-finalextinct <-
+finalextinct <- # how many spp need to go extinct to match ctrl turf
   cover_thin %>% 
     filter(year == minY) %>%
     select(-speciesName, -originBlockID) %>%
-    merge(controlturf) %>% 
+    left_join(controlturf) %>% 
     group_by(turfID, TTtreat, destSiteID) %>%
     summarise(final = length(
       setdiff(
       species,
       cover_thin$species[cover_thin$turfID == controlTurfID[1] & cover_thin$year == maxY]
     ))/length(species))
-ggplot(finalextinct, aes(x = TTtreat, y  = final, colour = destSiteID)) + geom_boxplot()
+
+ggplot(finalextinct, aes(x = TTtreat, y  = final, colour = destSiteID)) + 
+  geom_boxplot()
 
 
 plot_extinctImmigrant <- function(x, final, ylab = ""){
@@ -56,7 +58,7 @@ plot_extinctImmigrant <- function(x, final, ylab = ""){
     g <- g + scale_x_continuous(breaks = min(x$year):max(x$year))
   } else{
     offset <- 0.3
-    final <- cbind(final, x = max(x$year) + offset)
+    final$x <- max(x$year) + offset
     g <- g + geom_point(data  = final,
                         mapping = aes(x = x, y = final),
                         colour = turfcolour) +
