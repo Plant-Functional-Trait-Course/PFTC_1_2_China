@@ -64,7 +64,9 @@ dist_to_control2 <- left_join(
   select(-year_original) %>%
   rename(year = year_, dist_to_control = dist_to_control_) %>%
   mutate(delta_dist = dist_to_control_original - dist_to_control, 
-         relative_dist = delta_dist / dist_to_control_original)
+         relative_dist = delta_dist / dist_to_control_original) %>%
+  ungroup() %>%
+  mutate(TTtreat = factor(TTtreat, levels = levels(cover_thin$TTtreat)))
   
 
 ## plot
@@ -72,6 +74,10 @@ ggplot(dist_to_control2, aes(x = as.factor(year), y = relative_dist)) +
   geom_boxplot() + 
   facet_wrap(~TTtreat)
 
-ggplot(dist_to_control2, aes(x = as.factor(year), y = delta_dist)) + 
+ggplot(dist_to_control2, aes(x = as.factor(year), y = delta_dist, fill = destSiteID)) + 
   geom_boxplot() + 
   facet_wrap(~TTtreat)
+
+ggplot(filter(dist_to_control2, year == 2013), aes(x = TTtreat, y = dist_to_control_original, fill = destSiteID)) + 
+  geom_boxplot() +
+  labs(x = "Treatment", ylab = "Original distance to destination control")
