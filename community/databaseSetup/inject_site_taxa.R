@@ -70,7 +70,7 @@ nameAuthority <- plyr::ldply(spNames, function(x){
   data_frame(speciesName, authority)
 })
 
-taxonomy <- bind_cols(select(taxonomy, species), nameAuthority)
+taxonomy <- bind_cols(select(taxonomy, -speciesName), nameAuthority)
 
 #taxize to check names correctly spelt
 #get_tsn(searchterm = taxonomy$speciesName)
