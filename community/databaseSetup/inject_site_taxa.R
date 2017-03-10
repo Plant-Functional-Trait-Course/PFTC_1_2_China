@@ -49,8 +49,8 @@ taxonomy0 <- taxonomy0[, names(taxonomy0) != ""]#zap blank columns
 taxonomy <- taxonomy0 %>%
   filter(!is.na(fullName), is.na(keep)) %>% # drop blank row and unwanted duplicate taxa
   select(-keep, -oldCode) %>%
-  rename(species = newCode, speciesName = fullName) %>%
-  mutate(Family = trimws(Family))
+  rename(species = newCode, speciesName = fullName, family = Family) %>%
+  mutate(family = trimws(family))
 
 #check for duplicates
 assert_that(!any(duplicated(taxonomy$species)))
