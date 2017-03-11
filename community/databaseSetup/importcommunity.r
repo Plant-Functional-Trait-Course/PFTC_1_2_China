@@ -147,7 +147,7 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
         spp2$juvenile[grep(paste("Jx", i, sep = ""),sp, ignore.case = TRUE)] <- i
          spp2$juvenile[grep(paste("xJ", i, sep = ""),sp, ignore.case = TRUE)] <- i
       }
-      spp2$adult[unique(c(grep("1", sp, ignore.case = TRUE), grep("F", sp, ignore.case = FALSE), grep("V", sp, ignore.case = TRUE), grep("D", sp, ignore.case = TRUE))) ] <- 1
+      spp2$adult[grep("[1|F|V|D]", sp, ignore.case = TRUE)] <- 1
       spp2<-spp2[rowSums(spp2[,-(1:4)])>0,] #keep only rows with presences
       spp2
     })  
