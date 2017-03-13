@@ -109,7 +109,7 @@ CREATE TABLE `turfCommunity`
 	`year`			int, 
 	`species`			varchar (100), 
 	`cover`			float, 
-	`cf`			char NOT NULL,
+	`cf`			int NOT NULL,
 	 PRIMARY KEY (turfID, year, species),
 	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
 
@@ -147,11 +147,11 @@ CREATE TABLE `subTurfCommunity`
 	`species`			varchar (100), 
 	`seedlings`			int, 
 	`juvenile`			int, 
-	`adult`			char NOT NULL, 
-	`fertile`			char NOT NULL, 
-	`vegetative`			char NOT NULL, 
-	`dominant`			char NOT NULL, 
-	`cf`			char NOT NULL,
+	`adult`			int NOT NULL, 
+	`fertile`			int NOT NULL, 
+	`vegetative`			int NOT NULL, 
+	`dominant`			int NOT NULL, 
+	`cf`			int NOT NULL,
 	 PRIMARY KEY (turfID, subTurf, year, species),
 	 FOREIGN KEY (turfID) REFERENCES turfs(turfID)
 
