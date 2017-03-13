@@ -101,7 +101,10 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
   
   #subTurfCommunity  
   message("subturfcommunity")  
-  subspp <- bind_cols(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ])[dat$Measure != "cover%",]
+  subspp <- bind_cols(dat[, c("turfID", "year", "subPlot")], dat[, (which(names(dat) == "recorder") + 1) : (which(names(dat) == "moss") -1) ]) %>%
+    filter(dat$Measure != "cover%") %>% 
+    mutate(subPlot = as.integer(subPlot))
+  
   subspp[subspp == 0] <- NA
   subsppX <- lapply(unique(mergedNames), function(sppname){
       species <- subspp[, names(subspp) == sppname]
