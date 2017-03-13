@@ -9,7 +9,7 @@ library("assertthat")
 dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE, ...){
   #get extra columns from DB
   allCols <- dbGetQuery(con, paste("select * from", table))
-  value <- bind_rows(value, allCols)
+  value <- bind_rows(allCols, value)
   
   #add to database
   dbWriteTable(con, table, value = value, row.names = row.names, append = append, ...)
