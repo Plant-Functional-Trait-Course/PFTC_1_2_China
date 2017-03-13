@@ -124,15 +124,17 @@ local <- rbind(local, notChains)
 swaps <- local %>% group_by(turfID, year) %>% filter(new %in% old & old %in% new) %>% arrange(turfID, year, old)
 local <- local %>% group_by(turfID, year) %>% filter(!(new %in% old & old %in% new)) # without swaps
 
-swapsA <- swaps[seq(1, nrow(swaps), by = 2), ]
-swaps2 <- swaps[seq(2, nrow(swaps), by = 2), ]
-
-swaps1 <- swapsA %>% mutate(new = "dummyTaxon")
-swaps3 <- swapsA %>% mutate(old = "dummyTaxon")
-
-swaps <- rbind(swaps1, swaps2, swaps3)
-
-local <- rbind(local, swaps)
+if(nrow(swaps) > 0){
+  swapsA <- swaps[seq(1, nrow(swaps), by = 2), ]
+  swaps2 <- swaps[seq(2, nrow(swaps), by = 2), ]
+  
+  swaps1 <- swapsA %>% mutate(new = "dummyTaxon")
+  swaps3 <- swapsA %>% mutate(old = "dummyTaxon")
+  
+  swaps <- rbind(swaps1, swaps2, swaps3)
+  
+  local <- rbind(local, swaps)
+}
 
 #number of cases
 local %>% ungroup() %>% count(old, new)
