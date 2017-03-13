@@ -4,8 +4,19 @@ library("tidyverse")
 
 source("community/start_here.R")
 
+#get functional groups
+con <- src_sqlite(path = "community/data/transplant.sqlite", create = FALSE)
+
+noGraminoids <- tbl(con, "taxon") %>% 
+  filter(!functionalGroup %in% c("gramineae", "sedge")) %>% 
+  select(species) %>%
+  collect()
+
+
+
 ## find taxonomic distance moved
-dist_moved <- cover_thin %>% 
+dist_moved <- cover_thin  %>% 
+  left_join(noGraminoids) %>%
   group_by(turfID, TTtreat, originSiteID) %>%
   select(-speciesName) %>%
   do({
@@ -30,6 +41,7 @@ dist_moved %>% ggplot(aes(x = as.factor(year), y = d, fill = originSiteID)) +
 #relative delta/d1 
 
 dist_to_control <- cover_thin %>%
+  left_join(noGraminoids) %>%
   group_by(turfID, destBlockID, destSiteID, year, TTtreat) %>%
   select(-speciesName) %>%
   spread(key = species, value = cover, fill = 0) %>%
