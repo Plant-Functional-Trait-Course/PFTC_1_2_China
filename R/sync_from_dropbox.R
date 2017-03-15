@@ -5,11 +5,15 @@
 # remember user between sessions?
 
 sync_from_dropbox <- function(drop_path, drop_file, local_path_file){
+  download <- readline("type 'yes' get data or check for new version")
+  if(!grepl("yes", download, ignore.case = TRUE)){
+    return()
+  }
   
   if(!require("rdrop2")){
     stop("Need to install rdrop2 with devtools::install_github('karthik/rdrop2') or from CRAN")
   }
-  browser()
+ # browser()
   drop_acc()# get account - will ask for login details
   #drop_auth()
   
@@ -35,4 +39,6 @@ sync_from_dropbox <- function(drop_path, drop_file, local_path_file){
   }
 }
 
-sync_from_dropbox(drop_path = "test/", drop_file = "test.txt", local_path_file = "community/test.txt")
+#test
+
+#sync_from_dropbox(drop_path = "test/", drop_file = "test.txt", local_path_file = "community/test.txt")
