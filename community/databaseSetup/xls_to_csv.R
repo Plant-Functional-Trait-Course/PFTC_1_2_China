@@ -79,7 +79,9 @@ allsites <- plyr::ldply(flist, function(fl){
     dat <- dat[, -to_delete] # currently also removes GRtreat and RTtreat
     
     #year
-    dat$year[is.na(dat$year)] <- dat$year[which(is.na(dat$year))-1]#fill blanks in year with row above
+    dat$year[is.na(dat$year)] <- dat$year[which(is.na(dat$year)) - 1]#fill blanks in year with row above
+    #recorder
+    dat$recorder[is.na(dat$recorder)] <- dat$recorder[which(is.na(dat$recorder)) - 1]#fill blanks in year with row above
     
     #taxonomy
     names(dat) <- trimws(names(dat))#zap trailing white space
