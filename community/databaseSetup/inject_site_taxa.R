@@ -120,3 +120,14 @@ import.data(dat, mergedictionary = setNames(taxonomy0[, c("oldCode", "newCode")]
 
 dbDisconnect(con)
 
+## upload to dropbox
+
+upload <- readline("type 'yes' to upload file to dropbox for distribution")
+if(grepl("yes", upload, ignore.case = TRUE)){
+  rdrop2::drop_upload(
+    file = "community/data/transplant.sqlite", 
+    dest = "transplant/communitydatabase/transplant.sqlite"
+    )
+  
+}
+
