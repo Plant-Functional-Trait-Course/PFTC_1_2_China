@@ -24,6 +24,7 @@ sync_from_dropbox <- function(drop_path, drop_file, local_path_file){
       downloadneeded <- TRUE
     } else{#local copy up to date
       downloadneeded <- FALSE
+      message("All files are up to date")
     }
   } else{#no local copy
     downloadneeded <- TRUE
