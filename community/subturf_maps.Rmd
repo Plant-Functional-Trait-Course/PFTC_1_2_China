@@ -24,7 +24,7 @@ source("R/load_subturfcomm.R")
 source("R/load_comm.R")
 
 #make database connection
-con <- dbConnect(RMySQL::MySQL(), group = "transplant")
+con <- dbConnect(RSQLite::SQLite(), dbname = "data/transplant.sqlite")
 
 #load cover data and metadata
 subturf_thin <- load_subturfcomm(con = con)
