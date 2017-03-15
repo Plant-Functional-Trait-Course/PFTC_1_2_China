@@ -38,7 +38,8 @@ weather <- weather %>%
   mutate(Tair = ifelse(Tair > 100 | Tair < -50, NA, Tair)) %>%
   mutate(Tsoil0 = ifelse(Tsoil0 > 60 | Tsoil0 < -50, NA, Tsoil0)) %>%
   mutate(Tsoil5 = ifelse(Tsoil5 > 50 | Tsoil5 < -5, NA, Tsoil5)) %>%
-  mutate(Tsoil20 = ifelse(Tsoil20 > 50 | Tsoil20 < -5, NA, Tsoil20)) 
+  mutate(Tsoil20 = ifelse(Tsoil20 > 50 | Tsoil20 < -5, NA, Tsoil20)) %>% 
+  mutate(windSpeed = ifelse(windSpeed > 50, NA, windSpeed))
 
 #remove minimal variance in Tsoil0 Toil5
 
@@ -57,6 +58,11 @@ weather <- weather %>%
   mutate(solarRadiation = ifelse(sd < 0.02, NA, solarRadiation)) %>%
   select(-sd)
 
+#zap zero values for PAR (all in site A)
+weather <- weather %>% 
+  group_by(file) %>%
+  mutate(PAR = ifelse(PAR < 0, NA, PAR))
+
 #soil moisture - zap impossible values
 ggplot(weather, aes(x = dateTime, y = waterContent20, group = file, colour = site)) + geom_path() + facet_wrap(~site)
 
@@ -64,7 +70,38 @@ weather <- weather %>%
   mutate(waterContent5 = ifelse(waterContent5 < 0 | waterContent5 > 1, NA, waterContent5)) %>%
   mutate(waterContent20 = ifelse(waterContent20 < 0 | waterContent20 > 1, NA, waterContent20))
 
+# remove remaining spikes in particular season
+weather <- weather %>% 
+  mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
+  mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
+                         ifelse(nummonth %in% c(3,4,5), "Spring", 
+                                ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
+  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
+  mutate(Tsoil0 = ifelse(site == "H" & season == "Spring" & Tsoil0 < -15, NA, Tsoil0))
+
+weather %>% 
+  group_by(season, year(dateTime)) %>% 
+  summarise(min = min(Tsoil20, na.rm = TRUE), max = max(Tsoil20, na.rm = TRUE))
+
+
+
+#clean spikes
+weather <- weather %>% 
+  # add season to check remove spikes in different parts of the year
+  mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
+  mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
+                         ifelse(nummonth %in% c(3,4,5), "Spring", 
+                                ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
+  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
+  # Tsoil20: remove spikes in winter 2015
+  mutate(Tsoil20 = ifelse(season == "Winter" & site == "H" & Tsoil20 > 2.5 , NA, Tsoil20)) %>% 
+  mutate(Tsoil20 = ifelse(dateTime == "2014-11-15 04:30:00"  & site == "H" , NA, Tsoil20))  %>% 
+  select(-nummonth, -season)
+
 save(weather, file = "climate/weather.Rdata")
+
+ggplot(weather, aes(x = dateTime, y = Tsoil20, colour = site)) + geom_line() + facet_wrap(~site)
+
 
 ## deal with duplicates (from overlapping files)
 
@@ -138,20 +175,12 @@ distinct_weather <- weather %>%
   distinct(site, dateTime, .keep_all = TRUE) %>%
   select(-file, -probableTempUnit, -notes, -Batt, -extra)
 
-
 save(distinct_weather, file = "climate/clean_weather.Rdata")
 
+
+
 #### make monthly climate ####
-monthly <- distinct_weather %>% 
-  mutate(month = ymd(format(dateTime, "%Y-%m-15"))) %>%
-  select(-dateTime) %>%
-  gather(key = variable, value = value, -site, -month) %>%
-  group_by(site, month, variable) %>%
-  filter(!is.na(value)) %>%
-  summarise(meanV = mean(value), sumV = sum(value), n = n()) %>%
-  mutate(value = ifelse(variable == "rain", sumV, meanV)) %>%
-  filter(n > 6 * 24 * 7 * 3) %>% #at least three weeks of data
-  select(-meanV, -sumV, -n)
+monthly <- CalcMonthlyData(distinct_weather)
 
 #add missing months
 full_grid <- expand.grid(variable = unique(monthly$variable), site = unique(monthly$site), month = seq(min(monthly$month), max(monthly$month), by = "month"))
@@ -161,6 +190,8 @@ monthly <- left_join(full_grid, monthly) %>%tbl_df()
 save(monthly, file = "climate/monthly_climate.Rdata")
 
 ####Annual mean####
+annual <- CalcYearlyData(monthly)
+
 annual1 <- monthly %>% 
   mutate(month = month(month, label = TRUE, abbr = FALSE)) %>%
   group_by(variable, site, month) %>%
