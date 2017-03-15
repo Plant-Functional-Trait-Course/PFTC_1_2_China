@@ -37,7 +37,7 @@ final_ex_im <- # how many spp need to go extinct to match ctrl turf
   select(-speciesName,-originBlockID) %>%
   left_join(controlturf) %>%
   group_by(turfID, TTtreat, destSiteID) %>%
-  summarise(
+  summarise( #find difference between turf community and control community in last year
     extinct = length(
       setdiff(species,
               cover_thin$species[cover_thin$turfID == controlTurfID[1] &
@@ -65,7 +65,7 @@ plot_extinctImmigrant <- function(x, final, what, ylab = ""){
   if (missing(final)) {
     g <- g + scale_x_continuous(breaks = min(x$year):max(x$year))
   } else{
-    offset <- 0.3
+    offset <- 0.2
     final$x <- max(x$year) + offset
     g <- g + geom_point(data  = final,
                         mapping = aes_string(x = "x", y = what),
