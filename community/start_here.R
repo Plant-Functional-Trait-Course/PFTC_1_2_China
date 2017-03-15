@@ -16,8 +16,10 @@ source("R/sync_from_dropbox.R")
 
 #download community data
 if(interactive()){
-  sync_from_dropbox(drop_path = "transplant/communityDatabase/", drop_file = "transplant.sqlite", local_path_file = "community/data/transplant.sqlite")
-  
+  download <- readline("type 'yes' get data or check for new version")
+  if(grepl("yes", download, ignore.case = TRUE)){
+    sync_from_dropbox(drop_path = "transplant/communityDatabase/", drop_file = "transplant.sqlite", local_path_file = "community/data/transplant.sqlite")
+  }
 }
 
 
