@@ -1,14 +1,5 @@
-## ToDo
-#make delta test specific to one file
-#test
-# check behaviour if directory is missing
-# remember user between sessions?
 
-sync_from_dropbox <- function(drop_path, drop_file, local_path_file){
-  download <- readline("type 'yes' get data or check for new version")
-  if(!grepl("yes", download, ignore.case = TRUE)){
-    return()
-  }
+sync_from_dropbox <- function(drop_path_file, local_path_file, force = FALSE){
   
   if(!require("rdrop2")){
     stop("Need to install rdrop2 with devtools::install_github('karthik/rdrop2') or from CRAN")
@@ -16,11 +7,13 @@ sync_from_dropbox <- function(drop_path, drop_file, local_path_file){
  # browser()
   drop_acc()# get account - will ask for login details
   #drop_auth()
+  sdrop_path_file <- paste0("/", dirname(drop_path_file))
   
   if(file.exists(local_path_file)){
     load(paste0(local_path_file, ".Rdata"))#load previously stored deltas
-    d_delta <- drop_delta(cursor = dropbox_delta$cursor, path_prefix = drop_path)#check if files changed
-    if(nrow(d_delta$entries) > 0){#zero rows if no changes
+    d_delta <- drop_delta(cursor = dropbox_delta$cursor, path_prefix = sdrop_path_file)#check if files changed
+    changed <- grepl(paste0("^", sdrop_path_file, "$"), unlist(d_delta$entries))
+    if(isTRUE(any(changed))){#zero rows if no changes
       downloadneeded <- TRUE
     } else{#local copy up to date
       downloadneeded <- FALSE
@@ -31,11 +24,18 @@ sync_from_dropbox <- function(drop_path, drop_file, local_path_file){
   }
   
   
-  if(downloadneeded){
-    drop_get(path = paste0(drop_path, drop_file) , local_file = local_path_file, overwrite = TRUE)
+  if(downloadneeded || force){
+    #check directory exits
+    local_dir <- dirname(local_path_file)
+    if(!dir.exists(local_dir)){
+      dir.create(local_dir)
+    }
+    
+    #download
+    drop_get(path = drop_path_file, local_file = local_path_file, overwrite = TRUE)
     
     #get deltas so can check for updates later
-    dropbox_delta <- drop_delta(path_prefix = drop_path)
+    dropbox_delta <- drop_delta(path_prefix = sdrop_path_file)
     save(dropbox_delta, file = paste0(local_path_file, ".Rdata"))
   }
 }
