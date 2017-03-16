@@ -1,5 +1,5 @@
 ---
-title: "OTC check cliamte data"
+title: "Climate data check"
 author: "Aud Halbritter"
 date: "18.01.2017"
 output: html_document
@@ -36,8 +36,15 @@ otc_month$site <- factor(otc_month$site, levels = c("H", "A", "M", "L"))
 
 # Variables
 
-I only look at the temperautre data: Tair30, Tsoil0 and Tsoil5
-All other variables are not checked!
+Variables checked:
+Tair: Air temperature in °C at 2m for gradient, 30cm for OTC
+Air Temperature in OTCs have too high maximum values; max temperature is the same in summer and winter. Flagged as unusable
+
+Tsoil0: Ground temperature in °C
+Ground temperature at H site has high variation in 2014-2015; has been flagged with high variance
+
+Tsoil5: Soil temperature in °C, 5cm below ground
+waterContent5: Soil moisture in %, 5cm below ground
 
 # Raw data
 
