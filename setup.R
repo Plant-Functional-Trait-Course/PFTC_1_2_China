@@ -6,13 +6,19 @@
 
 #Check recent version of R installed
 if(getRversion() < "3.3.2") {
-  message("##########\nOld version of R\nPlease install latest version\n##########")
+  stop("##########\nOld version of R\nPlease install latest version\n##########")
 }
 
 #Check recent version of Rstudio installed
 if(RStudio.Version()$version < "1.0.0"){
-  message("##########\nOld version of Rstudio\nPlease install latest version\n##########")
+  stop("##########\nOld version of Rstudio\nPlease install latest version\n##########")
 }
+
+#Check git is installed
+if(Sys.which("git") == ""){
+  warning("##########\ngit not installed\n##########", immediate. = TRUE)
+}
+
 
 #Check libraries installed
 packages_needed <- read.table(header = TRUE, text = 
@@ -20,12 +26,14 @@ packages_needed <- read.table(header = TRUE, text =
    tidyverse TRUE NA #this includes dplyr, ggplot, tidyr etc
    rdrop2 TRUE NA
    vegan  TRUE NA
-   DBI TRUE NA
    RSQLite TRUE NA
    ggvegan FALSE gavinsimpson
    assertthat TRUE NA
    plyr TRUE NA
    devtools TRUE NA
+   raster TRUE NA
+   cowplot TRUE NA
+   gridExtra TRUE NA
   ")
 
 #check against currently installed packages
@@ -42,7 +50,7 @@ if(nrow(pn) > 0){
   devtools::install_github(paste(pn$package, pn$github, sep = "/"))
 }
 
-#check all packages downloaded
+#check all packages downloaded - if this line doesn't work - assertthat didn't install!
 assertthat::assert_that(all(packages_needed$package %in% .packages(all.available = TRUE)))
 
 #clean-up
