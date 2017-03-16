@@ -12,15 +12,7 @@ if(interactive()){
 
 fl <- list.files(paste0(path, "R/"), full.names = TRUE)
 sapply(fl, source)
-source("R/sync_from_dropbox.R")
 
-#download community data
-if(interactive()){
-  download <- readline("type 'yes' get data or check for new version")
-  if(grepl("yes", download, ignore.case = TRUE)){
-    sync_from_dropbox(drop_path_file = "transplant/communityDatabase/transplant.sqlite", local_path_file = "community/data/transplant.sqlite")
-  }
-}
 
 
 #make database connection
