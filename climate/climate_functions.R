@@ -46,16 +46,15 @@ CalcYearlyData<-function(dd){
 #### ZOOM INN PLOT FUNCTION ####
 ZoomIntoPlot <- function(dd, use.gather, date1, date2, site, variable){
   if(use.gather == "yes"){
-    dd <- dd %>% 
+    dd %>% 
       gather(key = variable, value = value, -dateTime, -site) %>% 
-      filter(dateTime > date1, dateTime < date2, site == "site", variable == "variable")
+      filter(dateTime > date1, dateTime < date2, site == site, variable == variable) %>% 
+      ggplot(aes(x = dateTime, y = value)) + geom_line()
   }
   else if(use.gather == "no"){
-    dd <- dd %>% 
-      filter(dateTime > date1, dateTime < date2, site == "site", variable == "variable")
+    dd %>% 
+      filter(dateTime > date1, dateTime < date2, site == site) %>% 
+      ggplot(aes(x = dateTime, y = variable)) + geom_line()
   }
-  
-  ggplot(dd, aes(x = dateTime, y = value)) + geom_line()
 }
-
 

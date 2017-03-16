@@ -2,10 +2,7 @@
 #load libraries
 # intall packages plyr and gdata is required
 library("openxlsx")
-library("dplyr")
-library("tidyr")
-library("lubridate")
-library("ggplot2")
+library("tidyverse")
 
 #get file list
 
@@ -28,6 +25,8 @@ otcc <- plyr::ldply(fl, function(f){
   ot
 })
 
+# safe copy
+otcc2 <- otcc
 
 save(otcc, file = "climate/otcc.Rdata")
 #load(file = "climate/otcc.Rdata")
@@ -68,7 +67,11 @@ otcc <- otcc %>%
   mutate(Tsoil5 = ifelse(season == "Autumn" & site == "L" & Tsoil5 < 2, NA, Tsoil5)) %>%
   #tsoil20 threshold -6 removes most spikes
   mutate(Tsoil20 = ifelse(Tsoil20 > -6, Tsoil20, NA)) %>%
-  #soil moisture > 0
+  mutate(Tsoil20 = ifelse(season == "Summer" & Tsoil20 < -2.5, NA, Tsoil20)) %>%
+  mutate(Tsoil20 = ifelse(season == "Autumn" & Tsoil20 < -2, NA, Tsoil20)) %>%
+  mutate(Tsoil20 = ifelse(dateTime == as.POSIXct("2015-12-02 11:20:00", tz = "Asia/Shanghai") & site == "H", NA, Tsoil20)) %>%
+  mutate(Tsoil20 = ifelse(dateTime == as.POSIXct("2013-09-28 18:40:00", tz = "Asia/Shanghai") & site == "L", NA, Tsoil20)) %>%
+  # waterContent5 > 0
   mutate(
     waterContent20 = ifelse(waterContent20 > 0, waterContent20, NA),
     waterContent5 = ifelse(waterContent5 > 0, waterContent5, NA),
@@ -79,7 +82,7 @@ otcc <- otcc %>%
   distinct(site, dateTime, .keep_all = TRUE)
 
 save(otcc, file = "climate/otcc_clean.Rdata")
-load(file = "climate/otcc_clean.Rdata", verbose = TRUE)
+#load(file = "climate/otcc_clean.Rdata", verbose = TRUE)
 
 ####monthly OTC####
 # prepare data
@@ -100,10 +103,7 @@ save(otc_month, file = "climate/otc_month.Rdata")
 otc_year <- CalcYearlyData(otc_month)
 
 
-#some plots
-library("ggplot2")
-ggplot(otc_month, aes(x = month, y = value, colour = site)) + geom_path() + facet_wrap(~variable, scales = "free_y")
-
+# Some plots to check the data
 # To add lines between the seasons
 #dateline <- c("2013-06-01 00:00:01", "2013-09-01 00:00:01", "2013-12-01 00:00:01", "2014-03-01 00:00:01", "2014-06-01 00:00:01", "2014-09-01 00:00:01", "2014-12-01 00:00:01", "2015-03-01 00:00:01", "2015-06-01 00:00:01", "2015-09-01 00:00:01", "2015-12-01 00:00:01", "2016-03-01 00:00:01", "2016-06-01 00:00:01", "2016-09-01 00:00:01")
 #+ geom_vline(xintercept = as.numeric(ymd_hms(dateline)), color = "red")
@@ -116,8 +116,8 @@ ggplot(otcc, aes(x = dateTime, y = waterContent20)) + geom_path() + facet_wrap(~
 ggplot(otcc, aes(x = dateTime, y = waterContent5)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = waterContent0)) + geom_path() + facet_wrap(~site)
 ggplot(otcc, aes(x = dateTime, y = PAR)) + geom_path() + facet_wrap(~site)
-
 ggplot(otcc, aes(x = dateTime, y = file, group = file)) + geom_path() + facet_wrap(~site, scale = "free_y")
+
 
 #minute resolution
 otcc %>% group_by(site, file) %>% mutate(d = c(NA, diff(dateTime)) == 1) %>% ggplot(aes(x = dateTime, y = file, colour = d, size = d)) + geom_point() + facet_wrap(~site)
