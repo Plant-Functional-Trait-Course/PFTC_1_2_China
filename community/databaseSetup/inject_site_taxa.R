@@ -41,7 +41,7 @@ dbListTables(con)
 
 #taxa - replace with full info
 
-taxonomy0 <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
+taxonomy0 <- readr::read_csv("community/databaseSetup/data/transplant_taxonomy.csv")
 taxonomy0 <- taxonomy0[, names(taxonomy0) != ""]#zap blank columns
 #taxonomy0 <- taxonomy0[, c("oldCode", "newCode", "fullName")]
 
@@ -84,8 +84,7 @@ spp <- spp[!spp %in% meta]
 extras <- spp[!spp %in% c(taxonomy0$oldCode, taxonomy0$newCode)]
 
 if(length(extras) != 0){
-  taxonomy <- bind_rows(taxonomy, bind_cols(species = extras, speciesName = extras, authority  = ""))  
-  warning("Not found in species list: ", paste(extras, collapse = " "))
+  stop("Species not found in species list: ", paste(extras, collapse = " "))
 }
 
 #add to database

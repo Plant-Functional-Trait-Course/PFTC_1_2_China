@@ -4,7 +4,7 @@ library("assertthat")
 library("dplyr")
 
 #list of xls files
-flist <- dir("community/databaseSetup/data", pattern = "*.xls$", full.names = TRUE, recursive = TRUE)
+flist <- dir("community/databaseSetup/data/commXLSx", pattern = "*.xls", full.names = TRUE, recursive = TRUE)
 
 #what do we have
 sapply(flist, excel_sheets)
