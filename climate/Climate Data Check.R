@@ -1,25 +1,3 @@
-##### JOIN OTC AND WEATHER DATA #####
-
-otcData <- otcc %>% 
-  select(-file) %>% 
-  rename(Tair = Tair30) %>% # rename 30cm logger to Tair, to match the gradient data
-  gather(key = variable, value = value, -dateTime, -site) %>% 
-  mutate(logger = "otc") # column to distinguish otc/gradient data
-
-climate_unflagged <- distinct_weather %>% 
-  gather(key = variable, value = value, -dateTime, -site) %>% 
-  select(dateTime, site, variable, value) %>% 
-  mutate(logger = "gradient") %>% # column to distinguish otc/gradient data
-  bind_rows(otcData) %>% 
-  mutate(flag = NA, comment = NA, month = month(dateTime))
-
-
-# Flag Data
-# OTC air temperature data has too high maximum values in winter
-climate <- climate_unflagged %>% 
-  mutate(flag = ifelse(logger == "otc" & variable == "Tair", "unusable", flag))
-
-ZoomIntoPlot(climate, date1 = as.POSIXct("2013-05-01 11:20:00", tz = "Asia/Shanghai"), date2 = as.POSIXct("2015-12-01 11:20:00", tz = "Asia/Shanghai"), site == "H", variable = "Tsoil0")
 
 ##### FIGURES TO CHECK DATA #####
 ## ----HourlyDataTair
@@ -48,7 +26,21 @@ climate %>%
   ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + labs(y = "Soil moisture in % at -5cm") + facet_grid(site ~ logger)
 
 
-ZoomIntoPlot(climate, use.gather = "no", "2013-06-01 01:50:00", "2013-06-05 01:50:00", "H", "waterContent5")
+## ----irgendwas
+climate %>% 
+  filter(dateTime > as.POSIXct("2014-03-23 03:00:00", tz = "Asia/Shanghai"), dateTime < as.POSIXct("2014-03-23 04:00:00", tz = "Asia/Shanghai"), site == "H", variable == "Tsoil0", logger == "gradient") %>% 
+  ggplot(aes(x = dateTime, y = value)) + geom_line()
+
++ stat_smooth(method = "loess", span = 0.005, n = 200)
+
+climate %>% 
+  filter(variable %in% c("Tair", "Tsoil0", "Tsoil20", "PAR")) %>% 
+  filter(site == "H") %>% 
+  filter(logger == "otc") %>% 
+  filter(dateTime > as.POSIXct("2014-11-10 01:50:00", tz = "Asia/Shanghai"), dateTime < as.POSIXct("2014-11-23 01:50:00", tz = "Asia/Shanghai")) %>% 
+  ggplot(aes(x = ymd_hm(paste("2017-1-1", format(dateTime, "%H:%M"))), y = value, colour = yday(dateTime), group = lubridate::yday(dateTime))) + geom_smooth() + facet_wrap(~ variable, scales = "free_y")
+
+
 
 
 
@@ -115,5 +107,134 @@ MonthlyAirTemperaturePlot <- monthlyClimate %>%
   geom_line() +
   scale_color_manual(values = c("blue", "lightblue", "orange", "red")) +
   labs(x = "", y = "Mean monthly \n air temperature in °C")
+
+
+
+
+
+
+
+## ----HourlyData
+otcc %>% 
+  select(dateTime, site, Tair30, Tsoil0, Tsoil5) %>% 
+  gather(key = variable, value = value, -dateTime, -site) %>% 
+  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + facet_grid(site ~ variable)
+
+## ----CorrelationsWithinSite
+### Correlations
+# within sites
+CorrT30_5 <- ggplot(otcc, aes(x = Tair30, y = Tsoil0)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+CorrT30_0 <- ggplot(otcc, aes(x = Tair30, y = Tsoil5)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+CorrT0_5 <- ggplot(otcc, aes(x = Tsoil0, y = Tsoil5)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+## ----VariationLoggerSite
+# Variation between loggers within site
+diff.logger <- otcc %>% 
+  select(dateTime, site, Tair30, Tsoil0, Tsoil5) %>% 
+  mutate(T30_0 = Tair30 - Tsoil0, T30_5 = Tair30 - Tsoil5, T0_5 = Tsoil0 - Tsoil5) 
+
+ggplot(diff.logger, aes(x = dateTime, y = T30_0)) + geom_point() + facet_wrap(~site)
+ggplot(diff.logger, aes(x = dateTime, y = T30_5)) + geom_point() + facet_wrap(~site)
+ggplot(diff.logger, aes(x = dateTime, y = T0_5)) + geom_point() + facet_wrap(~site)
+
+
+## ----DailyData
+### Daily data
+daily_dat <- otcc %>% 
+  mutate(day = ymd(format(dateTime, "%Y-%m-%d"))) %>%
+  select(day, site, Tair30, Tsoil0, Tsoil5) %>% 
+  gather(key = variable, value = value, -day, -site) %>% 
+  group_by(day, site, variable) %>% 
+  summarise(mean = mean(value), min = min(value), max = max(value), diff = max - min)
+
+ggplot(daily_dat, aes(x = day, y = mean, colour = site)) + geom_line() + facet_grid(site ~ variable)
+
+
+## ----DailyDiffMinMax
+ggplot(daily_dat, aes(x = day, y = diff, colour = site)) + geom_point() + facet_wrap(variable ~site)
+
+## ----DailyVarBetweenSite
+site.daily <- daily_dat %>% 
+  select(day, variable, site, mean) %>% 
+  spread(key = site, value = mean)
+p1 <- ggplot(site.daily, aes(x = H, y = A, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p2 <- ggplot(site.daily, aes(x = H, y = M, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p3 <- ggplot(site.daily, aes(x = H, y = L, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p4 <- ggplot(site.daily, aes(x = A, y = M, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p5 <- ggplot(site.daily, aes(x = A, y = L, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p6 <- ggplot(site.daily, aes(x = M, y = L, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+cowplot::plot_grid(p1, p2, p3, p4, p5, p6, labels = c("a)", "b)", "c)", "d)", "e)", "f)"), nrow = 2, ncol = 3)
+
+
+## ----DailyVarWithinSite
+# Within sites
+daily_dat %>% 
+  select(day, variable, site, mean) %>% 
+  spread(key = variable, value = mean) %>%
+  ggplot(aes(x = Tair30, y = Tsoil0)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+daily_dat %>% 
+  select(day, variable, site, mean) %>% 
+  spread(key = variable, value = mean) %>%
+  ggplot(aes(x = Tair30, y = Tsoil5)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+daily_dat %>% 
+  select(day, variable, site, mean) %>% 
+  spread(key = variable, value = mean) %>%
+  ggplot(aes(x = Tsoil0, y = Tsoil5)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+
+
+
+
+
+### Monthly data
+otc_month$site <- factor(otc_month$site, levels = c("H", "A", "M", "L"))
+
+## ----MonthlyData
+otc_month %>% 
+  filter(variable %in% c("Tair30", "Tsoil0", "Tsoil5")) %>% 
+  ggplot(aes(x = month, y = value, colour = variable)) + geom_line() + facet_grid(~ site)
+
+## ----MonthlyVarBetweenSite
+# Between site
+site.dat <- otc_month %>% 
+  filter(variable %in% c("Tair30", "Tsoil0", "Tsoil5")) %>% 
+  spread(key = site, value = value)
+p1 <- ggplot(site.dat, aes(x = H, y = A, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p2 <- ggplot(site.dat, aes(x = H, y = M, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p3 <- ggplot(site.dat, aes(x = H, y = L, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p4 <- ggplot(site.dat, aes(x = A, y = M, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p5 <- ggplot(site.dat, aes(x = A, y = L, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+p6 <- ggplot(site.dat, aes(x = M, y = L, colour = variable)) + geom_point() + geom_abline(intercept = 0, slope = 1, colour = "grey")
+cowplot::plot_grid(p1, p2, p3, p4, p5, p6, labels = c("a)", "b)", "c)", "d)", "e)", "f)"), nrow = 2, ncol = 3)
+
+## ----MonthlyVarWithinSite
+# Within sites
+otc_month %>% 
+  spread(key = variable, value = value) %>%
+  ggplot(aes(x = Tair30, y = Tsoil0)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+otc_month %>% 
+  spread(key = variable, value = value) %>%
+  ggplot(aes(x = Tair30, y = Tsoil5)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+otc_month %>% 
+  spread(key = variable, value = value) %>%
+  ggplot(aes(x = Tsoil0, y = Tsoil5)) + geom_point() + facet_wrap(~ site) + geom_abline(intercept = 0, slope = 1, colour = "grey")
+
+
+## ----MonthlyVarWithinSiteDiff
+# same plot but as difference between loggers over time
+otc_month %>% 
+  spread(key = variable, value = value) %>%
+  select(month, site, Tair30, Tsoil0, Tsoil5) %>% 
+  mutate(T30_0 = Tair30 - Tsoil0, T30_5 = Tair30 - Tsoil5, T0_5 = Tsoil0 - Tsoil5) %>% 
+  gather(key = diff, value = value, -month, -site, -Tair30, -Tsoil0, -Tsoil5) %>% 
+  ggplot(aes(x = month, y = value, colour = diff)) + geom_point() + facet_grid(diff~site) + geom_hline(yintercept = 0)
+
+
+
+
 
 
