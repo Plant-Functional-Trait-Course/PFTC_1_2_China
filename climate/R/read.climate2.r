@@ -1,11 +1,11 @@
 #read climate data
 
 #load libraries
-library("lubridate")
+library("tidyverse")
 
-source("climate/read_badly_formatted_data.R") # badly formatted data in data/csv
-source("climate/read_well_formatted_data.R") # better formatted data in data/2016
-weather2 <- weather#make safe copy
+source("climate/R/read_badly_formatted_data.R") # badly formatted data in data/csv
+source("climate/R/read_well_formatted_data.R") # better formatted data in data/2016
+weather2 <- weather #make safe copy
 
 #combine output of well and badly formatted dat
 weather <- bind_rows(weather2, dat)
@@ -17,9 +17,6 @@ save(weather, file = "climate/weather_unclean.Rdata")
 
 #unit conversion  - probably F to C
 #clean climate
-
-library("dplyr")
-library("ggplot2")
 
 F_C <- function(x)(x-32)/1.8
 
@@ -64,49 +61,31 @@ weather <- weather %>%
   mutate(PAR = ifelse(PAR < 0, NA, PAR))
 
 #soil moisture - zap impossible values
-ggplot(weather, aes(x = dateTime, y = waterContent20, group = file, colour = site)) + geom_path() + facet_wrap(~site)
-
 weather <- weather %>%
   mutate(waterContent5 = ifelse(waterContent5 < 0 | waterContent5 > 1, NA, waterContent5)) %>%
   mutate(waterContent20 = ifelse(waterContent20 < 0 | waterContent20 > 1, NA, waterContent20))
 
-# remove remaining spikes in particular season
+# Remove remaining spikes in particular season
+# Spike in Tsoil0 at H site
+# Spikes in Tsoil20 at H site
 weather <- weather %>% 
   mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
   mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
                          ifelse(nummonth %in% c(3,4,5), "Spring", 
                                 ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
   mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
-  mutate(Tsoil0 = ifelse(site == "H" & season == "Spring" & Tsoil0 < -15, NA, Tsoil0))
-
-weather %>% 
-  group_by(season, year(dateTime)) %>% 
-  summarise(min = min(Tsoil20, na.rm = TRUE), max = max(Tsoil20, na.rm = TRUE))
-
-
-
-#clean spikes
-weather <- weather %>% 
-  # add season to check remove spikes in different parts of the year
-  mutate(nummonth = month(as.POSIXlt(dateTime, format="%Y/%m/%d %H/%m/%s"))) %>% 
-  mutate(season = ifelse(nummonth %in% c(12,1,2), "Winter",
-                         ifelse(nummonth %in% c(3,4,5), "Spring", 
-                                ifelse(nummonth %in% c(6,7,8), "Summer", "Autumn")))) %>% 
-  mutate(season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% 
+  mutate(Tsoil0 = ifelse(site == "H" & season == "Spring" & Tsoil0 < -15, NA, Tsoil0)) %>% 
   # Tsoil20: remove spikes in winter 2015
   mutate(Tsoil20 = ifelse(season == "Winter" & site == "H" & Tsoil20 > 2.5 , NA, Tsoil20)) %>% 
-  mutate(Tsoil20 = ifelse(dateTime == "2014-11-15 04:30:00"  & site == "H" , NA, Tsoil20))  %>% 
   select(-nummonth, -season)
 
 save(weather, file = "climate/weather.Rdata")
 
-ggplot(weather, aes(x = dateTime, y = Tsoil20, colour = site)) + geom_line() + facet_wrap(~site)
 
 
 ## deal with duplicates (from overlapping files)
 
 #check variance is low amongst duplicates
-
 weather %>% 
   group_by(dateTime, site) %>% 
    ungroup() %>%
@@ -166,8 +145,16 @@ weather <- weather %>%
   # delete bad UV from H
   mutate(UV = ifelse(site == "H", NA, UV))
 
-#remove duplicates - start with last file 
+weather <- weather %>% 
+  # delete bad waterContent5 from H
+  mutate(waterContent5 = ifelse(site == "H" & dateTime > as.POSIXct("2016-01-01 00:00:00", tz = "Asia/Shanghai") & dateTime < as.POSIXct("2016-09-24 01:00:00", tz = "Asia/Shanghai"), NA, waterContent5))
 
+
+
+
+
+
+#remove duplicates - start with last file 
 distinct_weather <- weather %>% 
   ungroup() %>% 
   mutate(file  = reorder(file, dateTime, max, na.rm = TRUE)) %>%
@@ -177,39 +164,3 @@ distinct_weather <- weather %>%
 
 save(distinct_weather, file = "climate/clean_weather.Rdata")
 
-
-
-#### make monthly climate ####
-monthly <- CalcMonthlyData(distinct_weather)
-
-#add missing months
-full_grid <- expand.grid(variable = unique(monthly$variable), site = unique(monthly$site), month = seq(min(monthly$month), max(monthly$month), by = "month"))
-
-monthly <- left_join(full_grid, monthly) %>%tbl_df()
-
-save(monthly, file = "climate/monthly_climate.Rdata")
-
-####Annual mean####
-annual <- CalcYearlyData(monthly)
-
-annual1 <- monthly %>% 
-  mutate(month = month(month, label = TRUE, abbr = FALSE)) %>%
-  group_by(variable, site, month) %>%
-  summarise(meanV = mean(value, na.rm = TRUE), n = sum(!is.na(value)))
-
-#check data for all months
-annual1 %>% filter(n >0) %>% 
-  group_by(site, variable) %>% 
-  summarise(n = n()) %>% 
-  filter (n < 12) # should be empty
-
-annual <- annual1 %>% 
-  group_by(site, variable) %>% 
-  summarise(value = mean(meanV)) %>%
-  mutate(value = ifelse(variable == "rain", value * 12, value)) # rain should be sum not mean
-
-
-annual %>% spread(key = variable, value = value)
-
-#
-save(monthly, annual, file = paste0("climate/month_annual", Sys.Date(), ".Rdata"))
