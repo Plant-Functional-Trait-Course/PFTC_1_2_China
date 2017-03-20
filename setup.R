@@ -34,6 +34,7 @@ packages_needed <- read.table(header = TRUE, text =
    raster TRUE NA
    cowplot TRUE NA
    gridExtra TRUE NA
+   rmarkdown TRUE NA
   ")
 
 #check against currently installed packages
