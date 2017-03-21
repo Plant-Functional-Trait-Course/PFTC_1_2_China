@@ -7,7 +7,6 @@
 
 load_subturfcomm <- function(con, cover = TRUE) {
   require("tidyr")
-  require("plyr")
   require("DBI")
   
   ##cover data
@@ -19,7 +18,7 @@ load_subturfcomm <- function(con, cover = TRUE) {
   subturf.thin <- dbGetQuery(con, subturfQ)
   
   #recode TTtreat
-  subturf.thin$TTtreat <- mapvalues(
+  subturf.thin$TTtreat <- plyr::mapvalues(
       subturf.thin$TTtreat,
       from = c("C", "O", "1", "2", "3", "4", "OTC")  ,
       to  = c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC")
