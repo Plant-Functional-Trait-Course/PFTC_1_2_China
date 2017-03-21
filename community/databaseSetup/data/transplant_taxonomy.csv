@@ -4,9 +4,11 @@ Agr.ner,Agr.ner,,Agrostis nervosa Nees ex Trinius,Poaceae,gramineae
 Aju.dec,Aju.dec,,Ajuga decumbens Thunb.,Labiatae,forb
 Ale.pau,Ale.pau,,Aletris pauciflora (Klotzsch) Handel-Mazzetti,liliaceae,forb
 All.pra,All.pra,,Allium prattii C. H. Wright ex Hemsley,liliaceae,forb
+All.sik,All.pra,0,Allium sikkimense,liliaceae,forb
 Ana.dem,Ane.dem,0,Anemone demissa J. D. Hooker & Thomson,Ranunculaceae,forb
 Ana.fla,Ana.fla,,Anaphalis flavescens Handel-Mazzetti,Asteraceae,forb
 Ana.lac,Ana.lac,,Anaphalis lactea Maximowicz,Asteraceae,forb
+Ana.nep,Ana.lac,0,Anaphalis lactea Maximowicz,Asteraceae,forb
 And.min,And.min,,Androsace minor (Handel-Mazzetti) C. M. Hu & Y. C. Yang,Primulaceae,forb
 Ane.dem,Ane.dem,,Anemone demissa J. D. Hooker & Thomson,Ranunculaceae,forb
 Ari.par,Ari.par,,Arisaema parvum N. E. Brown,Araceae,forb
@@ -15,13 +17,20 @@ Ast.ast,Ast.ast,,Aster asteroides (Candolle) Kuntze,Asteraceae,forb
 Ast.var,Ast.ast,0,Aster asteroides (Candolle) Kuntze,Asteraceae,forb
 Berberis,Berberis,,Berberis jamesiana,Berberidaceae,shrub
 Ber.L,Berberis,0,Berberis jamesiana,Berberidaceae,shrub
+Bro.sin,Poa.spp,0,Poa.spp,Poaceae,gramineae
 Cal.pal,Cal.pal,,Caltha palustris Linnaeus,Ranunculaceae,forb
 Car.hum,Car.hum,,Carpesium humile C. Winkler,Asteraceae,forb
-Car.L.,Car.spp,,Carex spp,sedge,sedge
+Car.L,Car.spp,,Carex spp,sedge,sedge
+Car.atr,Car.spp,0,Carex spp,sedge,sedge
+Car.bla,Car.spp,0,Carex spp,sedge,sedge
+Car.fin,Car.spp,0,Carex spp,sedge,sedge
+Car.M,Car.spp,0,Carex spp,sedge,sedge
 Car.nub,Car.nub,,Carex nubigena D. Don ex Tilloch & Taylor,sedge,sedge
 Car.pal,Cal.pal,0,Caltha palustris Linnaeus,Ranunculaceae,forb
+Car.rar,Car.spp,0,Carex spp,sedge,sedge
 Cer.pyl,Ger.pyl,0,Geranium pylzowianum Maximowicz,Geraniaceae,forb
 Cer.sze,Cer.sze,,Cerastium szechuense F. N. Williams,Caryophyllaceae,forb
+Cha.par,Cha.vir,0,Chamaesium viridiflorum (Franchet) H. Wolff ex R. H. Shan,Umbelliferae,forb
 Cha.tha,Cha.vir,0,Chamaesium viridiflorum (Franchet) H. Wolff ex R. H. Shan,Umbelliferae,forb
 Cha.vir,Cha.vir,,Chamaesium viridiflorum (Franchet) H. Wolff ex R. H. Shan,Umbelliferae,forb
 Cle.pse,Cle.pse,,Clematis pseudopogonandra,Ranunculaceae,forb
@@ -30,27 +39,36 @@ Cli.pro,Cli.pol,0,Clinopodium polycephalum (Vaniot) C. Y. Wu & Hsuan ex P. S. Hs
 Cod.pil,Cod.foe,,Codonopsis foetens,Campanulaceae,forb
 Cya.hoo,Cya.hus,0,Cyananthus husincanus,Campanulaceae,forb
 Cya.hus,Cya.hus,,Cyananthus husincanus,Campanulaceae,forb
+Cya.inc,Cya.hus,,Cyananthus husincanus,Campanulaceae,forb
+Dey..pul,Fes.spp,0,Fes spp,Poaceae,gramineae
+Dey.sca,Fes.spp,0,Fes spp,Poaceae,gramineae
 Epi.fan,Epi.fan,,Epilobium fangii C. J. Chen et al.,onagraceae,forb
 Euphorbia,Eup.L,0,Euphorbia spp.,Euphorbiaceae,forb
 Eup.horbia,Eup.L,0,Euphorbia spp.,Euphorbiaceae,forb
 Euphoribia,Eup.L,0,Euphorbia spp.,Euphorbiaceae,forb
 Eup.L,Eup.L,,Euphorbia spp.,Euphorbiaceae,forb
 Far.spa,Far.spa,,Fargesia spathacea Franch.,Poaceae,gramineae
+Far.sp,Far.spp,0,Far spp,Poaceae,gramineae
+Fern,Pse.sub,,Pseudocystopteris subtriangularis (Hook.) Ching,Pteridophyta,forb
 Fes.for,Fes.for,,Festuca forrestii St.-Yves,Poaceae,gramineae
 Fes.spa,Far.spa,0,Festuca forrestii St.-Yves,Poaceae,gramineae
 Fes.var,Fes.for,0,Festuca forrestii St.-Yves,Poaceae,gramineae
 Fra.ori,Fra.ori,,Fragaria orientalis Losinskaja,Rosaceae,forb
+Gal.asp,Gal.hof,,Galium hoffmeisteri (Klotzsch) Ehrendorfer & Schön­beck-Temesy ex R. R. Mill,Rubiaceae,forb
 Gal.hof,Gal.hof,,Galium hoffmeisteri (Klotzsch) Ehrendorfer & Schön­beck-Temesy ex R. R. Mill,Rubiaceae,forb
+Gal.pal,Cal.pal,0,Caltha palustris ,Ranunculaceae,forb
 Gal.spa,Gal.spa,,Galearis spathulata (Lindley) P. F. Hunt,Orchidaceae,forb
 Gen.cra,Gen.cra,,Gentiana crassuloides Bureau & Franchet,Gentiana,forb
 Gen.pal,Gen.pal,,Gentianopsis paludosa (Munro ex J. D. Hooker) Ma,Gentiana,forb
 Gen.pse,Gen.pse,,Gentiana pseudoaquatica kusnez,Gentiana,forb
+Gen.sp,Rho.fas,0,Rhodiola fastigiata,Crassulaceae,forb
 Gen.tri,Gen.tri,,Gentiana trichotoma,Gentiana,forb
 Ger.nep,Ger.nep,,Geranium nepalense Sweet,Geraniaceae,forb
 Ger.pyl,Ger.pyl,,Geranium pylzowianum Maximowicz,Geraniaceae,forb
 Geu.ale,Geu.ale,,Geum aleppicum Jacquin,Rosaceae,forb
 Gym.con,Gym.con,,Gymnadenia conopsea,Orchidaceae,forb
 Hal.cor,Hal.cor,,Halenia corniculata,Gentiana,forb
+Hal.ell,Hal.cor,,Halenia corniculata,Gentiana,forb
 Hed.alg,Hed.alg,,Hedysarum algidum L. Z. Shue in W. T. Wang et al.,Leguminosae,forb
 Hem.het,Hem.het,,Hemiphragma heterophyllum Wallich,Scrophulariaceae,forb
 Hyp.wig,Hyp.wig,,Hypericum wightianum Wallich ex Wight & Arnott,Guttiferae,forb
@@ -62,17 +80,26 @@ Jun.set,Jun.set,,Juncus setchuensis Buchen.,Juncaceae,gramineae
 Kob.cer,Kob.cer,,Kobresia cercostachys (Franchet) C. B. Clarke,sedge,sedge
 Kob.pgy,Kob.pyg,0,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,sedge,sedge
 Kob.pyg,Kob.pyg,,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,sedge,sedge
+Kob.middle,Kob.spp,0,Kob spp,sedge,sedge
+Kob.sigan,Kob.spp,0,Kob spp,sedge,sedge
+Kob.small,Kob.spp,0,Kob spp,sedge,sedge
 Lig.ple,Lig.ple,,Ligularia pleurocaulis (Franchet) Handel-Mazzetti,Asteraceae,forb
 Lig.sca,Lig.sca,,Ligusticum scapiforme H. Wolff,Umbelliferae,forb
 Lil.lop,Lil.lop,,Lilium lophophorum (Bureau & Franchet) Franchet,liliaceae,forb
+Lom.mac,Lom.mac,0,Lomatogonium macranthum,Gentianaceae,forb
 Luzula,Luzula,,Luzula spp,Juncaceae,gramineae
+Luz.mul,Luzula,0,Luzula spp,Juncaceae,gramineae
 Mal.mom,Mal.mon,0,Malaxis monophyllos (Linnaeus) Swartz,Orchidaceae,forb
 Mal.mon,Mal.mon,,Malaxis monophyllos (Linnaeus) Swartz,Orchidaceae,forb
+Mai.hen,Mai.hen,0,Maianthemum henryi,Liliaceae,forb
 Mic.sik,Mic.sik,,Microula sikkimensis Hemsl.,Boraginaceae,forb
 Mor.nep,Mor.nep,,Morina nepalensis,Dipsacaceae,forb
+Myr.nep,Myr.nep,,Myriactis nepalensis,Gentianaceae,forb
 Nei.aff,Nei.aff,,Neillia affinis,Rosaceae,forb
 Not.bul,Not.bul,,Notholirion bulbuliferum (Lingelsheim ex H. Limpricht) Stearn,liliaceae,forb
+Not.blu,Not.bul,0,Notholirion bulbuliferum (Lingelsheim ex H. Limpricht) Stearn,liliaceae,forb
 Oxy.yun,Oxy.yun,,Oxytropis yunnanensis Franchet,Leguminosae,forb
+Oxy.gla,Cal.pal,,Caltha palustris Linnaeus,Ranunculaceae,forb
 Par.lat,Par.lat,,Parasenecio latipes (Franchet) Y. L. Chen,Asteraceae,forb
 Par.psu,Par.pus,,Parnassia pusilla Wallich ex Arnott,Parnassiaceae,forb
 Ped.dav,Ped.dav,,Pedicularis davidii Franchet,Scrophulariaceae,forb
@@ -80,9 +107,12 @@ Ped.mus,Ped.mus,,Pedicularis mussotii var. lophocentra (Handel-Mazzetti) H. L. L
 Ped.rhy,Ped.rhy,,Pedicularis rhynchodonta,Scrophulariaceae,forb
 Ped.sem,Ped.sim,0,Pedicularis sima Maxim.,Scrophulariaceae,forb
 Ped.sim,Ped.sim,,Pedicularis sima Maxim.,Scrophulariaceae,forb
+Ped.ver,Ped.dav,0,Pedicularis davidii Franchet,Scrophulariaceae,forb
+Phl.med,Phl.med,,Phlomis medicinalis,Labiatae,forb
 Pla.asi,Pla.asi,,Plantago asiatica Linnaeus,Plantaginaceae,forb
 Poa.pra,Poa.pra,,Poa pratensis Linnaeus,Poaceae,gramineae
 Poa.pro,Poa.pra,0,Poa pratensis Linnaeus,Poaceae,gramineae
+Poa.pol,Poa.spp,0,Poa spp,Poaceae,gramineae
 Pol.cas,Pol.cas,,Polystichum castaneum,Dryopteridaceae,forb
 Pol.cir,Pol.cir,,Polygonatum cirrhifolium (Wallich) Royle,liliaceae,forb
 Pol.cya,Pol.cya,,Polygonum cyanandrum Diels,Polygonaceae,forb
@@ -91,11 +121,13 @@ Pol.run,Pol.run,,Polygonum runcinatum Buchanan-Hamilton ex D. Don,Polygonaceae,f
 Pol.viv,Pol.viv,,Polygonum viviparum Linnaeus,Polygonaceae,forb
 Poly.cya,Pol.cya,0,Polygonum cyanandrum Diels,Polygonaceae,forb
 Poly.mac,Pol.mac,0,Polygonum macrophyllum D. Don,Polygonaceae,forb
+Pot.ans,Pot.ans,,Potentilla anserina,Rosaceae,forb
 Pot.fru,Pot.fru,,Potentilla fruticosa,Rosaceae,shrub
 Pot.leu,Pot.leu,,Potentilla leuconota D. Don,Rosaceae,forb
 Pot.pro,Poa.pra,0,Poa pratensis Linnaeus,Poaceae,gramineae
 Pot.ste,Pot.ste,,Potentilla stenophylla var. emergens Cardot,Rosaceae,forb
 Pra.ori,Fra.ori,0,Fragaria orientalis Losinskaja,Rosaceae,forb
+Pri.bli,Pri.def,0,Primula deflexa Duthie.,Primulaceae,forb
 Pri.def,Pri.def,,Primula deflexa Duthie.,Primulaceae,forb
 Pri.ser,Pri.ser,,Primula serratifolia Franch.,Primulaceae,forb
 Pru.var,Aju.dec,0,Ajuga decumbens Thunb.,Labiatae,forb
@@ -114,10 +146,14 @@ Rum.nep,Rum.nep,,Rumex nepalensis Sprengel,Polygonaceae,forb
 Run.tun,Ran.tan,0,Ranunculus tanguticus (Maximowicz) Ovczinnikov,Ranunculaceae,forb
 Sag.jap,Sag.jap,,Sagina japonica,Caryophyllaceae,forb
 Sal.bra,Sal.bra,,Salix brachista Schneid,Salicaceae,shrub
+Sal.sou,Sal.bra,0,Salix brachista Schneid,Salicaceae,shrub
 Sau.cet,Sau.cet,,Saussurea ceterach Handel-Mazzetti,Asteraceae,forb
 Sau.glo,Sau.glo,,Saussurea globosa,Asteraceae,forb
 Sau.gra,Sau.gra,,Saussurea graminea,Asteraceae,forb
+Sau.hie,Sau.glo,,Saussurea globosa,Asteraceae,forb
 Sau.pac,Sau.pac,,Saussurea pachyneura,Asteraceae,forb
+Sau.ste,Sau.ste,,Saussurea stella,Asteraceae,forb
+Sau.sub,You.jap,,Youngia japonica,Asteraceae,forb
 Saxifrage,Saxifrage,,Saxifraga sp. Tourn.ex L.,Saxifragaceae,forb
 Sed.tri,Sed.tri,,Sedum triactina Berger,Crassulaceae,forb
 Sib.pro,Sib.pro,,Sibbaldia procumbens,Rosaceae,forb
@@ -128,6 +164,7 @@ Ste.med,Ste.med,,Stellaria media (L.)Cyr.,Caryophyllaceae,forb
 Swertia,Swertia,,Swertia spp,Gentiana,forb
 Swe.tia,Swertia,0,Swertia spp,Gentiana,forb
 Tan.tat,Tan.tat,,Tanacetum tatsienense (Bureau & Franchet) K. Bremer & Humphries,Asteraceae,forb
+Tha.jav,Tha.jav,,Thalictrum javanicum,Ranunculaceae,forb
 Tri.rep,Tri.rep,,Trifolium repens Linnaeus,Leguminosae,forb
 Ver.fil,Ver.fil,,Veronica filipes,Plantaginaceae,forb
 Ver.sze,Ver.sze,,Veronica szechuanica Batalin,Plantaginaceae,forb
