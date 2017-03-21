@@ -7,79 +7,91 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
-knitr::read_chunk("OTC_climate.R")
+knitr::read_chunk("Climate Data Check.R")
 
 library("ggplot2")
 library("dplyr")
 library("tidyr")
 library("lubridate")
 
-load("otcc_clean.Rdata")
-load("otc_month.Rdata")
+load("climate.Rdata")
+load("climate_month.Rdata")
 
-source("climate_functions.R")
-
-daily_dat <- otcc %>% 
+daily_dat <- climate %>% 
   mutate(day = ymd(format(dateTime, "%Y-%m-%d"))) %>%
-  select(day, site, Tair30, Tsoil0, Tsoil5) %>% 
-  gather(key = variable, value = value, -day, -site) %>% 
-  group_by(day, site, variable) %>% 
-  summarise(mean = mean(value), min = min(value), max = max(value), diff = max - min)
-
-
-otcc$site <- factor(otcc$site, levels = c("H", "A", "M", "L"))
-daily_dat$site <- factor(daily_dat$site, levels = c("H", "A", "M", "L"))
-otc_month$site <- factor(otc_month$site, levels = c("H", "A", "M", "L"))
+  filter(variable %in% c("Tair", "Tsoil0", "Tsoil5", "Tsoil20")) %>% 
+  group_by(day, site, variable, logger) %>% 
+  summarise(mean = mean(value), min = min(value), max = max(value), diff = max - min) %>% 
+  mutate(month = month(day))
 
 
 ```
 
-# Variables
+# Data
 
-Variables checked:
-Tair: Air temperature in °C at 2m for gradient, 30cm for OTC
-Air Temperature in OTCs have too high maximum values; max temperature is the same in summer and winter. Flagged as unusable
+Climate data at 4 sites, from the gradient and otc chambers (not all variables).
 
-Tsoil0: Ground temperature in °C
-Ground temperature at H site has high variation in 2014-2015; has been flagged with high variance
+```{r, echo = FALSE}
+table(climate$variable, climate$logger)
+```
 
-Tsoil5: Soil temperature in °C, 5cm below ground
-waterContent5: Soil moisture in %, 5cm below ground
 
 # Raw data
 
-I have cleaned away the worst spikes in the data and removed duplicates. The data are mostly recorded every ten minutes, but in the first file at each site, data are recorded every minute, at least for a while. I have left these values in the data.
-Additionally, all spikes that could be identified visually were removed.
+The worst spikes in the data that could be identified visually and duplicates were removed. The data are mostly recorded every ten minutes, but in the first file at each site, data are recorded every minute, at least for a while. I have left these values in the data.
+
+
+# Checked variables
+
+Tair: Air temperature in °C at 2m for gradient, 30cm for OTC
+
+Tsoil0: Ground temperature in °C
+
+Tsoil5: Soil temperature in °C, 5cm below ground
+Soil temperature not useful. For 3 sites only data in otc. For L site, the variation increases over time for the gradient (flagged)
+
+Tsoil20: Soil temperature in °C, 20cm below ground
+
+waterContent5: Soil moisture in %, 5cm below ground
+!!! NOT YET CHECKED !!!
+
+
+## Raw data plotted
+
+```{r HourlyDataTair, echo = FALSE}
+
+```
+
+```{r HourlyDataTGround, echo = FALSE}
+
+```
+
+```{r HourlyDataTsoil5, echo = FALSE}
+
+```
+
+```{r HourlyDataTsoil20, echo = FALSE}
+
+```
+
+## Have not removed spikes here! Need to figure out when the growing season starts.
+```{r HourlyDatawaterContent5, echo = FALSE}
+
+```
+
+
 
 
 ## Monthly Data
-Correlation between loggers seems ok for all sites. Also the 4 sites show the same trends and it get warmer with lower elevation.
-Tair30 is generally colder both in summer and winter.
 
-```{r MonthlyData}
-
-```
-
-### Between site
-Correlations of the closest sites are the best. Tair30 is sometimes off, e.g. between M and L site.
-
-```{r MonthlyVarBetweenSite}
-
-```
-
-### Within sites
-
-Tair30 is usually colder than soil temperature, except for M site in 2016.
-Correlation between the two soil loggers is good.
-
-```{r MonthlyVarWithinSite}
+Air temperature at 2m along the gradient
+```{r AirTemperatureGradient}
 
 ```
 
 
-### same but as difference between loggers over time
-
-```{r MonthlyVarWithinSiteDiff}
+Ground and soil temperature data inside and outside of OTC
+```{r TableWarmestMonth}
 
 ```
 
@@ -87,48 +99,8 @@ Correlation between the two soil loggers is good.
 
 ## Daily Data
 
-```{r DailyData}
-
-```
-
-
 ### Daily difference between min and max values
-
-This is the differences between daily min and max values at each site and for all 3 loggers. There is not much data for Tair at L site.
 
 ```{r DailyDiffMinMax}
 
 ```
-
-
-
-### Correlation between sites
-
-Correllation between sites on daily data looks ok. Again Tair30 is off for some values.
-
-```{r DailyVarBetweenSite}
-
-```
-
-
-### Correlation within sites
-
-Ground temperature is generally higher than Tair30. 
-Correllation between soil temp is good.
-
-```{r DailyVarWithinSite}
-
-```
-
-
-
-
-## Hourly Data
-
-Tsoil0 has some strange spikes at H site. Also the variation is much higher, but could be due to low vegetation.
-Tair30 logger has very flat maximum values.
-```{r HourlyData}
-
-```
-
-
