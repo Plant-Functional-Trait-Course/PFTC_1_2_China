@@ -40,10 +40,15 @@ originDestination <- read.table(header = TRUE, stringsAsFactors = FALSE, text = 
 ")  
 
 #read taxonomy file
-taxonomy <- read_excel("community/databaseSetup/data/Full name and code.xlsx", sheet = "Sheet1")
-taxonomy <- taxonomy[, names(taxonomy) != ""]#zap blank columns
+taxonomy <- readr::read_csv("community/databaseSetup/data/transplant_taxonomy.csv")
 taxonomy <- taxonomy %>% 
-  filter(!is.na(fullName)) %>% # I hate excel
+  filter(!is.na(fullName)) # I hate excel
+
+#sanity checks on taxonomy file
+dups <- taxonomy %>% filter(is.na(keep)) %>% group_by(newCode) %>% filter(n() > 1) %>% arrange(newCode)
+assert_that(nrow(dups) == 0)
+
+taxonomy <- taxonomy %>% 
   select(oldCode, newCode)
                                 
 #import data, process and export to CSV
