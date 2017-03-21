@@ -43,7 +43,6 @@ dbListTables(con)
 
 taxonomy0 <- readr::read_csv("community/databaseSetup/data/transplant_taxonomy.csv")
 taxonomy0 <- taxonomy0[, names(taxonomy0) != ""]#zap blank columns
-#taxonomy0 <- taxonomy0[, c("oldCode", "newCode", "fullName")]
 
 #keep only correct names
 taxonomy <- taxonomy0 %>%
