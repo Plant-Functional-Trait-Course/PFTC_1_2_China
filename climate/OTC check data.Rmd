@@ -9,10 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
 knitr::read_chunk("Climate Data Check.R")
 
-library("ggplot2")
-library("dplyr")
-library("tidyr")
+library("tidyverse")
 library("lubridate")
+library("knitr")
 
 load("climate.Rdata")
 load("climate_month.Rdata")
@@ -32,7 +31,7 @@ daily_dat <- climate %>%
 Climate data at 4 sites, from the gradient and otc chambers (not all variables).
 
 ```{r, echo = FALSE}
-table(climate$variable, climate$logger)
+kable(table(climate$variable, climate$logger))
 ```
 
 
