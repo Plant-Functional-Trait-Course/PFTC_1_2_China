@@ -24,6 +24,23 @@ trait2016 <- trait2016LeafTrait %>%
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE))
   
 
+# Antijoin
+trait2016LeafTrait2 <- trait2016LeafTrait %>% 
+  mutate(Date = ymd(Date)) %>% 
+  # NA's are created, because there is text in these columns
+  rename(Elevation = Elevation_m, Individual_number = Individual_plant_number, Taxon = Plant_species)
+
+# Rows from LeafTrait with no matching LeafArea: 81
+anti_join(trait2016LeafTrait2, trait2016LeafArea, by = c("Envelope_Name_Corrected")) %>% select(Envelope_Name_Corrected) %>% print(n = 81)
+
+# Rows from LeafArea with no match LeafTrait: 33
+anti_join(trait2016LeafArea, trait2016LeafTrait2, by = c("Envelope_Name_Corrected")) %>% select(Envelope_Name_Corrected) %>% print(n = 33)
+
+
+
+dim(trait2016)
+
+
 # some plots
 # wet vs dry mass
 ggplot(trait2016, aes(x = Wet_Mass_g, y = Dry_Mass_g)) + 
