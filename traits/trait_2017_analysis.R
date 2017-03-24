@@ -30,6 +30,25 @@ ggplot(trait2015, aes(x = Dry_Mass_2016_g, y = Leaf_Area_cm2)) +
   scale_x_log10() + 
   scale_y_log10()
 
+
+ddd <- trait2015 %>% 
+  filter(!is.na(Dry_Mass_2016_g)) %>% 
+  filter(!is.na(Leaf_Area_cm2))
+
+fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_2016_g), ddd)
+ddd$res <- resid(fit)
+
+ddd %>% 
+  #filter(abs(res) > 4) %>% 
+  #select(Envelope_Name_Corrected) %>% print(n = 41)
+  mutate(resHL = ifelse(abs(res) > 4, "High", "Low")) %>% 
+  ggplot(aes(x = Dry_Mass_2016_g, y = Leaf_Area_cm2, color = resHL)) + 
+  geom_point() +   
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10()
+
+
 #thickness
 ggplot(trait2015, aes(x = Leaf_Thickness_Ave_mm)) + 
   geom_histogram()
