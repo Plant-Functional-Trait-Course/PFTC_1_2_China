@@ -51,8 +51,18 @@ Soil temperature not useful. For 3 sites only data in otc. For L site, the varia
 
 Tsoil20: Soil temperature in °C, 20cm below ground
 
-waterContent5: Soil moisture in %, 5cm below ground
-!!! NOT YET CHECKED !!!
+waterContent5: Soil moisture in %, 5cm below ground; only data at -5cm is useful; 
+
+rain: very little data
+
+PAR: not useful, because of threshold, better from otc
+solar Radiation:
+
+windSpeed: ok
+
+RH: ok
+UV: only data from 2 sites
+
 
 
 ## Raw data plotted
