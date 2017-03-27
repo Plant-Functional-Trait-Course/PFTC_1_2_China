@@ -1,0 +1,133 @@
+---
+title: "Climate Data"
+author: "Aud Halbritter"
+date: "27 3 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::read_chunk("Climate Data Check.R")
+
+library("tidyverse")
+library("lubridate")
+library("knitr")
+
+load("weather_unclean.Rdata")
+load("climate.Rdata")
+load("climate_month.Rdata")
+
+```
+
+
+## Data cleaning #1
+
+Units
+
+```{r UncleanTair, echo = FALSE}
+
+```
+
+## Data cleaning #2
+
+Spikes
+
+```{r UncleanwaterContent5, echo = FALSE}
+
+```
+
+
+
+## Air temperature
+
+Gradient: 2m; OTC: 30 cm
+
+```{r DataTair, echo = FALSE}
+
+```
+
+
+## Ground temperature
+
+```{r DataTsoil0, echo = FALSE}
+
+```
+
+
+## Soil temperature -5cm
+
+Not much data from the gradient; increasing variation at L site
+
+```{r DataTsoil5, echo = FALSE}
+
+```
+
+
+## Soil temperature -20cm
+
+Data ok, but we do not expect much difference at -20cm
+
+```{r DataTsoil20, echo = FALSE}
+
+```
+
+
+## Gradient
+```{r AirTemperatureGradient, echo = FALSE}
+
+```
+
+
+
+## Gradient vs OTC
+
+July tempereature
+
+```{r GradientVSOtc, echo = FALSE}
+
+```
+
+
+
+
+## Soil moisture
+
+```{r DatawaterContent5, echo = FALSE}
+
+```
+
+
+
+## Precipitation
+
+No data
+
+```{r Datarain, echo = FALSE}
+
+```
+
+
+## PAR
+
+Problematic cut off
+
+```{r DataPAR, echo = FALSE}
+
+```
+
+
+## Solar Radiation
+
+Cut off
+
+```{r DatasolarRadiation, echo = FALSE}
+
+```
+
+
+## Relative humidity
+
+```{r DataRH, echo = FALSE}
+
+```
+
