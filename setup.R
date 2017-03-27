@@ -63,3 +63,12 @@ source("R/sync_from_dropbox.R")
 #download community data - repeat this to check you have latest available data
 sync_from_dropbox(drop_path_file = "transplant/communityDatabase/transplant.sqlite", 
                   local_path_file = "community/data/transplant.sqlite")
+
+
+#download climate data
+sync_from_dropbox(drop_path_file = "climate/climate.Rdata", 
+                  local_path_file = "climate/climate.Rdata")
+
+# monthly climate data
+sync_from_dropbox(drop_path_file = "climate/climate_month.Rdata", 
+                  local_path_file = "climate/climate_month.Rdata")
