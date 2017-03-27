@@ -1,6 +1,7 @@
 #### CLIMATE DATA FUNCTIONS #####
 
 #### CALCULATE MONTHLY VALUES FROM HOURLY DATA ####
+# for wide data frame!
 # dd = data, should only contain
 # dateTime
 # climate variables (name does not matter, except rain needs to be called "rain")
@@ -43,18 +44,36 @@ CalcYearlyData<-function(dd){
 }
   
 
+
 #### ZOOM INN PLOT FUNCTION ####
-ZoomIntoPlot <- function(dd, use.gather, date1, date2, site, variable){
-  if(use.gather == "yes"){
-    dd %>% 
-      gather(key = variable, value = value, -dateTime, -site) %>% 
-      filter(dateTime > date1, dateTime < date2, site == site, variable == variable) %>% 
-      ggplot(aes(x = dateTime, y = value)) + geom_line()
+ddd <- climate %>% 
+  filter(variable == "Tsoil5")
+
+
+
+ZoomIntoPlot <- function(data){
+    data %>% 
+      filter(dateTime > as.POSIXct("2016-07-01 01:00:00", tz = "Asia/Shanghai")) %>%
+      filter(logger == "otc") %>% 
+      filter(site == "M") %>% 
+      ggplot(aes(x = dateTime, y = value, colour = logger)) + 
+      geom_line()
   }
-  else if(use.gather == "no"){
-    dd %>% 
-      filter(dateTime > date1, dateTime < date2, site == site) %>% 
-      ggplot(aes(x = dateTime, y = variable)) + geom_line()
-  }
+ZoomIntoPlot(data = ddd)  
+  
+  
+ZoomIntoPlot <- function(data = climate, Site, start_date, end_date, Variable, Logger){
+  data %>% 
+    filter(dateTime > as.POSIXct(ymd(start_date)), dateTime < as.POSIXct(ymd(end_date))) %>%
+    filter(site == Site) %>% 
+    filter (variable == Variable) %>% 
+    ggplot(aes(x = dateTime, y = Variable, colour = Site)) + 
+    geom_line() +
+    facet_wrap(~ Site)
+    #scale_x_datetime(date_breaks = breaks) +
+    #theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0)) +
+    #ggtitle(label = SITE)
 }
 
+ZoomIntoPlot(Site = "H", start_date = "2013-03-01 01:50:00", end_date = "2016-08-20 01:50:00", Logger = "gradient")
+ZoomIntoPlot(climate, SITE = "M", VARIABLE = "Tsoil5")
