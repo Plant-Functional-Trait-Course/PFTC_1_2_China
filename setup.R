@@ -66,9 +66,9 @@ sync_from_dropbox(drop_path_file = "transplant/communityDatabase/transplant.sqli
 
 
 #download climate data
-sync_from_dropbox(drop_path_file = "climate/climate.Rdata", 
-                  local_path_file = "climate/climate.Rdata")
+sync_from_dropbox(drop_path_file = "transplant/climate/climate.Rdata", 
+                  local_path_file = "transplant/climate/climate.Rdata")
 
 # monthly climate data
-sync_from_dropbox(drop_path_file = "climate/climate_month.Rdata", 
-                  local_path_file = "climate/climate_month.Rdata")
+sync_from_dropbox(drop_path_file = "transplant/climate/climate_month.Rdata", 
+                  local_path_file = "transplant/climate/climate_month.Rdata")
