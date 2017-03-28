@@ -1,5 +1,6 @@
 ##### JOIN OTC AND WEATHER DATA #####
 library("tidyverse")
+library("lubridate")
 
 # Merge otc and gradient data
 # Tsoil5 L site gradient: varying variance
