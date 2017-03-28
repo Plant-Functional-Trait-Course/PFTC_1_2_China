@@ -1,0 +1,44 @@
+---
+title: "ReadMe"
+author: "Aud Halbritter"
+date: "28 März 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## START HERE
+
+source(setup.R)
+
+- Checks required packages installed
+- Downloads climate, community and trait data from dropbox
+
+
+## CLIMATE DATA
+
+Run climate/Climate_Data_Presentation_Finse.Rmd
+
+Will show cleaned climate data plots
+
+
+
+
+
+## TRAIT ANALYSIS
+
+# Run analysis 1
+
+trait/...Rmd
+
+
+
+
+## COMMUNITY ANALYSIS
+
+# Run ordinations
+community/ordinations.Rmd
+
+...
