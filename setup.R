@@ -72,3 +72,15 @@ sync_from_dropbox(drop_path_file = "transplant/climate/climate.Rdata",
 # monthly climate data
 sync_from_dropbox(drop_path_file = "transplant/climate/climate_month.Rdata", 
                   local_path_file = "transplant/climate/climate_month.Rdata")
+
+#download climate data
+sync_from_dropbox(drop_path_file = "transplant/trait/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", 
+                  local_path_file = "transplant/trait/data/2015_ChinaLeafTraitData_corrCP_16032017.csv")
+
+sync_from_dropbox(drop_path_file = "transplant/trait/data/2016_China_envelope_names_CPcorr_30032017.csv", 
+                  local_path_file = "transplant/trait/data/2016_China_envelope_names_CPcorr_30032017.csv")
+
+sync_from_dropbox(drop_path_file = "transplant/trait/data/2016_PFTC2_Leaf_Area_corrCP_30032017.csv", 
+                  local_path_file = "transplant/trait/data/2016_PFTC2_Leaf_Area_corrCP_30032017.csv")
+
+
