@@ -24,7 +24,7 @@ trait2016 <- trait2016LeafTrait %>%
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE))
   
 
-# Antijoin
+# Antijoin - check how many Envelopes have no scan and vice versa
 trait2016LeafTrait2 <- trait2016LeafTrait %>% 
   mutate(Date = ymd(Date)) %>% 
   # NA's are created, because there is text in these columns
