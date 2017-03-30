@@ -27,18 +27,21 @@ Will show cleaned climate data plots
 
 
 
-## TRAIT ANALYSIS
+## TRAIT DATA
 
-# Run analysis 1
+# 2015 data
 
-trait/...Rmd
+Run script for some plots
+trait/trait_2017_analysis.R
+
+
+# 2016 data
+
+Run script for some plots
+trait/TraitData2016.R
 
 
 
 
 ## COMMUNITY ANALYSIS
 
-# Run ordinations
-community/ordinations.Rmd
-
-...
