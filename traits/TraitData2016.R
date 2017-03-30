@@ -3,14 +3,14 @@ library(lubridate)
 
 #import data
 # leaf area
-trait2016LeafArea <- read.table("traits/data/2016_PFTC2_Leaf_Area_corrCP_24032017.csv", sep = ",", header = TRUE, comment = "", stringsAsFactors = FALSE) %>% as_tibble()
+trait2016LeafArea <- read.table("traits/data/2016_PFTC2_Leaf_Area_corrCP_30032017.csv", sep = ",", header = TRUE, comment = "", stringsAsFactors = FALSE) %>% as_tibble()
 
 trait2016LeafArea <- trait2016LeafArea %>% 
   mutate(Date = ymd(Date))
 
 
 # leaf traits
-trait2016LeafTrait <- read.table("traits/data/2016_China_envelope_names_CPcorr_24032017.csv", sep = ";", header = TRUE, comment = "", stringsAsFactors = FALSE) %>% as_tibble()
+trait2016LeafTrait <- read.table("traits/data/2016_China_envelope_names_CPcorr_30032017.csv", sep = ";", header = TRUE, comment = "", stringsAsFactors = FALSE) %>% as_tibble()
 
 head(trait2016LeafTrait)
 str(trait2016LeafTrait)
@@ -30,11 +30,11 @@ trait2016LeafTrait2 <- trait2016LeafTrait %>%
   # NA's are created, because there is text in these columns
   rename(Elevation = Elevation_m, Individual_number = Individual_plant_number, Taxon = Plant_species)
 
-# Rows from LeafTrait with no matching LeafArea: 81
-anti_join(trait2016LeafTrait2, trait2016LeafArea, by = c("Envelope_Name_Corrected")) %>% select(Envelope_Name_Corrected) %>% print(n = 81)
+# Rows from LeafTrait with no matching LeafArea: 57
+anti_join(trait2016LeafTrait2, trait2016LeafArea, by = c("Envelope_Name_Corrected")) %>% select(Envelope_Name_Corrected) %>% print(n = 57)
 
-# Rows from LeafArea with no match LeafTrait: 33
-anti_join(trait2016LeafArea, trait2016LeafTrait2, by = c("Envelope_Name_Corrected")) %>% select(Envelope_Name_Corrected) %>% print(n = 33)
+# Rows from LeafArea with no match LeafTrait: 9
+anti_join(trait2016LeafArea, trait2016LeafTrait2, by = c("Envelope_Name_Corrected")) %>% select(Envelope_Name_Corrected) %>% print(n = 9)
 
 
 
@@ -58,7 +58,7 @@ trait2016 %>%
   scale_y_log10()
 
 trait2016 %>%
-  ggplot(aes(x = Leaf_Thickness_1_mm, y = Leaf_Thickness_3_mm)) + 
+  ggplot(aes(x = Leaf_Thickness_1_mm, y = Leaf_Thickness_2_mm)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
@@ -99,10 +99,13 @@ ddd %>%
   filter(abs(res) > 1.2) %>% 
   select(Envelope_Name_Corrected, Wet_Mass_g, Dry_Mass_g) %>%
   mutate(Ratio = Dry_Mass_g/Wet_Mass_g*100) %>% 
-  arrange(-Ratio) %>% print(n = 50)
+  filter(Ratio < 6) %>% 
+  arrange(-Wet_Mass_g) %>% print(n = 20)
 
 ddd %>% 
-    mutate(resHL = ifelse(abs(res) > 1.2, "High", "Low")) %>% 
+    #mutate(resHL = ifelse(abs(res) > 1.2, "High", "Low")) %>%
+    mutate(Ratio = Dry_Mass_g/Wet_Mass_g*100) %>% 
+    mutate(resHL = ifelse(Ratio < 6, "High", "Low")) %>% 
     ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, color = resHL)) + 
     geom_point() +   
     geom_abline(intercept = 0, slope = 1, colour = "red") +
