@@ -1,30 +1,56 @@
 ##### FIGURES TO CHECK DATA #####
 
-#### HOURLY DATA ####
-## ----HourlyDataTair
-climate %>% 
-  filter(variable == "Tair") %>% 
-  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + labs(y = "Air temperature in °C") + facet_grid(site ~ logger) + theme_bw()
 
-## ----HourlyDataTGround
-climate %>% 
-  filter(variable == "Tsoil0") %>% 
-  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + labs(y = "Ground temperature in °C") + facet_grid(site ~ logger) + theme_bw()
+## ----UncleanTair
+ggplot(weather, aes(x = dateTime, y = Tair, colour = site)) + geom_line() + labs(y = "Air temperature in ...") + facet_grid(~ site) + theme_bw()
 
-## ----HourlyDataTsoil5
-climate %>% 
-  filter(variable == "Tsoil5") %>% 
-  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + labs(y = "Soil temperature in °C at -5cm") + facet_grid(site ~ logger) + theme_bw()
+## ----UncleanwaterContent5
+ggplot(weather, aes(x = dateTime, y = waterContent5, colour = site)) + geom_line() + labs(y = "Soil moisture at -5cm") + facet_grid(~ site) + theme_bw()
 
-## ----HourlyDataTsoil20
-climate %>% 
-  filter(variable == "Tsoil20") %>% 
-  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + labs(y = "Soil temperature in °C at -20cm") + facet_grid(site ~ logger) + theme_bw()
 
-## ----HourlyDatawaterContent5
-climate %>% 
-  filter(variable == "waterContent5") %>% 
-  ggplot(aes(x = dateTime, y = value, colour = site)) + geom_line() + labs(y = "Soil moisture in % at -5cm") + facet_grid(site ~ logger) + theme_bw()
+#### SOME PLOTS ####
+## ----DataTair
+p <- ggplot(climate, aes(x = dateTime, y = Tair, colour = site)) + geom_line() + labs(y = "Air temperature in °C") + facet_grid(site ~ logger) + theme_bw()
+p
+
+## ----DataTsoil0
+p + aes(y = Tsoil0) + labs(y = "Ground temperature in °C")
+
+
+## ----DataTsoil5
+#p + aes(y = Tsoil5) + geom_point(size = 0.01) + labs(y = "Soil temperature in °C at -5cm") 
+p + aes(y = Tsoil5) + geom_line() + labs(y = "Soil temperature in °C at -5cm") 
+
+
+## ----DataTsoil20
+p + aes(y = Tsoil20) + labs(y = "Soil temperature in °C at -20cm") 
+
+
+## ----DatawaterContent5
+p + aes(y = waterContent5) + labs(y = "Soil moisture in °C at -5cm") 
+
+
+## ----Datarain
+p + aes(y = rain) + geom_point(size = 0.01) + facet_grid(~site) + labs(y = "Rain in mm") 
+
+## ----DataPAR
+p + aes(y = PAR) + labs(y = "PAR") 
+
+## ----DatasolarRadiation
+p + aes(y = solarRadiation) + geom_point(size = 0.01) + facet_grid(~site)  + labs(y = "Solar Radiation") 
+
+## ----DatawindSpeed
+p + aes(y = windSpeed) + facet_grid(~site)  + labs(y = "Wind Speed") 
+
+## ----DatawindDirection
+p + aes(y = windDirection) + facet_grid(~site)  + labs(y = "Wind Direction") 
+
+## ----DataRH
+p + aes(y = RH) + facet_grid(~site) + geom_point(size = 0.01) + labs(y = "Relative humidity") 
+
+## ----DataUV
+p + aes(y = UV) + facet_grid(~site)  + geom_point(size = 0.01) + labs(y = "UV") 
+
 
 
 ## ----AirTemperatureGradient
@@ -49,15 +75,18 @@ climate_month %>%
   summarise(mean = mean(value, na.rm = TRUE)) %>%
   spread(key = variable, value = mean)
 
+
+## ----GradientVSOtc
 climate_month %>% 
-  filter(variable %in% c("Tsoil0", "Tsoil5", "Tsoil20")) %>%
-  mutate(variable = factor(variable, levels = c("Tsoil0", "Tsoil5", "Tsoil20"))) %>% 
-  mutate(elevation = plyr::mapvalues(site, c("H", "A", "M", "L"), c("4100", "3800", "3500", "3000"))) %>% 
+  filter(variable %in% c("Tair", "Tsoil0", "Tsoil5", "Tsoil20")) %>%
+  mutate(variable = factor(variable, levels = c("Tair", "Tsoil0", "Tsoil5", "Tsoil20"))) %>% 
+  mutate(elevation = plyr::mapvalues(site, c("H", "A", "M", "L"), c("4100", "3800", "3500", "3000"))) %>%
   mutate(elevation = as.numeric(as.character(elevation))) %>%
-  filter(month(month) %in% c("6", "7", "8")) %>% 
+  filter(month(month) %in% c("7")) %>% 
   group_by(variable, elevation, logger) %>% 
   summarise(mean = mean(value, na.rm = TRUE)) %>% 
-  ggplot(aes(x = elevation, y = mean, colour = logger)) + geom_line() + facet_wrap(~variable)
+  ggplot(aes(x = elevation, y = mean, colour = logger)) + geom_line() + facet_wrap(~variable) + theme_bw()
+
 
 
 

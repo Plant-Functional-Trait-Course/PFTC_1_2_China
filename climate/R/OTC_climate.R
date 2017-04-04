@@ -32,6 +32,8 @@ save(otcc, file = "climate/otcc.Rdata")
 #load(file = "climate/otcc.Rdata")
 summary(otcc)
 
+
+otcc <- otcc2
 #site names & file as factor
 otcc$site <- factor(otcc$site, levels = c("H", "A", "M", "L"))
 otcc$file <- reorder(otcc$file, otcc$date, min)
@@ -77,9 +79,14 @@ otcc <- otcc %>%
     waterContent5 = ifelse(waterContent5 > 0, waterContent5, NA),
     waterContent0 = ifelse(waterContent0 > 0, waterContent0, NA)
   ) %>%
-  #remove duplicates
+  mutate(waterContent5 = ifelse(nummonth %in% c(1,2,3,11,12), NA, waterContent5)) %>% # remove waterContent5 in winter: 1.11 - 30.3
+  mutate(waterContent5 = ifelse(site == "H" & waterContent5 < 0.2, NA, waterContent5)) %>%  # remove spikes
+  mutate(waterContent5 = ifelse(site %in% c("A", "M") & waterContent5 < 0.15, NA, waterContent5)) %>%  # remove spikes 
+  mutate(waterContent5 = ifelse(site == "L" & waterContent5 < 0.35, NA, waterContent5)) %>%   # remove spikes
   select(-nummonth, -season) %>% 
+  #remove duplicates
   distinct(site, dateTime, .keep_all = TRUE)
+
 
 save(otcc, file = "climate/otcc_clean.Rdata")
 #load(file = "climate/otcc_clean.Rdata", verbose = TRUE)
