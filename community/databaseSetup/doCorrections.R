@@ -145,12 +145,12 @@ dat$dummyTaxon <- NA
 
 
 #loop over rows in data
-for(i in 1:nrow(local)) {
+for(i in 1:nrow(local)) {print(i)
   target <- dat$year == local$year[i] & dat$turfID == local$turfID[i] #&
    # dat$DestinationSite == local$site[i]
   if (!any(target)) {
-    warning(local[i,], "not located")
-    break()
+    warning(local[i,], "not located - local")
+    next()
   } else {
     old <- dat[target, ]
     old <- old[old$Measure == "cover%", local$old[i]]
@@ -158,11 +158,12 @@ for(i in 1:nrow(local)) {
       old <- old[1]# may be duplicate because of extra excel files with corrections
     }
     if(old == 0 | is.na(old)) {
-      warning(local[i,], "old species not present") 
+      warning(local[i,], "old species not present - local") 
     }
     #cover
-    dat[target & dat$Measure == "cover%", local$new[i]][1] <- sum(c(dat[target & dat$Measure == "cover%", local$new[i]][1], old), na.rm = TRUE)   
+    dat[target & dat$Measure == "cover%", local$new[i]][1] <- sum(dat[target & dat$Measure == "cover%", local$new[i]][1], old, na.rm = TRUE)   
     dat[target & dat$Measure == "cover%", local$old[i]] <- 0
+    #browser(condition = "zero result", expr = {!dat[target & dat$Measure == "cover%", local$new[i]][1] > 0})
     #pa
     dat[target & dat$Measure == "Presence", local$new[i]][1:25] <- combinePA(dat[target & dat$Measure == "Presence", unlist(local[i, c("old", "new")])][1:25, ])
     dat[target & dat$Measure == "Presence", local$old[i]] <- 0
@@ -183,8 +184,8 @@ for(i in 1:nrow(special)) {
     dat$turfID == special$turfID[i] &
     dat$DestinationSite == special$site[i]
   if (sum(target) == 0) {
-    warning(special[i,], "not located")
-    break()
+    warning(special[i,], "not located - special")
+    next()
   } else{
     old <- dat[target, ]
     old <- old[old$Measure == "cover%", special$old[i]]
