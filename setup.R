@@ -48,7 +48,7 @@ if(nrow(packages_needed[packages_needed$CRAN, ]) > 0){
 #download missing github packages
 pn <- packages_needed[!packages_needed$CRAN, , drop = FALSE]
 if(nrow(pn) > 0){
-  devtools::install_github(paste(pn$package, pn$github, sep = "/"))
+  devtools::install_github(paste(pn$github, pn$package, sep = "/"))
 }
 
 #check all packages downloaded - if this line doesn't work - assertthat didn't install!
