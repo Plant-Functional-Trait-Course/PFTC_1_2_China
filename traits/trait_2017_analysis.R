@@ -54,10 +54,9 @@ trait2016 <- trait2016 %>%
   rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
   mutate(Leaf_number = as.character(Leaf_number))
 
-traits <- bind_rows(trait2016, trait2015)    
-
-
-
+traits <- bind_rows(trait2016, trait2015) %>%
+  mutate(SLA_cm2_g = Leaf_Area_cm2 / Dry_Mass_g,
+         LDMC = Dry_Mass_g / Wet_Mass_g)
 
 ##some plots
 #wet vs dry
