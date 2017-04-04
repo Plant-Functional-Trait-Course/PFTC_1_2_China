@@ -3,8 +3,8 @@ library("tidyr")
 library("DBI")# also needs RSQLite installed
 library("dplyr")
 
-#source functions
-if(interactive()){
+#source functions 
+if(interactive()){#this is needed because if this is called from a markdown doc the path changes
   path <- "community/"
 }else{
   path <- ""
@@ -39,3 +39,8 @@ turfs <- cover_meta[!duplicated(cover_meta$turfID),]
 cover <- cover[, -(1:which(names(cover) == "year"))]
 
 #save(cover, cover_meta, cover_thin, file = "cover.RData")
+
+#get taxonomy table
+
+con2 <- src_sqlite(path = paste0(path, "data/transplant.sqlite"), create = FALSE)# need to move all code to dplyr for consistancy
+taxa <- tbl(con2, "taxon")
