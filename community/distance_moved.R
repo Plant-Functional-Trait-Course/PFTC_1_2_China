@@ -21,14 +21,18 @@ dist_moved <- cover_thin  %>%
       arrange(year)
     vdata <-  select(tdata, -(originSiteID:year))
     d <- as.matrix(vegdist(vdata))
-    data.frame(year = tdata$year, d = d[, 1])
+    data_frame(year = tdata$year, d = d[, 1])
   }) %>%
   filter(year > min(year))
 
 
-dist_moved %>% ggplot(aes(x = destSiteID, y = d, fill = as.factor(year))) +
+dist_moved %>% ggplot(aes(x = originSiteID, y = d, fill = as.factor(year))) +
   geom_boxplot() +
   facet_wrap(~TTtreat)
+
+dist_moved %>% ggplot(aes(x = year, y = d, colour = originSiteID, group = turfID)) +
+  geom_line() +
+  facet_wrap( ~ TTtreat)
 
 ## find directional distance moved towards target
 
