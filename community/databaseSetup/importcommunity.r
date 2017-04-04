@@ -150,7 +150,8 @@ import.data<-function(dat, mergedictionary){#dat is data.frame from the correctl
         spp2$juvenile[grep(paste("Jx", i, sep = ""),sp, ignore.case = TRUE)] <- i
          spp2$juvenile[grep(paste("xJ", i, sep = ""),sp, ignore.case = TRUE)] <- i
       }
-      spp2$adult[grep("[1|F|V|D]", sp, ignore.case = TRUE)] <- 1
+      spp2$adult[grep("[F|V|D]", sp, ignore.case = TRUE)] <- 1
+      spp2$adult[grep("^\\d+$", sp, ignore.case = TRUE)] <- 1
       spp2<-spp2[rowSums(spp2[,-(1:4)])>0,] #keep only rows with presences
       spp2
     })  
