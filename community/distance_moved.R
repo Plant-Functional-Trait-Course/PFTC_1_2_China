@@ -5,13 +5,10 @@ library("tidyverse")
 source("community/start_here.R")
 
 #get functional groups
-con <- src_sqlite(path = "community/data/transplant.sqlite", create = FALSE)
 
-noGraminoids <- tbl(con, "taxon") %>% 
+noGraminoids <- taxa %>% 
   filter(!functionalGroup %in% c("gramineae", "sedge")) %>% 
-  select(species) %>%
-  collect()
-
+  select(species)
 
 
 ## find taxonomic distance moved
