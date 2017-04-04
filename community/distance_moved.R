@@ -29,7 +29,7 @@ dist_moved <- cover_thin  %>%
   filter(year > min(year))
 
 
-dist_moved %>% ggplot(aes(x = as.factor(year), y = d, fill = originSiteID)) +
+dist_moved %>% ggplot(aes(x = destSiteID, y = d, fill = as.factor(year))) +
   geom_boxplot() +
   facet_wrap(~TTtreat)
 
