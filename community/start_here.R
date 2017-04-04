@@ -43,5 +43,6 @@ cover <- cover[, -(1:which(names(cover) == "year"))]
 #get taxonomy table
 
 con2 <- src_sqlite(path = paste0(path, "data/transplant.sqlite"), create = FALSE)# need to move all code to dplyr for consistancy
+
 taxa <- tbl(con2, "taxon") %>%
   collect()
