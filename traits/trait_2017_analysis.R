@@ -17,22 +17,22 @@ trait2015 <- trait2015 %>%
 
 ##some plots
 #wet vs dry
-ggplot(trait2015, aes(x = Wet_Mass_g, y = Dry_Mass_2016_g)) + 
+ggplot(trait2015, aes(x = Wet_Mass_g, y = Dry_Mass_2016_g, colour = Site)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
   scale_y_log10()
 
 # dry vs area  
-ggplot(trait2015, aes(x = Dry_Mass_2016_g, y = Leaf_Area_cm2)) + 
+ggplot(trait2015, aes(x = Dry_Mass_2016_g, y = Leaf_Area_cm2, colour = Site)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
   scale_y_log10()
 
 #thickness
-ggplot(trait2015, aes(x = Leaf_Thickness_Ave_mm)) + 
-  geom_histogram()
+ggplot(trait2015, aes(y = Leaf_Thickness_Ave_mm, x = Site)) + 
+  geom_boxplot()
 
 
 
