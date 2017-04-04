@@ -1,7 +1,7 @@
 #load packages
-library("tidyr")
+library("tidyverse")
 library("DBI")# also needs RSQLite installed
-library("dplyr")
+
 
 #source functions 
 if(interactive()){#this is needed because if this is called from a markdown doc the path changes
