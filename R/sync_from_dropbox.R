@@ -10,7 +10,11 @@ sync_from_dropbox <- function(drop_path_file, local_path_file, force = FALSE){
   sdrop_path_file <- paste0("/", dirname(drop_path_file))
   
   if(file.exists(local_path_file)){
-    load(paste0(local_path_file, ".Rdata"))#load previously stored deltas
+    chk_file <- paste0(local_path_file, ".Rdata")
+    if(!file.exists(chk_file)){
+      stop("Data file present but no file with synchronisation info/nrun with force = TRUE to force download")
+    }
+    load(chk_file)#load previously stored deltas
     d_delta <- drop_delta(cursor = dropbox_delta$cursor, path_prefix = sdrop_path_file)#check if files changed
     changed <- grepl(paste0("^", sdrop_path_file, "$"), unlist(d_delta$entries))
     if(isTRUE(any(changed))){#zero rows if no changes
