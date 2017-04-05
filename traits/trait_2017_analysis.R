@@ -42,8 +42,11 @@ trait2015 <- trait2015 %>%
   mutate(Date = ymd(Date)) %>%
   select(-Leaf_Area_m2, -Wet_Mass_WeighingScale, -Dry_Mass_WeighingScale, -Dry_Mass_g, -`LMA g -m2`, -`log LMA`, -`wet-dry`, -notes, -corrections) %>%
   rename(Taxon = Taxon_FoC_corrected, Leaf_number = Leaf_Number, Individual_number = Individual_Number, Dry_Mass_g = Dry_Mass_2016_g, SLA_cm2_g = `SLA_cm2-g`) %>%
-  mutate(Individual_number = as.character(Individual_number)) %>%
-  mutate(Date = if_else(is.na(Date), ymd("20150101"), Date))# fill missing dates
+  mutate(
+    Individual_number = as.character(Individual_number),
+    Date = if_else(is.na(Date), ymd("20150101"), Date),# fill missing dates
+    Project = "LOCAL"
+    )
   
 
 trait2016 <- trait2016 %>%
