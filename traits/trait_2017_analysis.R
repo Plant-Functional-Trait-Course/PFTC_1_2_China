@@ -54,7 +54,16 @@ trait2016 <- trait2016 %>%
 traits <- bind_rows(trait2016, trait2015) %>%
   mutate(SLA_cm2_g = Leaf_Area_cm2 / Dry_Mass_g,
          LDMC = Dry_Mass_g / Wet_Mass_g,
-         Site = factor(Site, levels = c("H", "A", "M", "L"))) 
+         Site = factor(Site, levels = c("H", "A", "M", "L")), 
+         #Clean Taxon
+         Taxon = gsub("_", " ", Taxon),# replace _ with " " in Taxon
+         Taxon = gsub("\xa0", " ", Taxon), #remove non-breaking space
+         Taxon = trimws(Taxon),
+         Taxon = gsub(" Var.", " var. ", Taxon), 
+         Taxon = gsub("var ", "var. ", Taxon), 
+         Taxon = gsub("var\\.", "var\\. ", Taxon),
+         Taxon = gsub("  ", " ", Taxon)
+         ) 
 
 ##some plots
 #wet vs dry
