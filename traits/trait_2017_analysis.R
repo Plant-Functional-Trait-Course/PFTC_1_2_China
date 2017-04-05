@@ -1,6 +1,7 @@
 #import packages
 library("tidyverse")
 library("readr")
+library("lubridate")
 
 #import data 2015
 trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
@@ -89,5 +90,14 @@ traits %>% mutate(year = as.factor(year(Date))) %>%
 ggplot(traits, aes(y = Leaf_Thickness_Ave_mm, x = Site, fill = as.factor(year(Date)))) + 
   geom_boxplot()
 
+traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
+ggplot(aes(y = Leaf_Thickness_Ave_mm, x = Site, fill = as.factor(year(Date)))) + 
+  geom_boxplot(show.legend = FALSE) +
+  facet_wrap(~ Taxon)
 
-
+traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
+  select(Date, Site, Taxon, matches("Leaf_Thickness_\\d_mm")) %>%
+  gather(key = measurement, value = thickness, -Date, -Site, -Taxon) %>% 
+  ggplot(aes(x = measurement, y = thickness, colour = as.factor(year(Date)))) + 
+  geom_boxplot(show.legend = FALSE) + 
+  facet_grid(Taxon ~ Site, scales = "free")
