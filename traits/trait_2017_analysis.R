@@ -37,8 +37,6 @@ trait2016 <- trait2016LeafTrait %>%
 
 ##combine 2015 & 2016 trait data
 #remove unneeded columns, rename columns
-setdiff(names(trait2015), names(trait2016))
-setdiff(names(trait2016), names(trait2015))
 
 trait2015 <- trait2015 %>%
   mutate(Date = ymd(Date)) %>%
@@ -54,6 +52,7 @@ trait2016 <- trait2016 %>%
   rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
   mutate(Leaf_number = as.character(Leaf_number))
 
+# Combine and recalculate SLA and LDMC
 traits <- bind_rows(trait2016, trait2015) %>%
   mutate(SLA_cm2_g = Leaf_Area_cm2 / Dry_Mass_g,
          LDMC = Dry_Mass_g / Wet_Mass_g)
@@ -78,26 +77,8 @@ traits %>% mutate(year = as.factor(year(Date))) %>%
   facet_wrap(~ year)
 
 
-ddd <- trait2015 %>% 
-  filter(!is.na(Dry_Mass_2016_g)) %>% 
-  filter(!is.na(Leaf_Area_cm2))
-
-fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_2016_g), ddd)
-ddd$res <- resid(fit)
-
-ddd %>% 
-  #filter(abs(res) > 4) %>% 
-  #select(Envelope_Name_Corrected) %>% print(n = 41)
-  mutate(resHL = ifelse(abs(res) > 4, "High", "Low")) %>% 
-  ggplot(aes(x = Dry_Mass_2016_g, y = Leaf_Area_cm2, color = resHL)) + 
-  geom_point() +   
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_log10() + 
-  scale_y_log10()
-
-
 #thickness
-ggplot(trait2015, aes(y = Leaf_Thickness_Ave_mm, x = Site)) + 
+ggplot(traits, aes(y = Leaf_Thickness_Ave_mm, x = Site)) + 
   geom_boxplot()
 
 
