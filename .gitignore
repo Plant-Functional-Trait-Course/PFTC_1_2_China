@@ -34,6 +34,7 @@ vignettes/*.pdf
 !localDatacorrections_plots_China.csv
 !cover_correction.csv
 !transplant_taxonomy.csv
+!trait_name_changes.csv
 *.xlsx#
 *.rar
 *.sqlite
