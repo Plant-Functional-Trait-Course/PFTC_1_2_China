@@ -6,7 +6,7 @@ source("traits/trait_2017_analysis.R")
 trait2016 %>% mutate(loc1 = substr(Location, 1, 1)) %>%
   count(loc1, Site, Project) %>% print(n = 100)
 
-
+#n leaves and community data
 traits %>% 
   filter(Project %in% c("LOCAL", "0", "C")) %>%
   mutate(year = year(Date)) %>% 
@@ -23,10 +23,6 @@ traits %>%
 
 
 
-
-
-cover_thin %>% 
-  
   
   
 
