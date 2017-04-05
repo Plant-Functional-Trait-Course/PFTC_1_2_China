@@ -3,38 +3,22 @@
 # Lorah Patterson - Variance partitioning of 2016 China leaf trait data
 
 # Install packages:
-install.packages("jsonlite")
-install.packages("taxize")
-install.packages("tidyr")
-install.packages("lme4")
-install.packages("varComp")
-install.packages("ggplot2")
-install.packages("BIEN")
-library(dplyr)
-library(tidyr)
+library(tidyverse)
 library(taxize)
 library(lme4)
 library(varComp)
-library(nlme)
 library(jsonlite)
 library(ape)
-library(ggplot2)
 library(BIEN)
 
-# Load 2016 China trait data csv files and merge them.
+# Load 2015 and 2016 China trait data files and merge them using trait_2017_analysis.R in transplant github repository.
+source("traits/trait_2017_analysis.R")
 
-setwd("~/Documents/R_data/China_2016_partitioning/Finse_traitdata/")
-chinatraits1 <- read.csv("2016_PFTC2_Leaf_Area_corrCP_30032017_LPEdit.csv")
-chinatraits2 <- read.csv("2016_China_envelope_names_CPcorr_30032017.csv")
+# Subset data to only contain trait data collected in 2016 (because as of April 2017, 2015 trait data needs further data management)
 
-chinatraits <- full_join(chinatraits2, chinatraits1, by="Envelope_Name_Corrected")
-#################################################################
+
 
 ### Get family and order for each species using taxize and further data management ###
-
-str(chinatraits) # see what types of data you have
-
-chinatraits %>% mutate_if(is.factor, as.character) -> chinatraits # convert factors to characters
 
 specgen <- strsplit(chinatraits$Plant_species,"_") # split the specific epithet into genus and species
 
