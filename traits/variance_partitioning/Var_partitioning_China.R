@@ -9,6 +9,7 @@ library(varComp)
 library(jsonlite)
 library(ape)
 library(BIEN)
+library(nlme)
 
 # Load 2015 and 2016 China trait data files and merge them using trait_2017_analysis.R in transplant github repository.
 source("traits/trait_2017_analysis.R")
@@ -34,57 +35,45 @@ taxspecgen5 <- subset(taxspecgen4, family!="Athyriaceae" & family!="Unknown")
 
 ### Join trait data to BIEN taxonomic data ###
 varpart2016join <- left_join(taxspecgen5, varpart2016, by = "genus")
-varpart2016$family <- taxspecgen$scrubbed_family
-write.csv(varpart2016, file="traits2.csv")
+# There are still some species naming errors in here, which make it seem like the join resulted in lost data. Will be fixed in the future.
 
-### ~OR~ get family and order from genus using taxize ###
-#family <- tax_name(query = specgen$genus, get = "family", db = "ncbi", verbose=TRUE, ask = FALSE) 
-# If there are multiple UID, it will skip those species by using ask = FALSE.
-# Running through taxize will require you to fix when there is an NA for family by first finding the NAs, then running taxize again on just those with NA and **manually** selecting which family is correct. If genus cannot be found, the row will be removed. This will take 20 minutes or so depending on the size of your data because it is partially manual. (You always select 2, so I wonder if there is a way to make this automatic in future.)
-# #for(i in 1:length(chinatraitsfam$family)) {
-#   if(is.na(chinatraitsfam$family[i])) {
-#     family2 <- tax_name(query = chinatraitsfam$genus[i], get = "family", db = "ncbi", verbose=TRUE)
-#     levels(chinatraitsfam$family) <- c(levels(chinatraitsfam$family), family2$family)
-#     chinatraitsfam$family[i]<- family2$family
-#   }
-# }
-# add taxonomic order as well.
-# order <- tax_name(query = chinatraitsfam$family, get = "order", db = "ncbi", verbose=TRUE, ask = FALSE) 
-# chinatraitsfam$order <- order
-# chinatraitsfam2 <- flatten(chinatraitsfam, recursive = TRUE) # To flatten nested data frames (the taxize function puts order data into its own data frame along with database type and query type)
-# colnames(chinatraitsfam2)[26] <-"taxon_database_2"
-# colnames(chinatraitsfam2)[27] <-"family_2"
-# colnames(chinatraitsfam2)[28] <- "order"
-
-# Change letters representing sites (L,M,H,A) to real names (Lower, Middle, High, Alpine)
-levels(chinatraitsfam2$Site) <- c(levels(chinatraitsfam$Site), "lower",
+### Change letters representing sites (L,M,H,A) to real names (Lower, Middle, High, Alpine) ###
+levels(varpart2016join$Site) <- c(levels(varpart2016join$Site), "lower",
                                  "middle", "high", "alpine")
 
-chinatraitsfam$Site[chinatraitsfam2$Site == "L"] <- "lower"
-chinatraitsfam$Site[chinatraitsfam2$Site == "M"] <- "middle"
-chinatraitsfam$Site[chinatraitsfam2$Site == "H"] <- "high"
-chinatraitsfam$Site[chinatraitsfam2$Site == "A"] <- "alpine"
+varpart2016join$Site[varpart2016join$Site == "L"] <- "lower"
+varpart2016join$Site[varpart2016join$Site == "M"] <- "middle"
+varpart2016join$Site[varpart2016join$Site == "H"] <- "high"
+varpart2016join$Site[varpart2016join$Site == "A"] <- "alpine"
 
-# Remove gymnosperms and equisetum from data set so that we are only analyzing data for angiosperms
-chinatraitsfam2 <- filter(chinatraitsfam2, chinatraitsfam$family!= "Pinaceae", chinatraitsfam$family!="Cupressaceae", chinatraitsfam$family!= "Equisetaceae")
+### Rename column name "taxon" to "species" ###
+varpart2016join$species <- varpart2016join$Taxon
 
-# Write all changes and additions to a .csv
-write.table(chinatraitsfam2, file = "ChinaLeafTraitData_final.csv", sep = ",", row.names = FALSE)
-chinatraitsfinal <-read.csv("ChinaLeafTraitData_final.csv")
+### If necessary, remove gymnosperms and equisetum from data set so that we are only analyzing data for angiosperms ###
+# varpart2016filter <- filter(varpart2016join, varpart2016join$family!= "Pinaceae", varpart2016join$family!="Cupressaceae", varpart2016join$family!= "Equisetaceae")
+
+### Subset by only those leaves collected in project=LOCAL (i.e. gradient outside the fence) or project=C (control plots within the fence) ###
+varpart <- subset(varpart2016join, Project=="LOCAL" | Project=="C")
 
 ##############################################################
 ### lme and varcomp analysis ###
 
-# Variance partitioning by order, family, genus, species
-vchinatraitsSLA <- varcomp(lme(SLA_cm2.g~1, random=~1|order/family/genus/species, data=chinatraitsfinal, na.action = na.omit), 1)
+### Variance partitioning by taxonomic level: order, family, genus, species, within species ###
+vchinatraitsSLA <- varcomp(lme(SLA_cm2_g~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
 
-vchinatraitsArea <- varcomp(lme(Leaf_Area_cm2~1, random=~1|order/family/genus/species, data=chinatraitsfinal, na.action = na.omit), 1)
+vchinatraitsArea <- varcomp(lme(Leaf_Area_cm2~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
 
-vchinatraitsThick <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|order/family/genus/species, data=chinatraitsfinal, na.action = na.omit), 1)
+vchinatraitsThick <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
 
-vchinatraitsLDMC <- varcomp(lme(LDMC~1, random=~1|order/family/genus/species, data=chinatraitsfinal, na.action = na.omit), 1)
+vchinatraitsLDMC <- varcomp(lme(LDMC~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
 
-# Variance partitioning between and within site (Not sure if this is the correct way to assess this)
+# show results
+vchinatraitsSLA
+vchinatraitsArea
+vchinatraitsThick
+vchinatraitsLDMC
+
+### Variance partitioning by spatial level ###
 vchinatraitsSiteSLA <- varcomp(lme(SLA_cm2.g~1, random=~1|Site, data=chinatraitsfinal, na.action = na.omit), 1)
 
 vchinatraitsSiteArea <- varcomp(lme(Leaf_Area_cm2~1, random=~1|Site, data=chinatraitsfinal, na.action = na.omit), 1)
@@ -93,12 +82,7 @@ vchinatraitsSiteThick <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|Site, da
 
 vchinatraitsSiteLDMC <- varcomp(lme(LDMC~1, random=~1|Site, data=chinatraitsfinal, na.action = na.omit), 1)
 
-#show results
-vchinatraitsSLA
-vchinatraitsArea
-vchinatraitsThick
-vchinatraitsLDMC
-
+# show results
 vchinatraitsSiteSLA
 vchinatraitsSiteArea
 vchinatraitsSiteThick
@@ -106,7 +90,7 @@ vchinatraitsSiteLDMC
 
 #####################################################
 ### PLOTS ###
-ggplot(data = chinatraitsfinal, aes(x = Site, y = SLA_cm2.g))
+ggplot(data = varpart, aes(x = Site, y = SLA_cm2.g))
 
 plot(chinatraitsfinal$Site, chinatraitsfinal$SLA_cm2.g)
 #Variance component analysis scatter plot
