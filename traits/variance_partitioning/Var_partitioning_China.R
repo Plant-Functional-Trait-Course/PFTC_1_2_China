@@ -2,7 +2,6 @@
 # 4-4-17
 # Lorah Patterson - Variance partitioning of 2016 China leaf trait data
 
-# Install packages:
 library(tidyverse)
 library(taxize)
 library(lme4)
@@ -13,55 +12,49 @@ library(BIEN)
 
 # Load 2015 and 2016 China trait data files and merge them using trait_2017_analysis.R in transplant github repository.
 source("traits/trait_2017_analysis.R")
+write.csv(traits, file="traits.csv")
+### Subset data to only contain trait data collected in 2016 (because as of April 2017, 2015 trait data needs further error correction) ###
+traits$year <- year(traits$Date) # make a column containing the year
+varpart2016 <- subset(traits, traits$year=="2016") # subset so that only 2016 trait data remains
 
-# Subset data to only contain trait data collected in 2016 (because as of April 2017, 2015 trait data needs further data management)
+### Get a column with names of genera from trait data ###
+specgen <- strsplit(varpart2016$Taxon," ") # split the specific epithet into genus and species
+specgen$genus <- as.character(sapply(specgen, head, 1)) # get only the genera data out so that the next step to extract plant family is quicker and matches easier will less NAs
+varpart2016$genus <- specgen$genus # add genus column to trait data
+ 
+### Get family and order from genus using BIEN ###
+taxspecgen<-BIEN_taxonomy_genus(genus = specgen$genus)
+taxspecgen2 <- taxspecgen %>% select(order, scrubbed_family, scrubbed_genus) # select order, family, genus columns only
+taxspecgen2$genus <- taxspecgen2$scrubbed_genus # rename genus column
+taxspecgen2$family <- taxspecgen2$scrubbed_family # rename family column
+taxspecgen3 <- taxspecgen2 %>% select(order,family,genus) # select relevant columns
+taxspecgen4 <- distinct(taxspecgen3) # Remove duplicate rows
+# The results of this specify two families for Carex and Athyrium. Delete the incorrect rows. CAUTION: You may have to modify this if using different data.
+taxspecgen5 <- subset(taxspecgen4, family!="Athyriaceae" & family!="Unknown")
 
+### Join trait data to BIEN taxonomic data ###
+varpart2016join <- left_join(taxspecgen5, varpart2016, by = "genus")
+varpart2016$family <- taxspecgen$scrubbed_family
+write.csv(varpart2016, file="traits2.csv")
 
-
-### Get family and order for each species using taxize and further data management ###
-
-specgen <- strsplit(chinatraits$Plant_species,"_") # split the specific epithet into genus and species
-
-specgen$genus <- as.character(sapply(specgen, head, 1)) # get only the genera data out so that the next step to extract plant family is quicker and matches easier will less NA's
-#specgen$species <- as.character(sapply(specgen, tail, 1)) Don't need species yet.
-
-## optional: write.table(specgen$genus,  file = "2016tax.csv", sep = ",", row.names = FALSE)
-taxon1 <- read.csv("2016tax.csv")
-taxon1 %>% mutate_if(is.factor, as.character) -> taxon1
-# Get family and order using BIEN
-tax<-BIEN_taxonomy_genus(genus = taxon1$genus)
-tax<-BIEN_taxonomy_genus(genus = genus)
-
-
-# Get family and order using taxize
-family <- tax_name(query = specgen$genus, get = "family", db = "ncbi", verbose=TRUE, ask = FALSE) # Use the tax_name function of taxize to extract family data from genus. If there are multiple UID, it will skip those species by using ask = FALSE. This will take a long time.
-
-chinatraits$family <- family # add the family names to your data
-chinatraitsfam <- flatten(chinatraits, recursive = TRUE) # To flatten nested data frames (the taxize function puts family data into its own data frame along with database type and query type)
-
-# change the column names of family, genus, species
-colnames(chinatraitsfam)[23]<-"taxon_database"
-colnames(chinatraitsfam)[24]<-"genus"
-colnames(chinatraitsfam)[25]<-"family"
-colnames(chinatraitsfam)[4]<-"species"
-colnames(chinatraitsfam)
-
-# Fix when there is an NA for family by first finding the NAs, then running taxize again on just those with NA and **manually** selecting which family is correct. If genus cannot be found, the row will be removed. This will take 20 minutes or so depending on the size of your data because it is partially manual. (You always select 2, so I wonder if there is a way to make this automatic in future.)
-for(i in 1:length(chinatraitsfam$family)) {
-  if(is.na(chinatraitsfam$family[i])) {
-    family2 <- tax_name(query = chinatraitsfam$genus[i], get = "family", db = "ncbi", verbose=TRUE)
-    levels(chinatraitsfam$family) <- c(levels(chinatraitsfam$family), family2$family)
-    chinatraitsfam$family[i]<- family2$family
-  }
-}
-
-# add taxonomic order as well. This also takes a long time. There isn't the problem with NAs for order since the NAs were fixed above.
-order <- tax_name(query = chinatraitsfam$family, get = "order", db = "ncbi", verbose=TRUE, ask = FALSE) 
-chinatraitsfam$order <- order
-chinatraitsfam2 <- flatten(chinatraitsfam, recursive = TRUE) # To flatten nested data frames (the taxize function puts order data into its own data frame along with database type and query type)
-colnames(chinatraitsfam2)[26] <-"taxon_database_2"
-colnames(chinatraitsfam2)[27] <-"family_2"
-colnames(chinatraitsfam2)[28] <- "order"
+### ~OR~ get family and order from genus using taxize ###
+#family <- tax_name(query = specgen$genus, get = "family", db = "ncbi", verbose=TRUE, ask = FALSE) 
+# If there are multiple UID, it will skip those species by using ask = FALSE.
+# Running through taxize will require you to fix when there is an NA for family by first finding the NAs, then running taxize again on just those with NA and **manually** selecting which family is correct. If genus cannot be found, the row will be removed. This will take 20 minutes or so depending on the size of your data because it is partially manual. (You always select 2, so I wonder if there is a way to make this automatic in future.)
+# #for(i in 1:length(chinatraitsfam$family)) {
+#   if(is.na(chinatraitsfam$family[i])) {
+#     family2 <- tax_name(query = chinatraitsfam$genus[i], get = "family", db = "ncbi", verbose=TRUE)
+#     levels(chinatraitsfam$family) <- c(levels(chinatraitsfam$family), family2$family)
+#     chinatraitsfam$family[i]<- family2$family
+#   }
+# }
+# add taxonomic order as well.
+# order <- tax_name(query = chinatraitsfam$family, get = "order", db = "ncbi", verbose=TRUE, ask = FALSE) 
+# chinatraitsfam$order <- order
+# chinatraitsfam2 <- flatten(chinatraitsfam, recursive = TRUE) # To flatten nested data frames (the taxize function puts order data into its own data frame along with database type and query type)
+# colnames(chinatraitsfam2)[26] <-"taxon_database_2"
+# colnames(chinatraitsfam2)[27] <-"family_2"
+# colnames(chinatraitsfam2)[28] <- "order"
 
 # Change letters representing sites (L,M,H,A) to real names (Lower, Middle, High, Alpine)
 levels(chinatraitsfam2$Site) <- c(levels(chinatraitsfam$Site), "lower",
