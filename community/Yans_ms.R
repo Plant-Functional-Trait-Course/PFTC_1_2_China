@@ -98,5 +98,8 @@ gw <- gc %+% (richnessC %>% filter(TTtreat %in% c("local", "warm1"), year == 201
 go <- gw %+% (richnessC %>% filter(TTtreat %in% c("control", "OTC"), year == 2016)) + 
   ggtitle("OTC")
                                   
-gridExtra::grid.arrange(gc, gw, go)                                  
-                                  
+gridExtra::grid.arrange(gc, gw, go)
+# remove duplicate legends
+# shink Transplant and OTC plots so temp scale is ~ equal
+# more responses
+# table of effects
