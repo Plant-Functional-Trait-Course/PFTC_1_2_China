@@ -35,6 +35,10 @@ trait2016 <- trait2016LeafTrait %>%
   inner_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number")) %>%  # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE))
 
+#import trait taxonomy dictionary
+trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",")
+
+
 ##combine 2015 & 2016 trait data
 #remove unneeded columns, rename columns
 
@@ -66,8 +70,10 @@ traits <- bind_rows(trait2016, trait2015) %>%
          Taxon = gsub(" Var.", " var. ", Taxon), 
          Taxon = gsub("var ", "var. ", Taxon), 
          Taxon = gsub("var\\.", "var\\. ", Taxon),
-         Taxon = gsub("  ", " ", Taxon)
+         Taxon = gsub("  ", " ", Taxon),
+         Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName)
          ) 
+
 
 ##some plots
 #wet vs dry
