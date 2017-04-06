@@ -90,15 +90,19 @@ richnessC <- cover_thin %>%
 gc <- ggplot(richnessC %>% filter(TTtreat %in% c("local", "control"), year == 2016), aes(x = mean, y = n, colour = originSiteID, shape = TTtreat, group = 1)) + 
   geom_jitter(height = 0, width = 0.1) +
   geom_smooth(method = "lm") +
+  scale_shape(limits = unique(richnessC$TTtreat)[c(2,3,1,4)]) +
+  labs(x = "Temperature °C", y = "Species Richness", colour = "Site", shape = "Treatment") +
   ggtitle("Gradient")
 
 gw <- gc %+% (richnessC %>% filter(TTtreat %in% c("local", "warm1"), year == 2016)) + aes(x = contrast, group = originSiteID) +
-  ggtitle("Transplant")
+  ggtitle("Transplant") + theme(legend.position = "none") + labs(x = "Temperature Contrast °C")
 
 go <- gw %+% (richnessC %>% filter(TTtreat %in% c("control", "OTC"), year == 2016)) + 
   ggtitle("OTC")
-                                  
-gridExtra::grid.arrange(gc, gw, go)
+         
+library("grid")
+library("gridExtra")
+grid.arrange(gc, gw, go, layout_matrix = rbind(c(1, 1), c(2, 3)))
 # remove duplicate legends
 # shink Transplant and OTC plots so temp scale is ~ equal
 # more responses
