@@ -9,7 +9,7 @@ library("ggvegan")
 
 ##load data
 #climate
-load("climate/")
+load("climate/climate.Rdata")
 
 #community
 source("community/start_here.R")
