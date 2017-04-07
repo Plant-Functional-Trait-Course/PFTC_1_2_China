@@ -10,8 +10,9 @@ biomass <- biomass %>%
   mutate(site = factor(site, levels = c("H", "A", "M", "L"))) %>% 
   rename(biomass = production) %>% 
   select(site, plot, species, matches("^H\\d+$"), cover, biomass) %>% 
-  mutate(mean_height = rowMeans(select(., matches("^H\\d+$")), na.rm = TRUE)) %>%
-  as_tibble()
+  mutate(mean_height = rowMeans(select(., matches("^H\\d+$")), na.rm = TRUE)) %>% 
+  group_by(site, plot)
+
 
 # split authority from name
 spNames <- strsplit(biomass$species, " ")
@@ -27,9 +28,17 @@ nameAuthority <- plyr::ldply(spNames, function(x){
   data_frame(speciesName, authority)
 })
 
+#
+getGenus <- function(x) {
+  x <- strsplit(x, " ")
+  unlist(lapply(x, "[[", 1))
+}
+
 # cbind to biomass data
 biomass <- biomass %>% 
-  bind_cols(nameAuthority)
+  bind_cols(nameAuthority) %>%
+  select(-species) %>%
+  mutate(genus = getGenus(speciesName))
 
 
 
@@ -60,3 +69,15 @@ setdiff(biomass$speciesName, taxa$speciesName)
 # 61 out of 123 species not in common with community data
 
 
+## biomass by site
+biomass %>% 
+  summarise(totalBiomass = sum(biomass, na.rm = TRUE)) %>%
+  ggplot(aes(x = site, y = totalBiomass)) + 
+  geom_boxplot()
+
+biomass %>% 
+  group_by(site, genus) %>% 
+  summarise(sppSum = sum(biomass, na.rm = TRUE)) %>% 
+  arrange(sppSum) %>% 
+  ggplot(aes(x = site, y = sppSum, fill = genus)) + 
+  geom_bar(stat = "identity", position = "stack", show.legend = FALSE)
