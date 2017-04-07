@@ -103,7 +103,27 @@ go <- gw %+% (richnessC %>% filter(TTtreat %in% c("control", "OTC"), year == 201
 library("grid")
 library("gridExtra")
 grid.arrange(gc, gw, go, layout_matrix = rbind(c(1, 1), c(2, 3)))
-# remove duplicate legends
-# shink Transplant and OTC plots so temp scale is ~ equal
+
+
 # more responses
 # table of effects
+
+
+
+## turnover on gradient
+turnover <- data_frame(
+  deltaT =  cover_fat %>% 
+    filter(TTtreat %in% c("control", "local")) %>% 
+    left_join(pred_temp, by = c("originSiteID" = "site", "TTtreat" = "TTtreat")) %>% 
+    select(mean) %>% 
+    dist() %>% as.vector(),
+  
+  deltaC = cover_fat_spp %>%
+    filter(cover_fat$TTtreat %in% c("control", "local")) %>%
+    vegdist() %>% as.vector()
+)
+
+ggplot(turnover, aes(x = deltaT, y = deltaC)) + 
+  geom_jitter(height = 0, width = 0.5) + 
+  geom_smooth(method = "lm", colour = 2) 
+  
