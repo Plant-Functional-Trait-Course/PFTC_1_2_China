@@ -6,6 +6,7 @@ source("traits/trait_2017_analysis.R")
 trait2016 %>% mutate(loc1 = substr(Location, 1, 1)) %>%
   count(loc1, Site, Project) %>% print(n = 100)
 
+
 # Merge traits and cover
 # Only Local, and controls from experiments
 AllLeaves <- traits %>% 
@@ -60,10 +61,9 @@ TraitsWithoutCover <- AllLeaves %>%
 
 
 
-
-
 ggplot(AllLeaves, aes(x = Site, y = mean, color = Taxon)) +
   geom_jitter(height = 0, width = 0.2, show.legend = FALSE)
+
   
   
 dd <- cover_thin %>% 
