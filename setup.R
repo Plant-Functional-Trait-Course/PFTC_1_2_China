@@ -83,4 +83,6 @@ sync_from_dropbox(drop_path_file = "transplant/trait/2016_China_envelope_names_C
 sync_from_dropbox(drop_path_file = "transplant/trait/2016_PFTC2_Leaf_Area_corrCP_30032017.csv", 
                   local_path_file = "traits/data/2016_PFTC2_Leaf_Area_corrCP_30032017.csv")
 
-
+#Biomass data
+sync_from_dropbox(drop_path_file = "transplant/biomass/biomass2015.xls", 
+                  local_path_file = "biomass/data/biomass2015.xls")

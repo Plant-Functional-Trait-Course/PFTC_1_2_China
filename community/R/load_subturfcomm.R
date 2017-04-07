@@ -6,7 +6,7 @@
 
 
 load_subturfcomm <- function(con, cover = TRUE) {
-  require("tidyr")
+  require("tidyverse")
   require("DBI")
   
   ##cover data
@@ -28,7 +28,7 @@ load_subturfcomm <- function(con, cover = TRUE) {
       levels = c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC")
     )
   subturf.thin$adult <- as.numeric(subturf.thin$adult)
-  subturf.thin$originSiteID <- factor(subturf.thin$originSiteID, levels = c("L", "M", "A", "H"))
-  subturf.thin$destSiteID <- factor(subturf.thin$destSiteID, levels = c("L", "M", "A", "H"))
-  subturf.thin
+  subturf.thin$originSiteID <- factor(subturf.thin$originSiteID, levels = c("H", "A", "M", "L"))
+  subturf.thin$destSiteID <- factor(subturf.thin$destSiteID, levels = c("H", "A", "M", "L"))
+  subturf.thin %>% as_tibble()
 }
