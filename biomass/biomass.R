@@ -7,7 +7,10 @@ biomass <- plyr::ldply(1:4, read_excel, path = "biomass/data/biomass2015.xls")
 names(biomass) <- make.names(names(biomass))
 
 biomass <- biomass %>% 
-  mutate(site = factor(site, levels = c("H", "A", "M", "L"))) %>% 
+  mutate(
+    site = factor(site, levels = c("H", "A", "M", "L")),
+    species = trimws(species)
+    ) %>% 
   rename(biomass = production) %>% 
   select(site, plot, species, matches("^H\\d+$"), cover, biomass) %>% 
   mutate(mean_height = rowMeans(select(., matches("^H\\d+$")), na.rm = TRUE)) %>% 
@@ -38,16 +41,22 @@ getGenus <- function(x) {
 biomass <- biomass %>% 
   bind_cols(nameAuthority) %>%
   select(-species) %>%
+  mutate(
+    speciesName = gsub("_", " ", speciesName),
+    speciesName = gsub("\\.sp", " sp", speciesName),
+    speciesName = gsub("\\.gra", " gra", speciesName),
+    speciesName = stringi::stri_trans_totitle(speciesName, type= "sentence")
+ ) %>%
   mutate(genus = getGenus(speciesName))
 
 
 
 # make plots
-ggplot(biomass, aes(x = cover, y = biomass, color = species)) +
+ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(~ site)
 
-ggplot(biomass, aes(x = mean_height, y = biomass, color = species)) +
+ggplot(biomass, aes(x = mean_height, y = biomass, color = speciesName)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(~ site)
 
