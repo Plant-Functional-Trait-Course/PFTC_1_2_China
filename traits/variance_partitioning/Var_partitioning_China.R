@@ -13,7 +13,7 @@ library(nlme)
 
 # Load 2015 and 2016 China trait data files and merge them using trait_2017_analysis.R in transplant github repository.
 source("traits/trait_2017_analysis.R")
-write.csv(traits, file="traits.csv")
+
 ### Subset data to only contain trait data collected in 2016 (because as of April 2017, 2015 trait data needs further error correction) ###
 traits$year <- year(traits$Date) # make a column containing the year
 varpart2016 <- subset(traits, traits$year=="2016") # subset so that only 2016 trait data remains
@@ -49,22 +49,37 @@ varpart2016join$Site[varpart2016join$Site == "A"] <- "alpine"
 ### Rename column name "taxon" to "species" ###
 varpart2016join$species <- varpart2016join$Taxon
 
+
+### Clean data errors. ###
+varpart2016join$LDMC[varpart2016join$Wet_Mass_g <= varpart2016join$Dry_Mass_g] <- NA # when there is an error that wet mass is less than or equals dry mass, change the LDMC value to NA so that it is not considered in the analysis
+
+varpart2016join$SLA_cm2_g[varpart2016join$Wet_Mass_g <= varpart2016join$Dry_Mass_g] <- NA # when there is an error that wet mass is less than or equals dry mass, change the SLA value to NA so that it is not considered in the analysis
+
+varpart2016join$SLA_cm2_g[varpart2016join$SLA_cm2_g >500] <- NA # when there is an error that SLA is greater than 500, change the SLA value to NA so that it is not considered in the analysis
+
+varpart2016join$SLA_cm2_g[varpart2016join$SLA_cm2_g <5] <- NA # when there is an error that SLA is less than 5, change the SLA value to NA so that it is not considered in the analysis
+
+
+
 ### If necessary, remove gymnosperms and equisetum from data set so that we are only analyzing data for angiosperms ###
 # varpart2016filter <- filter(varpart2016join, varpart2016join$family!= "Pinaceae", varpart2016join$family!="Cupressaceae", varpart2016join$family!= "Equisetaceae")
 
-### Subset by only those leaves collected in project=LOCAL (i.e. gradient outside the fence) or project=C (control plots within the fence) ###
+
+
+### Subset by only those leaves collected in project=LOCAL (i.e. gradient outside the fence, grazed) or project=C (control plots within the fence, ungrazed) ###
 varpart <- subset(varpart2016join, Project=="LOCAL" | Project=="C")
 
+varpartLocal <- subset(varpart2016join, Project=="LOCAL") # only leaves outside fence, grazed
+varpartControl <- subset(varpart2016join, Project=="C") # only leaves inside fence, ungrazed
 ##############################################################
 ### lme and varcomp analysis ###
 
+#bootvchinatraitsSLA <- boot(data=varpart, vchinatraitsSLA, R=5, statistic=)
+
 ### Variance partitioning by taxonomic level: order, family, genus, species, within species ###
 vchinatraitsSLA <- varcomp(lme(SLA_cm2_g~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
-
 vchinatraitsArea <- varcomp(lme(Leaf_Area_cm2~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
-
 vchinatraitsThick <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
-
 vchinatraitsLDMC <- varcomp(lme(LDMC~1, random=~1|order/family/genus/species, data=varpart, na.action = na.omit), 1)
 
 # show results
@@ -73,6 +88,28 @@ vchinatraitsArea
 vchinatraitsThick
 vchinatraitsLDMC
 
+### Variance partitioning of ONLY project=LOCAL leaves (i.e. gradient outside the fence, grazed) then ONLY project=C (control plots within the fence, ungrazed) to see if there is any difference ###
+vchinatraitsSLALocal <- varcomp(lme(SLA_cm2_g~1, random=~1|order/family/genus/species, data=varpartLocal, na.action = na.omit), 1)
+vchinatraitsAreaLocal <- varcomp(lme(Leaf_Area_cm2~1, random=~1|order/family/genus/species, data=varpartLocal, na.action = na.omit), 1)
+vchinatraitsThickLocal <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|order/family/genus/species, data=varpartLocal, na.action = na.omit), 1)
+vchinatraitsLDMCLocal <- varcomp(lme(LDMC~1, random=~1|order/family/genus/species, data=varpartLocal, na.action = na.omit), 1)
+# show results
+vchinatraitsSLALocal
+vchinatraitsAreaLocal
+vchinatraitsThickLocal
+vchinatraitsLDMCLocal
+
+vchinatraitsSLAControl <- varcomp(lme(SLA_cm2_g~1, random=~1|order/family/genus/species, data=varpartControl, na.action = na.omit), 1)
+vchinatraitsAreaControl <- varcomp(lme(Leaf_Area_cm2~1, random=~1|order/family/genus/species, data=varpartControl, na.action = na.omit), 1)
+vchinatraitsThickControl <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|order/family/genus/species, data=varpartControl, na.action = na.omit), 1)
+vchinatraitsLDMCControl <- varcomp(lme(LDMC~1, random=~1|order/family/genus/species, data=varpartControl, na.action = na.omit), 1)
+# show results
+vchinatraitsSLAControl
+vchinatraitsAreaControl
+vchinatraitsThickControl
+vchinatraitsLDMCControl
+
+#####################
 ### Variance partitioning by spatial level ###
 vchinatraitsSiteSLA <- varcomp(lme(SLA_cm2.g~1, random=~1|Site, data=chinatraitsfinal, na.action = na.omit), 1)
 
@@ -90,27 +127,8 @@ vchinatraitsSiteLDMC
 
 #####################################################
 ### PLOTS ###
-ggplot(data = varpart, aes(x = Site, y = SLA_cm2.g))
 
-plot(chinatraitsfinal$Site, chinatraitsfinal$SLA_cm2.g)
-#Variance component analysis scatter plot
-
-plot.varcomp(vchinatraitsSLA, xlab = "Levels", ylab = "Variance", type="p")
-plot.varcomp(vchinatraitsArea, xlab = "Levels", ylab = "Variance", type="p")
-plot.varcomp(vchinatraitsThick, xlab = "Levels", ylab = "Variance", type = "p")
-plot.varcomp(vchinatraitsLDMC, xlab = "Levels", ylab = "Variance", type = "p")
-
-plot.varcomp(vchinatraitsSiteSLA, xlab = "Levels", ylab = "Variance", type = "p")
-plot.varcomp(vchinatraitsSiteArea, xlab = "Levels", ylab = "Variance", type = "p")
-plot.varcomp(vchinatraitsSiteThick, xlab = "Levels", ylab = "Variance", type = "p")
-plot.varcomp(vchinatraitsSiteLDMC, xlab = "Levels", ylab = "Variance", type = "p")
-
-# Scatterplots to check for incorrect original trait data.
-
-pairs(~ log10(SLA_cm2.g) + log10(Leaf_Area_cm2) + log10(Leaf_Thickness_Ave_mm) + log10(LDMC), data=chinatraitsfinal)
-
-####Bar Graphs to show variance component analysis####
-# Probably a better way to get the data into shape than what I did since it took so many lines... but hey it worked!
+### Stacked bar graph of variance partitioning: taxonomic levels ###
 
 vchinatraitsSLA2 <- data.frame(as.list(vchinatraitsSLA)) # turns vector into data frame
 vchinatraitsSLA2$trait <- "SLA" # add a column called trait with SLA
@@ -148,14 +166,5 @@ varcompanalysis$trait <- factor(varcompanalysis$trait, levels= c ("SLA", "LDMC",
 ggplot(data = varcompanalysis, aes(x = trait, y = Percent.variance.100, fill = Taxonomic.level)) + geom_bar(stat="identity") + labs(title = "Variance Analysis", x= "Leaf trait" , y = "Percent variance" , fill="Taxonomic level") + scale_fill_manual(values=c("#003366", "#0066CC", "#3399FF", "#99CCFF", "#FF9900")) + theme(text = element_text(size=20))
 
 
-#### Linear and linear mixed-effects - assessing effects of elevation on leaf area using lme
-# 
-# la.lm<-lm(Leaf_Area_cm2~Elevation, data=chinatraitsfam, na.action=na.omit)
-# summary(la.lm)
-#   # Elevation has no effect on leaf area 
-# 
-# library(nlme)
-# la.lme<-lme(Leaf_Area_cm2~Elevation, random=~1|Taxon_written_on_envelopes, data=chinatraitsfam, na.action=na.omit)
-# summary(la.lme)
-
+### Stacked bar graph of variance partitioning: spatial levels ###
 
