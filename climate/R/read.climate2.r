@@ -93,6 +93,13 @@ weather <- weather %>%
   mutate(waterContent5 = ifelse(site == "H" & dateTime > as.POSIXct("2016-01-01 00:00:00", tz = "Asia/Shanghai") & dateTime < as.POSIXct("2016-09-24 01:00:00", tz = "Asia/Shanghai"), NA, waterContent5))
 
 
+# replace impossible values in Tsoil0 at H site with NA
+HTsoilwrong <- c("YJG-H_2014.03.07_2014.08.22.csv", "YJG-H_2014.05.11_2014.10.26.csv", "YJG-H_2014.11.06_2015.04.01.csv", "YJG-H_2015.02.04_2015.06.03.csv", "YJG-H_2015.03.11_2015.08.27.csv", "YJG-H_2015.04.12_2015.09.28.csv", "YJG-H_2015.09.28_2015.10.26.csv", "YJG-H_2015.09.28_2015.12.02.csv", "YJG-H_2015.10.22_2016.02.21.csv")
+
+weather <- weather %>% 
+  mutate(Tsoil0 = ifelse(site == "H"& file %in% HTsoilwrong, NA, Tsoil0))
+
+
 ## deal with duplicates (from overlapping files)
 distinct_weather <- weather %>%
   select(-extra, -notes, -Batt, -probableTempUnit) %>% 
@@ -103,7 +110,7 @@ distinct_weather <- weather %>%
 save(distinct_weather, file = "climate/clean_weather.Rdata")
 
 
-weather %>% ggplot(aes(x = dateTime, y = waterContent5)) + geom_line() + facet_wrap(~site)
+weather %>% ggplot(aes(x = dateTime, y = Tsoil0)) + geom_line() + facet_wrap(~site)
 
 
 # some stuff with duplicates
