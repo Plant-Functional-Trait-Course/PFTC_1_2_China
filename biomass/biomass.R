@@ -55,6 +55,8 @@ biomass <- biomass %>%
 biomass %>% count(site, plot, speciesName) %>% filter(n >1)
 stop("duplicate taxa")
 
+biomass %>% group_by(site, plot, speciesName) %>% filter(n() >1) %>% arrange(site, plot, speciesName)
+
 # make plots
 ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +
   geom_point(show.legend = FALSE) +
