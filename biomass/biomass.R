@@ -1,6 +1,8 @@
 #load packages
 library("readxl")
 library("tidyverse")
+library("vegan")
+library("ggvegan")
 
 #read excel file
 biomass <- plyr::ldply(1:4, read_excel, path = "biomass/data/biomass2015.xls")
@@ -49,7 +51,9 @@ biomass <- biomass %>%
  ) %>%
   mutate(genus = getGenus(speciesName))
 
-
+##problem - duplicate taxa
+biomass %>% count(site, plot, speciesName) %>% filter(n >1)
+stop("duplicate taxa")
 
 # make plots
 ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +
@@ -90,3 +94,42 @@ biomass %>%
   arrange(sppSum) %>% 
   ggplot(aes(x = site, y = sppSum, fill = genus)) + 
   geom_bar(stat = "identity", position = "stack", show.legend = FALSE)
+
+#cover by site
+biomass %>% 
+  summarise(sumCover = sum(cover, na.rm = TRUE)) %>%
+  ggplot(aes(x = site, y = sumCover)) + 
+  geom_boxplot()
+
+#richness by site
+biomass %>% 
+  summarise(n = n()) %>%
+  ggplot(aes(x = site, y = n)) + 
+  geom_boxplot()
+
+
+## ordinations
+biomass_fat <- biomass %>% 
+  group_by(speciesName) %>% 
+  mutate(biomass = if_else(is.na(biomass), median(biomass, na.rm = TRUE), biomass)) %>%#fill missing values with ?species? median
+  group_by(site, plot, speciesName) %>%
+  summarise(biomass = sum(biomass)) %>% 
+  filter(n() > 3) %>% 
+  ungroup() %>%
+#  select(-cover, -matches("^H\\d+$"), mean_height, authority) %>%
+  spread(key = speciesName, value = biomass, fill = 0)
+
+NMDS <- metaMDS(select(biomass_fat, -(site:plot)) >0)
+
+fNMDS <- fortify(NMDS) %>% filter(Score == "sites") %>% bind_cols(select(biomass_fat, site))
+
+treat_colours <- c("black", "grey50", "red", "green")
+
+g <-ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = site)) +
+  geom_point(fill = "black") +
+  coord_fixed(ratio = 1) +
+  scale_shape_manual(values = c(24, 22, 23, 25)) +
+  guides(shape = guide_legend(override.aes = list(fill = "black"))) +
+  labs(x = "NMDS 1", y = "NMDS 2")
+g
+
