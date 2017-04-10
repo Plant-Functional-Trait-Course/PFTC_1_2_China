@@ -53,10 +53,13 @@ biomass <- biomass %>%
 
 ##problem - duplicate taxa
 biomass %>% count(site, plot, speciesName) %>% filter(n >1)
+biomass %>% group_by(site, plot, speciesName) %>% filter(n() >1) %>% arrange(site, plot, speciesName)
 stop("duplicate taxa")
+
 
 ##sum unknows
 biomass %>% filter(genus == "Unkown") %>% summarise(sum = sum(biomass)) %>% arrange(desc(sum))
+
 
 
 # make plots
