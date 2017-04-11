@@ -2,9 +2,9 @@ oldCode,newCode,keep,fullName,Family,functionalGroup
 Aca.nep,Aca.nep,,Acanthocalyx nepalensis (D. Don) M. J. Cannon,Dipsacaceae,forb
 Agr.ner,Agr.ner,,Agrostis nervosa Nees ex Trinius,Poaceae,gramineae
 Aju.dec,Aju.dec,,Ajuga decumbens Thunb.,Labiatae,forb
-Ale.pau,Ale.pau,,Aletris pauciflora (Klotzsch) Handel-Mazzetti,liliaceae,forb
-All.pra,All.pra,,Allium prattii C. H. Wright ex Hemsley,liliaceae,forb
-All.sik,All.sik,0,Allium sikkimense,liliaceae,forb
+Ale.pau,Ale.pau,,Aletris pauciflora (Klotzsch) Handel-Mazzetti,Liliaceae,forb
+All.pra,All.pra,,Allium prattii C. H. Wright ex Hemsley,Liliaceae,forb
+All.sik,All.sik,0,Allium sikkimense,Liliaceae,forb
 Ana.dem,Ane.dem,0,Anemone demissa J. D. Hooker & Thomson,Ranunculaceae,forb
 Ana.fla,Ana.fla,,Anaphalis flavescens Handel-Mazzetti,Asteraceae,forb
 Ana.lac,Ana.lac,,Anaphalis lactea Maximowicz,Asteraceae,forb
@@ -20,15 +20,15 @@ Ber.L,Berberis,0,Berberis jamesiana,Berberidaceae,shrub
 Bro.sin,Poa.spp,0,Poa.spp,Poaceae,gramineae
 Cal.pal,Cal.pal,,Caltha palustris Linnaeus,Ranunculaceae,forb
 Car.hum,Car.hum,,Carpesium humile C. Winkler,Asteraceae,forb
-Car.L,Car.spp,,Carex spp,sedge,sedge
-Car.L.,Car.spp,0,Carex spp,sedge,sedge
-Car.atr,Car.spp,0,Carex spp,sedge,sedge
-Car.bla,Car.spp,0,Carex spp,sedge,sedge
-Car.fin,Car.spp,0,Carex spp,sedge,sedge
-Car.M,Car.spp,0,Carex spp,sedge,sedge
-Car.nub,Car.nub,,Carex nubigena D. Don ex Tilloch & Taylor,sedge,sedge
+Car.L,Car.spp,,Carex spp,Cyperaceae,sedge
+Car.L.,Car.spp,0,Carex spp,Cyperaceae,sedge
+Car.atr,Car.spp,0,Carex spp,Cyperaceae,sedge
+Car.bla,Car.spp,0,Carex spp,Cyperaceae,sedge
+Car.fin,Car.spp,0,Carex spp,Cyperaceae,sedge
+Car.M,Car.spp,0,Carex spp,Cyperaceae,sedge
+Car.nub,Car.nub,,Carex nubigena D. Don ex Tilloch & Taylor,Cyperaceae,sedge
 Car.pal,Cal.pal,0,Caltha palustris Linnaeus,Ranunculaceae,forb
-Car.rar,Car.spp,0,Carex spp,sedge,sedge
+Car.rar,Car.spp,0,Carex spp,Cyperaceae,sedge
 Cer.pyl,Ger.pyl,0,Geranium pylzowianum Maximowicz,Geraniaceae,forb
 Cer.sze,Cer.sze,,Cerastium szechuense F. N. Williams,Caryophyllaceae,forb
 Cha.par,Cha.vir,0,Chamaesium viridiflorum (Franchet) H. Wolff ex R. H. Shan,Umbelliferae,forb
@@ -43,7 +43,7 @@ Cya.hus,Cya.hus,,Cyananthus husincanus,Campanulaceae,forb
 Cya.inc,Cya.hus,0,Cyananthus husincanus,Campanulaceae,forb
 Dey..pul,Fes.spp,0,Fes spp,Poaceae,gramineae
 Dey.sca,Fes.spp,0,Fes spp,Poaceae,gramineae
-Epi.fan,Epi.fan,,Epilobium fangii C. J. Chen et al.,onagraceae,forb
+Epi.fan,Epi.fan,,Epilobium fangii C. J. Chen et al.,Onagraceae,forb
 Euphorbia,Eup.L,0,Euphorbia spp.,Euphorbiaceae,forb
 Eup.horbia,Eup.L,0,Euphorbia spp.,Euphorbiaceae,forb
 Euphoribia,Eup.L,0,Euphorbia spp.,Euphorbiaceae,forb
@@ -78,15 +78,15 @@ Jun.him,Jun.him,,Juncus himalensis Klotzsch in Klotzsch & Garcke,Juncaceae,grami
 Jun.leu,Jun.leu,,Juncus leucanthus Royle ex D. Don,Juncaceae,gramineae
 Jun.pri,Jun.pri,,Juncus prismatocarpus R. Brown,Juncaceae,gramineae
 Jun.set,Jun.set,,Juncus setchuensis Buchen.,Juncaceae,gramineae
-Kob.cer,Kob.cer,,Kobresia cercostachys (Franchet) C. B. Clarke,sedge,sedge
-Kob.pgy,Kob.pyg,0,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,sedge,sedge
-Kob.pyg,Kob.pyg,,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,sedge,sedge
-Kob.middle,Kob.spp,0,Kob spp,sedge,sedge
-Kob.sigan,Kob.spp,0,Kob spp,sedge,sedge
-Kob.small,Kob.spp,0,Kob spp,sedge,sedge
+Kob.cer,Kob.cer,,Kobresia cercostachys (Franchet) C. B. Clarke,Cyperaceae,sedge
+Kob.pgy,Kob.pyg,0,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,Cyperaceae,sedge
+Kob.pyg,Kob.pyg,,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,Cyperaceae,sedge
+Kob.middle,Kob.spp,0,Kob spp,Cyperaceae,sedge
+Kob.sigan,Kob.spp,0,Kob spp,Cyperaceae,sedge
+Kob.small,Kob.spp,0,Kob spp,Cyperaceae,sedge
 Lig.ple,Lig.ple,,Ligularia pleurocaulis (Franchet) Handel-Mazzetti,Asteraceae,forb
 Lig.sca,Lig.sca,,Ligusticum scapiforme H. Wolff,Umbelliferae,forb
-Lil.lop,Lil.lop,,Lilium lophophorum (Bureau & Franchet) Franchet,liliaceae,forb
+Lil.lop,Lil.lop,,Lilium lophophorum (Bureau & Franchet) Franchet,Liliaceae,forb
 Lom.mac,Lom.mac,0,Lomatogonium macranthum,Gentianaceae,forb
 Luzula,Luzula,,Luzula spp,Juncaceae,gramineae
 Luz.mul,Luzula,0,Luzula spp,Juncaceae,gramineae
@@ -97,8 +97,8 @@ Mic.sik,Mic.sik,,Microula sikkimensis Hemsl.,Boraginaceae,forb
 Mor.nep,Mor.nep,,Morina nepalensis,Dipsacaceae,forb
 Myr.nep,Myr.nep,,Myriactis nepalensis,Gentianaceae,forb
 Nei.aff,Nei.aff,,Neillia affinis,Rosaceae,forb
-Not.bul,Not.bul,,Notholirion bulbuliferum (Lingelsheim ex H. Limpricht) Stearn,liliaceae,forb
-Not.blu,Not.bul,0,Notholirion bulbuliferum (Lingelsheim ex H. Limpricht) Stearn,liliaceae,forb
+Not.bul,Not.bul,,Notholirion bulbuliferum (Lingelsheim ex H. Limpricht) Stearn,Liliaceae,forb
+Not.blu,Not.bul,0,Notholirion bulbuliferum (Lingelsheim ex H. Limpricht) Stearn,Liliaceae,forb
 Oxy.yun,Oxy.yun,,Oxytropis yunnanensis Franchet,Leguminosae,forb
 Oxy.gla,Cal.pal,0,Caltha palustris Linnaeus,Ranunculaceae,forb
 Par.lat,Par.lat,,Parasenecio latipes (Franchet) Y. L. Chen,Asteraceae,forb
@@ -115,7 +115,7 @@ Poa.pra,Poa.pra,,Poa pratensis Linnaeus,Poaceae,gramineae
 Poa.pro,Poa.pra,0,Poa pratensis Linnaeus,Poaceae,gramineae
 Poa.pol,Poa.spp,0,Poa spp,Poaceae,gramineae
 Pol.cas,Pol.cas,,Polystichum castaneum,Dryopteridaceae,forb
-Pol.cir,Pol.cir,,Polygonatum cirrhifolium (Wallich) Royle,liliaceae,forb
+Pol.cir,Pol.cir,,Polygonatum cirrhifolium (Wallich) Royle,Liliaceae,forb
 Pol.cya,Pol.cya,,Polygonum cyanandrum Diels,Polygonaceae,forb
 Pol.mac,Pol.mac,,Polygonum macrophyllum D. Don,Polygonaceae,forb
 Pol.run,Pol.run,,Polygonum runcinatum Buchanan-Hamilton ex D. Don,Polygonaceae,forb
@@ -158,7 +158,7 @@ Sau.sub,You.jap,0,Youngia japonica,Asteraceae,forb
 Saxifrage,Saxifrage,,Saxifraga sp. Tourn.ex L.,Saxifragaceae,forb
 Sed.tri,Sed.tri,,Sedum triactina Berger,Crassulaceae,forb
 Sib.pro,Sib.pro,,Sibbaldia procumbens,Rosaceae,forb
-Smi.jap,Smi.jap,,Smilacina japonica A. Gray,liliaceae,forb
+Smi.jap,Smi.jap,,Smilacina japonica A. Gray,Liliaceae,forb
 Sor.hoo,Sor.hoo,,Soroseris hookeriana Stebbins,Asteraceae,forb
 Spi.jap,Spi.jap,,Spiraea japonica Linnaeus f.,Rosaceae,forb
 Ste.med,Ste.med,,Stellaria media (L.)Cyr.,Caryophyllaceae,forb
