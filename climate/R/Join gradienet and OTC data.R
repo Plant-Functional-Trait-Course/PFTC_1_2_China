@@ -10,7 +10,7 @@ otcData <- otcc %>%
   select(site, dateTime, Tair, Tsoil0, Tsoil5, Tsoil20, waterContent5, waterContent20, rain, PAR, solarRadiation, windSpeed, windDirection, RH, UV) %>% 
   mutate(logger = "otc")
   
-ddd <- distinct_weather %>%
+climate <- distinct_weather %>%
   spread(key = variable, value = value) %>% 
   select(site, dateTime, Tair, Tsoil0, Tsoil5, Tsoil20, waterContent5, waterContent20, rain, PAR, solarRadiation, windSpeed, windDirection, RH, UV) %>% 
   mutate(logger = "gradient") %>% 
