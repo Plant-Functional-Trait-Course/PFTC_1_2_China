@@ -20,42 +20,60 @@ if(Sys.which("git") == ""){
 }
 
 
-#Check libraries installed
-packages_needed <- read.table(header = TRUE, text = 
-  "package CRAN github
-   tidyverse TRUE NA #this includes dplyr, ggplot, tidyr etc
-   rdrop2 TRUE NA
-   vegan  TRUE NA
-   RSQLite TRUE NA
-   ggvegan FALSE gavinsimpson
-   assertthat TRUE NA
-   plyr TRUE NA
-   devtools TRUE NA
-   raster TRUE NA
-   cowplot TRUE NA
-   gridExtra TRUE NA
-   rmarkdown TRUE NA
-  ")
+#Check CRAN packages installed
+CRAN_needed <- read.table(header = TRUE, stringsAsFactors = FALSE, text = 
+                            "package
+                          tidyverse #this includes dplyr, ggplot, tidyr etc
+                          vegan
+                          RSQLite
+                          assertthat
+                          plyr
+                          devtools
+                          cowplot
+                          gridExtra
+                          rmarkdown
+                          assertr
+                          GGally
+                          ggfortify
+                          entropy
+                          cocorresp
+                          ggrepel
+                          rdrop2
+                          raster
+                          ")$package
 
 #check against currently installed packages
-packages_needed <- packages_needed[!packages_needed$package %in% .packages(all.available = TRUE), , drop = FALSE]
+installed_packages <- .packages(all.available = TRUE)
+CRAN_needed2 <- CRAN_needed[!CRAN_needed %in% installed_packages]
 
 #download missing CRAN packages
-if(nrow(packages_needed[packages_needed$CRAN, ]) > 0){
-  install.packages(packages_needed$package[packages_needed$CRAN])
+if(length(CRAN_needed2) > 0){
+  install.packages(CRAN_needed2)
 }
 
-#download missing github packages
-pn <- packages_needed[!packages_needed$CRAN, , drop = FALSE]
-if(nrow(pn) > 0){
-  devtools::install_github(paste(pn$github, pn$package, sep = "/"))
+#check github packages
+github_needed <- read.table(header = TRUE, stringsAsFactors = FALSE, text =
+                              "package repo ref
+   ggbiplot richardjtelford experimental
+   ggvegan gavinsimpson master
+   tpldata gustavobio master
+   tpl gustavobio master
+")
+
+github_needed2 <- github_needed[!github_needed$package %in% installed_packages, , drop = FALSE]
+if(nrow(github_needed2) > 0){
+  plyr::a_ply(github_needed2, 1, function(g){
+    devtools::install_github(paste(g$repo, g$package, sep = "/"), ref = g$ref)
+  })
 }
+
+
 
 #check all packages downloaded - if this line doesn't work - assertthat didn't install!
-assertthat::assert_that(all(packages_needed$package %in% .packages(all.available = TRUE)))
+assertthat::assert_that(all(c(CRAN_needed, github_needed$package) %in% .packages(all.available = TRUE)))
 
 #clean-up
-rm(packages_needed, pn)
+rm(CRAN_needed, CRAN_needed2, github_needed, github_needed2, installed_packages)
 
 ## install/sync data from dropbox
 source("R/sync_from_dropbox.R")
