@@ -110,3 +110,13 @@ traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
   ggplot(aes(x = measurement, y = thickness, colour = as.factor(year(Date)))) + 
   geom_boxplot(show.legend = FALSE) + 
   facet_grid(Taxon ~ Site, scales = "free")
+
+traits %>% 
+  mutate(year = year(Date)) %>% 
+  arrange(SLA_cm2_g) %>%
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = SLA_cm2_g > 500)) + 
+  geom_point() + 
+  geom_abline(slope = 1, intercept = 0) + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)

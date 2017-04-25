@@ -43,7 +43,7 @@ dim(trait2016)
 
 # some plots
 # wet vs dry mass
-ggplot(trait2016, aes(x = Wet_Mass_g, y = Dry_Mass_g)) + 
+ggplot(trait2016, aes(x = Wet_Mass_g, y = Dry_Mass_g, color = Site)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
@@ -51,14 +51,16 @@ ggplot(trait2016, aes(x = Wet_Mass_g, y = Dry_Mass_g)) +
 
 # dry vs area  
 trait2016 %>%
-  ggplot(aes(x = Dry_Mass_g, y = Cropped_Leaf_Area)) + 
+  ggplot(aes(x = Dry_Mass_g, y = Cropped_Leaf_Area, color = Site)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
   scale_y_log10()
 
+ggplot(trait2016, aes(y = Leaf_Thickness_Ave_mm, x = Site)) + geom_boxplot()
+
 trait2016 %>%
-  ggplot(aes(x = Leaf_Thickness_1_mm, y = Leaf_Thickness_2_mm)) + 
+  ggplot(aes(x = Leaf_Thickness_1_mm, y = Leaf_Thickness_2_mm, color = Site)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
