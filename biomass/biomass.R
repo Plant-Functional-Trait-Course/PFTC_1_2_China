@@ -15,8 +15,7 @@ biomass <- biomass %>%
     ) %>% 
   rename(biomass = production) %>% 
   select(site, plot, species, matches("^H\\d+$"), cover, biomass) %>% 
-  mutate(mean_height = rowMeans(select(., matches("^H\\d+$")), na.rm = TRUE)) %>% 
-  group_by(site, plot)
+  mutate(mean_height = rowMeans(select(., matches("^H\\d+$")), na.rm = TRUE)) 
 
 
 # split authority from name
@@ -51,6 +50,13 @@ biomass <- biomass %>%
  ) %>%
   mutate(genus = getGenus(speciesName))
 
+#import trait taxonomy dictionary
+biomass_taxa <- read_delim("biomass/data/biomass_taxonomic_corrections.csv", delim = ",", comment = "#")
+
+biomass <- biomass %>%
+  mutate(speciesName = plyr::mapvalues(speciesName, from = biomass_taxa$wrongName, to = biomass_taxa$correctName)) %>% 
+  group_by(site, plot)
+                              
 ##problem - duplicate taxa
 biomass %>% count(site, plot, speciesName) %>% filter(n >1)
 biomass %>% group_by(site, plot, speciesName) %>% filter(n() >1) %>% arrange(site, plot, speciesName)

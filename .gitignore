@@ -35,6 +35,7 @@ vignettes/*.pdf
 !cover_correction.csv
 !transplant_taxonomy.csv
 !trait_name_changes.csv
+!biomass_taxonomic_corrections.csv
 *.xlsx#
 *.rar
 *.sqlite
