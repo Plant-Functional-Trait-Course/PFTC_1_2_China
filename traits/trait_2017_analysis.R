@@ -36,7 +36,7 @@ trait2016 <- trait2016LeafTrait %>%
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE))
 
 #import trait taxonomy dictionary
-trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",")
+trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",", comment = "#")
 
 
 ##combine 2015 & 2016 trait data
