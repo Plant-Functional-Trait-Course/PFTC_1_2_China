@@ -1,6 +1,7 @@
 ##### JOIN OTC AND WEATHER DATA #####
 library("tidyverse")
 library("lubridate")
+library("data.table")
 
 # Merge otc and gradient data
 # Tsoil5 L site gradient: varying variance
@@ -20,6 +21,7 @@ climate <- distinct_weather %>%
   
 save(climate, file = "climate/climate.Rdata")
 
+climate <- setDT(climate)
 
 
 #### MONTHLY DATA ####
@@ -27,7 +29,7 @@ climate_month <- climate %>%
   select(-month, -flag, -comment) %>% 
   mutate(month = lubridate::ymd(format(dateTime, "%Y-%m-15"))) %>% 
   select(-dateTime) %>%
-  gather(key = variable, value = value, -site, -logger) %>% 
+  gather(key = variable, value = value, -site, -logger, -month) %>% 
   group_by(site, month, variable, logger) %>%
   filter(!is.na(value)) %>%
   summarise(meanV = mean(value), sumV = sum(value), n = n()) %>%
