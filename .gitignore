@@ -40,6 +40,7 @@ vignettes/*.pdf
 *.rar
 *.sqlite
 *.dat
+*.RData.Tmp1
 
 #rasters & shapefiles
 *.bil
