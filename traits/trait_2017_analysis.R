@@ -26,7 +26,7 @@ trait2016LeafArea <- trait2016LeafArea %>%
 
 
 # leaf traits
-trait2016LeafTrait <- read_delim("traits/data/2016_China_envelope_names_CPcorr_30032017.csv", delim = ";", comment = "")
+trait2016LeafTrait <- read_delim("traits/data/2016_China_envelope_names_CPcorr_30032017.csv", delim = ",", comment = "")
 
 trait2016 <- trait2016LeafTrait %>% 
   mutate(Date = ymd(Date)) %>% 
