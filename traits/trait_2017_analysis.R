@@ -13,9 +13,16 @@ trait2015 %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2)
 trait2015 <- trait2015 %>% 
   mutate(Dry_Mass_2016_g = as.numeric(Dry_Mass_2016_g)) %>%
   mutate(Leaf_Area_m2 = as.numeric(Leaf_Area_m2)) %>%
-  mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE))#mean thickness
+  mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE)) %>% #mean thickness
+  mutate(Taxon_FoC_corrected = gsub("\xa0", " ", Taxon_FoC_corrected)) %>%  #remove non-breaking space
+  mutate(Individual_Number = as.character(Individual_Number))
 
 
+# merge Newleafarea2015 with trait2015 data
+trait2015 <- trait2015 %>% 
+    full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number")) %>% 
+  
+  
 
 #import data 2016
 # leaf area
@@ -44,8 +51,8 @@ trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",", comm
 
 trait2015 <- trait2015 %>%
   mutate(Date = ymd(Date)) %>%
-  select(-Leaf_Area_m2, -Wet_Mass_WeighingScale, -Dry_Mass_WeighingScale, -Dry_Mass_g, -`LMA g -m2`, -`log LMA`, -`wet-dry`, -notes, -corrections) %>%
-  rename(Taxon = Taxon_FoC_corrected, Leaf_number = Leaf_Number, Individual_number = Individual_Number, Dry_Mass_g = Dry_Mass_2016_g, SLA_cm2_g = `SLA_cm2-g`) %>%
+  select(-Leaf_Area_cm2, -Leaf_Area_m2, -Wet_Mass_WeighingScale, -Dry_Mass_WeighingScale, -Dry_Mass_g, -`LMA g -m2`, -`log LMA`, -`wet-dry`, -notes, -corrections) %>%
+  rename(Taxon = Taxon_FoC_corrected, Leaf_number = Leaf_Number, Individual_number = Individual_Number, Dry_Mass_g = Dry_Mass_2016_g, SLA_cm2_g = `SLA_cm2-g`, LeafArea_cm2 = LeafArea2) %>%
   mutate(
     Individual_number = as.character(Individual_number),
     Date = if_else(is.na(Date), ymd("20150101"), Date),# fill missing dates
@@ -56,7 +63,8 @@ trait2015 <- trait2015 %>%
 trait2016 <- trait2016 %>%
   select(-`Difference_(Uncropped_minus_Cropped)`, -Uncropped_Leaf_Area, -X20,  -Notes, -Dry_Mass_g_Multiple2, -Dry_Mass_g_Multiple3, -Corrections.x, -`dry:wet`, -Corrections.y) %>%
   rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
-  mutate(Leaf_number = as.character(Leaf_number))
+  mutate(Leaf_number = as.character(Leaf_number)) %>% 
+  mutate(allComments = NA)
 
 # Combine and recalculate SLA and LDMC
 traits <- bind_rows(trait2016, trait2015) %>%
