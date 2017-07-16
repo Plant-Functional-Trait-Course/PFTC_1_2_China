@@ -20,7 +20,7 @@ trait2015 <- trait2015 %>%
 
 # merge Newleafarea2015 with trait2015 data
 trait2015 <- trait2015 %>% 
-    full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number")) %>% 
+    full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number"))
   
   
 
@@ -52,7 +52,7 @@ trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",", comm
 trait2015 <- trait2015 %>%
   mutate(Date = ymd(Date)) %>%
   select(-Leaf_Area_cm2, -Leaf_Area_m2, -Wet_Mass_WeighingScale, -Dry_Mass_WeighingScale, -Dry_Mass_g, -`LMA g -m2`, -`log LMA`, -`wet-dry`, -notes, -corrections) %>%
-  rename(Taxon = Taxon_FoC_corrected, Leaf_number = Leaf_Number, Individual_number = Individual_Number, Dry_Mass_g = Dry_Mass_2016_g, SLA_cm2_g = `SLA_cm2-g`, LeafArea_cm2 = LeafArea2) %>%
+  rename(Taxon = Taxon_FoC_corrected, Leaf_number = Leaf_Number, Individual_number = Individual_Number, Dry_Mass_g = Dry_Mass_2016_g, SLA_cm2_g = `SLA_cm2-g`, Leaf_Area_cm2 = LeafArea2) %>%
   mutate(
     Individual_number = as.character(Individual_number),
     Date = if_else(is.na(Date), ymd("20150101"), Date),# fill missing dates
@@ -86,7 +86,7 @@ traits <- bind_rows(trait2016, trait2015) %>%
 ##some plots
 #wet vs dry
 traits %>% mutate(year = as.factor(year(Date))) %>%
-ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Site)) + 
+ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
@@ -95,7 +95,21 @@ ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Site)) +
 
 # dry vs area  
 traits %>% mutate(year = as.factor(year(Date))) %>%
-  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, colour = Site)) + 
+  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2)) + 
+  geom_point() +   
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+
+# calculate large residuals: Area vs. DryMass
+LargeResid <- traits %>% filter(!is.na(Leaf_Area_cm2), !is.na(Dry_Mass_g))
+fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_g), data = LargeResid)
+LargeResid$resid_Area_Dry <- resid(fit)
+LargeResid <- LargeResid %>% select(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, Dry_Mass_g, Leaf_Area_cm2, resid_Area_Dry)
+
+LargeResid %>% mutate(year = as.factor(year(Date))) %>%
+  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = abs(resid_Area_Dry) > 1.2)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
@@ -119,12 +133,31 @@ traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
   geom_boxplot(show.legend = FALSE) + 
   facet_grid(Taxon ~ Site, scales = "free")
 
+
 traits %>% 
   mutate(year = year(Date)) %>% 
-  arrange(SLA_cm2_g) %>%
+  arrange(SLA_cm2_g) %>% filter(SLA_cm2_g > 500)
   ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = SLA_cm2_g > 500)) + 
   geom_point() + 
   geom_abline(slope = 1, intercept = 0) + 
   scale_x_log10() + 
   scale_y_log10() + 
   facet_wrap(~ year)
+
+
+### FLAG DATA
+# Wet mass > Dry mass
+# Very small wet mass
+# large residual for dry mass vs. leaf area
+# SLA > 500
+traits<- traits %>% 
+  mutate(flag = NA) %>% 
+  mutate(flag = ifelse(Dry_Mass_g - Wet_Mass_g > 0, "Wet>Dry", NA)) %>% 
+  mutate(flag = ifelse(Wet_Mass_g < 0.0005, paste(flag, "WetTiny", sep = "_"), NA)) %>% 
+  left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% 
+  mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA)) %>% 
+  mutate(flag = ifelse(SLA_cm2_g > 500, paste(flag, "LargeSLA", sep = "_"), NA))
+  
+unique(dd$flag)
+
+
