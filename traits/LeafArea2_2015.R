@@ -13,8 +13,8 @@ Newleafarea2015 <- leafarea2015 %>%
   select(-X1) %>% 
   rename(Taxon = X5) %>% 
   filter(!is.na(LeafArea)) %>% # remove files without area
-  # remove dirt, folded, eaten, brown and yellow leaves, black lines and double and empty scans
-  filter(!grepl("dirt|black line|empty|did not work|yellow leaf|leaf yellow|brown|not Rumex|part of leaf too white, two leaves on scan?", comment)) %>% 
+  # remove dirt, black lines and double and empty scans
+  filter(!grepl("dirt|black line|empty|did not work|part of leaf too white, two leaves on scan?|double", comment)) %>% 
   # split File name and Area 1, 2, 3
   separate(col = File_Name, into = c("File_Name", "Area"), sep = "\\.txt\\.") %>% 
   # summarize areas from different part of  leaves
@@ -27,17 +27,21 @@ Newleafarea2015 <- leafarea2015 %>%
   mutate(File_Name = if_else(grepl("\\d-\\d$", File_Name), File_Name, gsub("(.*)(-\\d$)", "\\1-1\\2",  File_Name))) %>% # add missing Individual_numbers
   mutate(File_Name = gsub("20150820-m-3500-Gentiana_crassuloides-S-1-1", "20150820-m-3500-Gentiana_crassuloides-1-1", File_Name)) %>%  # remove -S in 20150820-m-3500-Gentiana_crassuloides-S-1-1 Gentiana crassuloides
   separate(col = File_Name, into = c("Date", "Site", "Elevation", "Species", "Individual_Number", "Leaf_Number"), sep = "-") %>% 
+  # fixing wrong variables
   mutate(
     Site = gsub("m", "M", Site), # replace m with M
     Elevation = gsub("3580", "3500", Elevation), # replace 3580 with 3500, only occurs at site M
-    # fix species names
+    # fix variables
     Elevation = gsub("^300$", "3000", Elevation), # replace 300 with 3000, all are Site L
     Taxon = gsub("Neottianthe cucullata var.camcola", "Neottianthe cucullata Var.Camcola", Taxon),
     Taxon = gsub("Youngia prattii", "Youngia racemifera", Taxon),
     Taxon = gsub("Carex nubigena", "Carex nubige", Taxon),
     Taxon = gsub("\xa0", "", Taxon),
-    Elevation = as.numeric(Elevation)
+    Elevation = as.numeric(Elevation),
+    Leaf_Number = gsub("1 004", "1", Leaf_Number), # Thalictrum javanicum
+    Leaf_Number = gsub("2 007", "2", Leaf_Number) # Arundinaria faberi
     ) %>% 
+  mutate(Individual_Number = ifelse(Site == "L" & Taxon == "Thalictrum javanicum" & Individual_Number == "1", "1.1", Individual_Number)) %>% 
   select(-Species, -Date) # remove columns before merging
 
 # No leaf area calculated
@@ -46,6 +50,10 @@ Newleafarea2015 <- leafarea2015 %>%
 
 # Check where the scans are for these species!
 # c("Polygonum macrophyllum", "Prenanthes macrophylla", "Swertia macrosperma", "Berberis dictyophylla", "Geranium donianum", "Anemone obtusiloba", "Chamaesium viridiflorum", "Codonopsis foetens subsp. Nervosa", "Codonopsis foetens subsp. nervosa", "Gentiana trichotoma", "Pedicularis roylei", "Pedicularis trichoglossa", "Kobresia cercostachys", "Saussurea stella")
+
+# Check large Anaphalis flavescense leaves!
+
+# Check Arisaema parvum, if ind. 2 is 4 scans and area should be mergend?
 
 setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
 setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
