@@ -14,6 +14,9 @@ trait2015 %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2)
 trait2015 <- trait2015 %>% 
   mutate(Dry_Mass_2016_g = as.numeric(Dry_Mass_2016_g)) %>%
   mutate(Leaf_Area_m2 = as.numeric(Leaf_Area_m2)) %>%
+  # if Dry_Mass_2016 is missing
+  mutate(flag = ifelse(is.na(Dry_Mass_2016_g), "DryMass2015", NA)) %>% 
+  mutate(Dry_Mass_2016_g = ifelse(is.na(Dry_Mass_2016_g), Dry_Mass_g, Dry_Mass_2016_g)) %>% 
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE)) %>% #mean thickness
   # Fix wrong variables
   mutate(Taxon_FoC_corrected = gsub("\xa0", " ", Taxon_FoC_corrected),
@@ -21,12 +24,18 @@ trait2015 <- trait2015 %>%
   mutate(Individual_Number = ifelse(Taxon_FoC_corrected == "Hemiphragma heterophyllum" & Individual_Number == "3.2", "3", Individual_Number),
          Taxon_FoC_corrected = ifelse(Taxon_written_on_envelopes %in% c("Alapharis_nepalensis", "Alaphanis_nepalensis"), "Anaphalis nepalensis", Taxon_FoC_corrected)) %>%
   mutate(Leaf_Number = ifelse(Taxon_FoC_corrected == "Festuca sinensis" & Leaf_Area_cm2 == 0.3169, "1_1", Leaf_Number)) %>% 
-  mutate(Individual_Number = as.character(Individual_Number))
+  # Fixing duplicate individuals
+  mutate(flag = ifelse(Taxon_FoC_corrected %in% c("Rhodiola yunnanensis", "Gentiana yunnanensis") & Site == "M", paste(flag, "Old ind nr.", Individual_Number, sep = "_"), flag)) %>% 
+  mutate(Individual_Number = ifelse(Taxon_FoC_corrected %in% c("Rhodiola yunnanensis", "Gentiana yunnanensis") & Site == "M", substr(Individual_Number, 1, 1), Individual_Number))
 
 
 # merge Newleafarea2015 with trait2015 data
 trait2015 <- trait2015 %>% 
-    full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number")) 
+  # Dealing with duplicates: sort data by DryMass, give them id
+  group_by(Site, Elevation, Taxon_FoC_corrected, Individual_Number, Leaf_Number) %>% 
+  arrange(Dry_Mass_2016_g) %>% 
+  mutate(LeafID = 1:n()) %>% 
+  full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number", "LeafID")) 
 
 # Check if there are areas that do not match with traits
 trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% pn  
@@ -89,9 +98,15 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName)
          ) 
 
+# Check duplicate rows
+traits_raw %>% 
+  group_by(Site, Taxon, Individual_number, Leaf_number, Project, Location) %>% 
+  filter(n() > 1)
+
 
 # Clean the trait data
-traits <- ...
+traits_raw %>% 
+  filter(Taxon == "Rumex nepalensis")
 
 
 traits_raw %>%  

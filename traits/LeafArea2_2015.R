@@ -21,16 +21,22 @@ Newleafarea2015 <- leafarea2015 %>%
   group_by(File_Name, Taxon) %>%
   summarise(LeafArea2 = sum(LeafArea), allComments = paste(unique(comment), collapse = " _ ")) %>% 
   ungroup() %>% 
+  filter(!grepl("Gentiana_yunnanensis-\\d\\.", File_Name)) %>% 
   mutate(File_Name = gsub("(.*)\\.jpe*g$", "\\1", File_Name)) %>% # remove jpg or jpeg
   mutate(File_Name = gsub("3850_Potentilla-stenophylla", "3850-Potentilla_stenophylla", File_Name)) %>%
   mutate(File_Name = gsub("jpg", "", File_Name)) %>% # zap jpg without dot
+  mutate(File_Name = if_else(
+    !grepl("\\d-\\d$", File_Name) & grepl("Halenis_eleptica|Gentiana_crassulides", File_Name), 
+    gsub("(.*)(-\\d$)", "\\1-2\\2",  File_Name),
+    File_Name)) %>% # Fix missing Ind nr for Halensis e.
   mutate(File_Name = if_else(grepl("\\d-\\d$", File_Name), File_Name, gsub("(.*)(-\\d$)", "\\1-1\\2",  File_Name))) %>% # add missing Individual_numbers
   mutate(File_Name = gsub("20150820-m-3500-Gentiana_crassuloides-S-1-1", "20150820-m-3500-Gentiana_crassuloides-1-1", File_Name)) %>%  # remove -S in 20150820-m-3500-Gentiana_crassuloides-S-1-1 Gentiana crassuloides
   separate(col = File_Name, into = c("Date", "Site", "Elevation", "Species", "Individual_Number", "Leaf_Number"), sep = "-") %>% 
   # fixing wrong variables
+  filter(!(Elevation == 300 & Species == "Hemiphragma_heterophyllum")) %>% # duplicates with wrong file names
+  filter(!(Elevation == 3580 & Species == "Juncus_himalescens")) %>% # additional files without traits
   mutate(
     Site = gsub("m", "M", Site), # replace m with M
-    Elevation = gsub("3580", "3500", Elevation), # replace 3580 with 3500, only occurs at site M
     # fix variables
     Elevation = gsub("^300$", "3000", Elevation), # replace 300 with 3000, all are Site L
     Taxon = gsub("Neottianthe cucullata var.camcola", "Neottianthe cucullata Var.Camcola", Taxon),
@@ -42,7 +48,11 @@ Newleafarea2015 <- leafarea2015 %>%
     Leaf_Number = gsub("2 007", "2", Leaf_Number) # Arundinaria faberi
     ) %>% 
   mutate(Individual_Number = ifelse(Site == "L" & Taxon == "Thalictrum javanicum" & Individual_Number == "1", "1.1", Individual_Number)) %>% 
-  select(-Species, -Date) # remove columns before merging
+  select(-Species, -Date) %>%  # remove columns before merging
+  # Dealing with duplicates: sort data by leaf area, give them id
+  group_by(Site, Elevation, Taxon, Individual_Number, Leaf_Number) %>% 
+  arrange(LeafArea2) %>% 
+  mutate(LeafID = 1:n())
 
 # No leaf area calculated
 # Leaf area caclculation did not work: Swertia macrosperma, Prenanthes macrophylla
