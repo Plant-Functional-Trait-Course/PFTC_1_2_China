@@ -6,6 +6,7 @@ library("lubridate")
 #import data 2015
 trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
 
+
 #fix character variables
 trait2015 %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
 trait2015 %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
@@ -14,15 +15,21 @@ trait2015 <- trait2015 %>%
   mutate(Dry_Mass_2016_g = as.numeric(Dry_Mass_2016_g)) %>%
   mutate(Leaf_Area_m2 = as.numeric(Leaf_Area_m2)) %>%
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE)) %>% #mean thickness
-  mutate(Taxon_FoC_corrected = gsub("\xa0", " ", Taxon_FoC_corrected)) %>%  #remove non-breaking space
+  # Fix wrong variables
+  mutate(Taxon_FoC_corrected = gsub("\xa0", " ", Taxon_FoC_corrected),
+         Taxon_FoC_corrected = trimws(Taxon_FoC_corrected)) %>%  #remove non-breaking space
+  mutate(Individual_Number = ifelse(Taxon_FoC_corrected == "Hemiphragma heterophyllum" & Individual_Number == "3.2", "3", Individual_Number),
+         Taxon_FoC_corrected = ifelse(Taxon_written_on_envelopes %in% c("Alapharis_nepalensis", "Alaphanis_nepalensis"), "Anaphalis nepalensis", Taxon_FoC_corrected)) %>%
+  mutate(Leaf_Number = ifelse(Taxon_FoC_corrected == "Festuca sinensis" & Leaf_Area_cm2 == 0.3169, "1_1", Leaf_Number)) %>% 
   mutate(Individual_Number = as.character(Individual_Number))
 
 
 # merge Newleafarea2015 with trait2015 data
 trait2015 <- trait2015 %>% 
-    full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number"))
-  
-  
+    full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number")) 
+
+# Check if there are areas that do not match with traits
+trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% pn  
 
 #import data 2016
 # leaf area
@@ -67,7 +74,7 @@ trait2016 <- trait2016 %>%
   mutate(allComments = NA)
 
 # Combine and recalculate SLA and LDMC
-traits <- bind_rows(trait2016, trait2015) %>%
+traits_raw <- bind_rows(trait2016, trait2015) %>%
   mutate(SLA_cm2_g = Leaf_Area_cm2 / Dry_Mass_g,
          LDMC = Dry_Mass_g / Wet_Mass_g,
          Site = factor(Site, levels = c("H", "A", "M", "L")), 
@@ -83,6 +90,27 @@ traits <- bind_rows(trait2016, trait2015) %>%
          ) 
 
 
+# Clean the trait data
+traits <- ...
+
+
+traits_raw %>%  
+  mutate(year = as.factor(year(Date))) %>%
+  filter(year == "2015") %>% 
+  mutate(allComments = ifelse(allComments == "NA", NA, allComments)) %>% 
+  mutate(allComments = gsub("_NA", "", allComments)) %>%  
+  mutate(allComments = gsub(", add", "", allComments)) %>%  
+  filter(grepl("black line", allComments)|is.na(allComments)) %>% 
+  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = allComments)) + 
+  geom_point() +   
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+
+
+
+
 ##some plots
 #wet vs dry
 traits %>% mutate(year = as.factor(year(Date))) %>%
@@ -95,12 +123,14 @@ ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) +
 
 # dry vs area  
 traits %>% mutate(year = as.factor(year(Date))) %>%
-  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2)) + 
+  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = Site)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
   scale_y_log10() + 
-  facet_wrap(~ year)
+  facet_wrap(~ year) +
+  theme(legend.position="none")
+
 
 # calculate large residuals: Area vs. DryMass
 LargeResid <- traits %>% filter(!is.na(Leaf_Area_cm2), !is.na(Dry_Mass_g))
@@ -145,11 +175,13 @@ traits %>%
   facet_wrap(~ year)
 
 
+# yellow leaf|leaf yellow|brown|not Rumex
+  
 ### FLAG DATA
 # Wet mass > Dry mass
 # Very small wet mass
 # large residual for dry mass vs. leaf area
-# SLA > 500
+# SLA > 500 and < 5
 traits<- traits %>% 
   mutate(flag = NA) %>% 
   mutate(flag = ifelse(Dry_Mass_g - Wet_Mass_g > 0, "Wet>Dry", NA)) %>% 
@@ -158,6 +190,5 @@ traits<- traits %>%
   mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA)) %>% 
   mutate(flag = ifelse(SLA_cm2_g > 500, paste(flag, "LargeSLA", sep = "_"), NA))
   
-unique(dd$flag)
 
 
