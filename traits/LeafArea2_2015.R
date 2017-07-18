@@ -3,18 +3,23 @@ library(tidyverse)
 library(lubridate)
 library(readr)
 
-leafarea2015 <- read_csv(file = "traits/data/Leaf.Area2015-20170714.csv")
+leafarea2015 <- read_csv(file = "traits/data/Leaf.Area2015-20170717.csv")
+
+# black line unsure which area, double scan!!!
+# comment: not Rumex, check this!
+# check cut, folded, eaten, black line leaves
 
 Newleafarea2015 <- leafarea2015 %>% 
   select(-X1) %>% 
   rename(Taxon = X5) %>% 
   filter(!is.na(LeafArea)) %>% # remove files without area
-  filter(!grepl("black|dirt|empty|double|brown|yellow|folded", comment)) %>% # remove black lines, dirt and douple scans
+  # remove dirt, folded, eaten, brown and yellow leaves, black lines and double and empty scans
+  filter(!grepl("dirt|black line|empty|did not work|yellow leaf|leaf yellow|brown|not Rumex|part of leaf too white, two leaves on scan?", comment)) %>% 
   # split File name and Area 1, 2, 3
   separate(col = File_Name, into = c("File_Name", "Area"), sep = "\\.txt\\.") %>% 
   # summarize areas from different part of  leaves
   group_by(File_Name, Taxon) %>%
-  summarise(LeafArea2 = sum(LeafArea), allComments = paste(comment, collapse = " _ ")) %>% 
+  summarise(LeafArea2 = sum(LeafArea), allComments = paste(unique(comment), collapse = " _ ")) %>% 
   ungroup() %>% 
   mutate(File_Name = gsub("(.*)\\.jpe*g$", "\\1", File_Name)) %>% # remove jpg or jpeg
   mutate(File_Name = gsub("3850_Potentilla-stenophylla", "3850-Potentilla_stenophylla", File_Name)) %>%
@@ -24,20 +29,25 @@ Newleafarea2015 <- leafarea2015 %>%
   separate(col = File_Name, into = c("Date", "Site", "Elevation", "Species", "Individual_Number", "Leaf_Number"), sep = "-") %>% 
   mutate(
     Site = gsub("m", "M", Site), # replace m with M
-    Elevation = gsub("300", "3000", Elevation), # replace 300 with 3000, all are Site L
     Elevation = gsub("3580", "3500", Elevation), # replace 3580 with 3500, only occurs at site M
     # fix species names
+    Elevation = gsub("^300$", "3000", Elevation), # replace 300 with 3000, all are Site L
     Taxon = gsub("Neottianthe cucullata var.camcola", "Neottianthe cucullata Var.Camcola", Taxon),
+    Taxon = gsub("Youngia prattii", "Youngia racemifera", Taxon),
     Taxon = gsub("Carex nubigena", "Carex nubige", Taxon),
-    Taxon = gsub("\xa0", " ", Taxon),
+    Taxon = gsub("\xa0", "", Taxon),
     Elevation = as.numeric(Elevation)
     ) %>% 
   select(-Species, -Date) # remove columns before merging
 
+# No leaf area calculated
 # Leaf area caclculation did not work: Swertia macrosperma, Prenanthes macrophylla
+# Arisaema parvum: Brown leaf
 
+# Check where the scans are for these species!
+# c("Polygonum macrophyllum", "Prenanthes macrophylla", "Swertia macrosperma", "Berberis dictyophylla", "Geranium donianum", "Anemone obtusiloba", "Chamaesium viridiflorum", "Codonopsis foetens subsp. Nervosa", "Codonopsis foetens subsp. nervosa", "Gentiana trichotoma", "Pedicularis roylei", "Pedicularis trichoglossa", "Kobresia cercostachys", "Saussurea stella")
 
 setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
 setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
-  
+
   
