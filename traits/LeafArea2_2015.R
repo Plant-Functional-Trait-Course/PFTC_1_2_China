@@ -5,10 +5,7 @@ library(readr)
 
 leafarea2015 <- read_csv(file = "traits/data/Leaf.Area2015-20170717.csv")
 
-# black line unsure which area, double scan!!!
-# comment: not Rumex, check this!
-# check cut, folded, eaten, black line leaves
-
+# remove black line unsure which area, double scan!!!
 Newleafarea2015 <- leafarea2015 %>% 
   select(-X1) %>% 
   rename(Taxon = X5) %>% 
