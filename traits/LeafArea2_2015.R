@@ -13,6 +13,11 @@ Newleafarea2015 <- leafarea2015 %>%
   select(-X1) %>% 
   rename(Taxon = X5) %>% 
   filter(!is.na(LeafArea)) %>% # remove files without area
+  # fix comment for Arisima_parvum at M; for Ind 2, change Leaf nr to 1.1 to merge single scanned leaflets
+  mutate(comment = ifelse(grepl("Arisima", File_Name) & grepl("-M-", File_Name) & LeafArea < 14.7, "dirt", comment)) %>% 
+  mutate(File_Name = ifelse(grepl("Arisima", File_Name) & grepl("-M-", File_Name), 
+                            gsub("\\.\\d", "", File_Name), 
+                            File_Name)) %>% 
   # remove dirt, black lines and double and empty scans
   filter(!grepl("dirt|black line|empty|did not work|part of leaf too white, two leaves on scan?|double", comment)) %>% 
   # split File name and Area 1, 2, 3
@@ -56,14 +61,11 @@ Newleafarea2015 <- leafarea2015 %>%
 
 # No leaf area calculated
 # Leaf area caclculation did not work: Swertia macrosperma, Prenanthes macrophylla
-# Arisaema parvum: Brown leaf
 
 # Check where the scans are for these species!
 # c("Polygonum macrophyllum", "Prenanthes macrophylla", "Swertia macrosperma", "Berberis dictyophylla", "Geranium donianum", "Anemone obtusiloba", "Chamaesium viridiflorum", "Codonopsis foetens subsp. Nervosa", "Codonopsis foetens subsp. nervosa", "Gentiana trichotoma", "Pedicularis roylei", "Pedicularis trichoglossa", "Kobresia cercostachys", "Saussurea stella")
 
 # Check large Anaphalis flavescense leaves!
-
-# Check Arisaema parvum, if ind. 2 is 4 scans and area should be mergend?
 
 setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
 setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
