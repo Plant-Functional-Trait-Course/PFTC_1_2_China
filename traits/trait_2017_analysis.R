@@ -3,6 +3,8 @@ library("tidyverse")
 library("readr")
 library("lubridate")
 
+pn <- . %>% print(n = Inf)
+
 #import data 2015
 trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
 
@@ -35,10 +37,11 @@ trait2015 <- trait2015 %>%
   group_by(Site, Elevation, Taxon_FoC_corrected, Individual_Number, Leaf_Number) %>% 
   arrange(Dry_Mass_2016_g) %>% 
   mutate(LeafID = 1:n()) %>% 
-  full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number", "LeafID")) 
+  full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number", "LeafID")) %>% 
+  ungroup()
 
 # Check if there are areas that do not match with traits
-trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% pn  
+trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% pn
 
 #import data 2016
 # leaf area
