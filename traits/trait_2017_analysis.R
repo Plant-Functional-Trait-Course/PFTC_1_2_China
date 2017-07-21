@@ -22,7 +22,8 @@ trait2015 <- trait2015 %>%
   mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE)) %>% #mean thickness
   # Fix wrong variables
   mutate(Taxon_FoC_corrected = gsub("\xa0", " ", Taxon_FoC_corrected),
-         Taxon_FoC_corrected = trimws(Taxon_FoC_corrected)) %>%  #remove non-breaking space
+         Taxon_FoC_corrected = trimws(Taxon_FoC_corrected),
+         Taxon_FoC_corrected = gsub("Codonopsis foetens subsp. Nervosa", "Codonopsis foetens subsp. nervosa", Taxon_FoC_corrected)) %>%  #remove non-breaking space
   mutate(Individual_Number = ifelse(Taxon_FoC_corrected == "Hemiphragma heterophyllum" & Individual_Number == "3.2", "3", Individual_Number),
          Taxon_FoC_corrected = ifelse(Taxon_written_on_envelopes %in% c("Alapharis_nepalensis", "Alaphanis_nepalensis"), "Anaphalis nepalensis", Taxon_FoC_corrected)) %>%
   mutate(Leaf_Number = ifelse(Taxon_FoC_corrected == "Festuca sinensis" & Leaf_Area_cm2 == 0.3169, "1_1", Leaf_Number)) %>% 
@@ -40,8 +41,13 @@ trait2015 <- trait2015 %>%
   full_join(Newleafarea2015, by = c("Site", "Elevation", "Taxon_FoC_corrected" = "Taxon", "Individual_Number", "Leaf_Number", "LeafID")) %>% 
   ungroup()
 
+
 # Check if there are areas that do not match with traits
-trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% pn
+trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
+### NEED TO CHECK THESE 3 SPECIES
+# Three species without traits: Galium asperifolium var.sikkimense-L Ind 1-5, check if same leaves (Maitner lowland 3-5; vigdis lowland 1 & 2)
+# Halenia elliptica-A; Bistorta viviapara-A
+
 
 #import data 2016
 # leaf area
@@ -101,6 +107,32 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName)
          ) 
 
+
+# CN Analysis
+# read in ID
+CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE)
+
+CN_ID <- CN_ID %>% 
+  as_tibble() %>% 
+  filter(stoich.vial.label != "") %>% 
+  mutate(Full_Envelope_Name = as.character(Full_Envelope_Name)) %>% 
+  mutate(stoich.vial.label = as.character(stoich.vial.label)) %>% 
+  select(Full_Envelope_Name, stoich.vial.label)
+
+# CN data
+CNdata <- read_excel(path = "traits/data/China_CNP_July18_2017.xls")
+
+CNdata <- CNdata %>% 
+  select(-SITE) %>%
+  rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
+  mutate(StoichLabel = as.character(StoichLabel)) %>% 
+  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
+
+# Merge CN Data with traits
+traits_raw <- traits_raw %>% 
+  left_join(CNdata, by = c("Full_Envelope_Name"))
+
+summary(CNdata)
 # Check duplicate rows
 traits_raw %>% 
   group_by(Site, Taxon, Individual_number, Leaf_number, Project, Location) %>% 
@@ -124,6 +156,8 @@ traits <- traits_raw %>%
   mutate(flag = ifelse(Dry_Mass_g - Wet_Mass_g > 0, paste("Wet>Dry", sep = "_"), NA)) %>% 
   mutate(flag = ifelse(Wet_Mass_g < 0.0005, paste(flag, "WetTiny", sep = "_"), NA)) %>% 
   mutate(flag = ifelse(SLA_cm2_g > 500, paste(flag, "LargeSLA", sep = "_"), NA))
+
+### Remove leaf area for brown leafs, yellow, eaten etc. But other data can still be good.
 
 
 # calculate large residuals: Area vs. DryMass
