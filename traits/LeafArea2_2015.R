@@ -2,13 +2,21 @@
 library(tidyverse)
 library(lubridate)
 library(readr)
+library(readxl)
 
 leafarea2015 <- read_csv(file = "traits/data/Leaf.Area2015-20170717.csv")
+leafarea2015_2 <- read_excel(path = "traits/data/LeafArea2015-20170721_SecondBatch.xlsx")
+
+leafarea2015_2 <- leafarea2015_2 %>% 
+  slice(-c(1:30)) %>% 
+  mutate(LeafArea = as.numeric(LeafArea))
+
 
 # remove black line unsure which area, double scan!!!
 Newleafarea2015 <- leafarea2015 %>% 
   select(-X1) %>% 
   rename(Taxon = X5) %>% 
+  bind_rows(leafarea2015_2) %>% 
   filter(!is.na(LeafArea)) %>% # remove files without area
   # fix comment for Arisima_parvum at M; for Ind 2, change Leaf nr to 1.1 to merge single scanned leaflets
   mutate(comment = ifelse(grepl("Arisima", File_Name) & grepl("-M-", File_Name) & LeafArea < 14.7, "dirt", comment)) %>% 
@@ -16,7 +24,7 @@ Newleafarea2015 <- leafarea2015 %>%
                             gsub("\\.\\d", "", File_Name), 
                             File_Name)) %>% 
   # remove dirt, black lines and double and empty scans
-  filter(!grepl("dirt|black line|empty|did not work|part of leaf too white, two leaves on scan?|double", comment)) %>% 
+  filter(!grepl("dirt|black line|empty|did not work|leaf half cut|part of leaf too white, two leaves on scan?|double", comment)) %>% 
   # split File name and Area 1, 2, 3
   separate(col = File_Name, into = c("File_Name", "Area"), sep = "\\.txt\\.") %>% 
   # summarize areas from different part of  leaves
@@ -26,6 +34,12 @@ Newleafarea2015 <- leafarea2015 %>%
   filter(!grepl("Gentiana_yunnanensis-\\d\\.", File_Name)) %>% 
   mutate(File_Name = gsub("(.*)\\.jpe*g$", "\\1", File_Name)) %>% # remove jpg or jpeg
   mutate(File_Name = gsub("3850_Potentilla-stenophylla", "3850-Potentilla_stenophylla", File_Name)) %>%
+  mutate(File_Name = gsub("Potetitiua-Stenophylla-Var.Emergens", "Potetitiua_Stenophylla_Var.Emergens", File_Name)) %>%
+  mutate(File_Name = gsub("Galium-asperifolium-var.sikkimense", "Galium_asperifolium_var.sikkimense", File_Name)) %>%
+  mutate(File_Name = gsub("_\\d{8}_000\\d$", "", File_Name)) %>%
+  mutate(File_Name = gsub("3850-Pediculanis_sima_", "3850-Pediculanis_sima-", File_Name)) %>%
+  mutate(File_Name = gsub("3850-Saxitaga_stelaritolia_5_", "3850-Saxitaga_stelaritolia-5-", File_Name)) %>%
+  mutate(File_Name = gsub("^20150820-A-Carex_agglomerata-5", "20150820-A-3850-Carex_agglomerata-5", File_Name)) %>%
   mutate(File_Name = gsub("jpg", "", File_Name)) %>% # zap jpg without dot
   mutate(File_Name = if_else(
     !grepl("\\d-\\d$", File_Name) & grepl("Halenis_eleptica|Gentiana_crassulides", File_Name), 
@@ -64,7 +78,7 @@ Newleafarea2015 <- leafarea2015 %>%
 
 # Check large Anaphalis flavescense leaves!
 
-setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
-setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
+setdiff(trait2015$Taxon, Newleafarea2015$Taxon)
+setdiff(Newleafarea2015$Taxon, trait2015$Taxon)
 
   
