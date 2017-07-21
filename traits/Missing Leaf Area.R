@@ -81,7 +81,11 @@ ToDo <- ExpectedMissingScans %>%
   bind_rows(UnknownMissingScans2) %>% 
   bind_rows(SomeAdditionalScans) 
 
-# DO BY HAND
+# DO NOT WORK; TO DO BY HAND
+# All_Images_cleaned-Maitner/Elevation_leaf_images_without_folders_cleaned/20150820-L-3000-Prenanthes_macrophylla(cf)-1: leaf 1-5
+# All_Images_cleaned-Maitner/Lowland_LeafImages_withoutfolders/20150820-L-3000-Bistorta_macrophyllerm-1: Leaf 1-3
+# leafscans_0825/20150820-H-4100-Polygonum_macrophyllum-1: Leaf 1-3
+
 # Swerfias -L- in 4 different places
 # /Volumes/My Passport/2015 ChinaDataAllComputers/leaftraitdata/All_Images_cleaned-Maitner/Elevation_leaf_images_without_folders_cleaned/20150820-L-3000-Swerfia_macrosperma-1-1.jpeg
 # /Volumes/My Passport/2015 ChinaDataAllComputers/leaftraitdata/All_Images/Lowland_LeafImages_withoutfolders/20150820-L-3000-Swerfia_macrosperma-1-1.jpeg
@@ -95,7 +99,44 @@ ToDo <- ExpectedMissingScans %>%
 # All scans form 2016
 AllImages2016 <- dir(path = paste0("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016"), pattern = "jpeg|jpg", recursive = TRUE, full.names = TRUE)
 
-# all files from trait2016
-trait2016$FileName
+# remove duplicates, fix names
+AllImages2016 <- AllImages2016 %>% 
+  data_frame(full = AllImages2016, x = basename(AllImages2016)) %>% 
+  group_by(x) %>% 
+  arrange(x) %>% 
+  mutate(ID = 1:n()) %>% filter(ID == 1) %>% 
+  ungroup(x) %>% 
+  mutate(x = gsub("-", "_", x),
+         x = gsub(" ", "_", x),
+         x = gsub(".jpg|.jpeg", "", x),
+         x = gsub("^\\d{4,8}\\_", "", x))
 
-setdiff(basename(AllImages2015), trait2016$FileName) %>% as_tibble()
+
+AllImages2016$x <- tolower(AllImages2016$x)
+AllImages2016 <- AllImages2016 %>% 
+  mutate(x = gsub("rockii", "rockiana", x),
+         x = gsub("var._rockiana", "var_rockiana", x),
+         x = gsub("_usincans", "_incans", x),
+         x = gsub("_husincans", "_incans", x),
+         x = gsub("sp\\._", "sp_", x),
+         x = gsub("leuconota", "leuconata", x),
+         x = gsub("trichomata", "trichotoma", x),
+         x = gsub("saussurea_gramina", "saussurea_graminea", x),
+         x = gsub("fustidola", "fastidiola", x))
+
+
+# all files from trait2016
+Trait2016 <- trait2016 %>% 
+  mutate(FileName = gsub("-", "_", FileName),
+         FileName = gsub(" ", "_", FileName),
+         FileName = gsub(".jpg|.jpeg", "", FileName),
+         FileName = gsub("^\\d{4,8}\\_", "", FileName),
+         FileName = gsub("leuconota", "leuconata", FileName),
+         FileName = tolower(FileName))
+
+#Scans not in trait; appr. 500 more that do not match, but all misspellings
+AllImages2016 %>% anti_join(Trait2016, by = c(x = "FileName")) %>% select(x) %>% pn
+
+
+# Missing Leaf Area in 2016 (from traits): need to be scanned again
+traits_raw %>% filter(is.na(Leaf_Area_cm2), year(Date) == 2016)
