@@ -1,12 +1,42 @@
 ### CALCULATE LEAF AREA
 library(LeafArea)
 
-ToDo
 
-find.ij()
-test <- run.ij (set.directory = "~/Desktop/TestLeaf")
-test <- run.ij (set.directory = "~/Desktop/TestLeaf", distance.pixel = 237, known.distance = 2, log =
-                       TRUE, save.image = TRUE, low.size = 0.05)
+# Auds fantastic function
+new.folder <- "~/Desktop/Temp"
+list.of.files <- dir(path = paste0("~/Desktop/TestLeaf"), pattern = "jpeg|jpg", recursive = TRUE, full.names = TRUE)
+
+list.of.files <- ToDo$full[201:390]
+
+loop.files <-  function(files){
+  
+  file.copy(files, new.folder)
+  if(grepl("-NA$", files)){
+    newfile <- basename(files)
+    file.rename(paste0(new.folder, "/", newfile), paste0(new.folder,
+                                                         "/", gsub("-NA$", "", newfile)))
+  }
+  print(files)
+  area <- try(run.ij(set.directory = "~/Desktop/Temp", distance.pixel = 237, known.distance = 2, log = TRUE, low.size = 0.005, save.image = TRUE))
+  if(inherits(area, "try-error")){
+    return(data.frame(File_Name =files, LeafArea = NA))
+  }
+  file.copy(dir(new.folder, full.names = TRUE, pattern = "\\.tif"), "~/Desktop/Output")
+  Sys.sleep(0.1)
+  if(any(!file.remove(dir(new.folder, full.names = TRUE) ))) stop()
+  res <- data.frame(File_Name = names(unlist(area[[2]])), LeafArea = (unlist(area[[2]])))
+  return(res)
+}
+
+LeafAreaSecond <- plyr::ldply(list.of.files, loop.files)
+
+LeafAreaSecond_1 <- LeafAreaSecond
+LeafAreaSecond_2 <- LeafAreaSecond
+LeafAreaSecond_3 <- LeafAreaSecond
+
+LeafArea2 <- rbind(LeafAreaSecond_1, LeafAreaSecond_2, LeafAreaSecond_3)
+LeafArea2 <- as_tibble(LeafArea2)
+write_csv(LeafArea2, "LeafArea2.csv")
 
 
 # Sean leaf areas without loop
