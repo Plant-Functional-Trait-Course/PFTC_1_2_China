@@ -61,14 +61,41 @@ Newleafarea2015 <- leafarea2015 %>%
     Taxon = gsub("\xa0", "", Taxon),
     Elevation = as.numeric(Elevation),
     Leaf_Number = gsub("1 004", "1", Leaf_Number), # Thalictrum javanicum
-    Leaf_Number = gsub("2 007", "2", Leaf_Number) # Arundinaria faberi
-    ) %>% 
+    Leaf_Number = gsub("2 007", "2", Leaf_Number), # Arundinaria faberi
+    Leaf_Number = gsub(" 00\\d", "", Leaf_Number)) %>% # remove 00 from Leaf_Number
   mutate(Individual_Number = ifelse(Site == "L" & Taxon == "Thalictrum javanicum" & Individual_Number == "1", "1.1", Individual_Number)) %>% 
+  mutate(Species = gsub("_", " ", Species)) %>% 
+  mutate(Taxon = ifelse(is.na(Taxon), Species, Taxon)) %>%
+  mutate(Taxon = gsub("Anaphanis flavescens", "Anaphalis flavescens", Taxon),
+         Taxon = gsub("Codonopsis nervosa|Codonopsis foetens subsp. Nervosa", "Codonopsis foetens subsp. nervosa", Taxon),
+         Taxon = gsub("Saussurea cetrach", "Saussurea ceterach", Taxon),
+         Taxon = gsub("Pediculanis sima", "Pedicularis sima", Taxon),
+         Taxon = gsub("Berberis Dictyophylla", "Berberis dictyophylla", Taxon),
+         Taxon = gsub("Geranium donerarium", "Geranium donianum", Taxon),
+         Taxon = gsub("Saxitaga stelaritolia", "Saxifraga stellariifolia", Taxon),
+         Taxon = gsub("Carex sp#1", "Carex sp1", Taxon),
+         Taxon = gsub("Saussurea stellaria", "Saussurea stella", Taxon),
+         Taxon = gsub("Polygonatum cirrifolium", "Polygonatum cirrhifolium", Taxon),
+         Taxon = gsub("Potetitiua Stenophylla Var.Emergens", "Potentilla stenophylla var.emergens", Taxon),
+         Taxon = gsub("Parasenecio palamatisectus", "Parasenecio palmatisectus", Taxon),
+         Taxon = gsub("Soraseris hockeriana", "Soroseris hookeriana", Taxon),
+         Taxon = gsub("Potentilla leucolata", "Potentilla leuconota", Taxon),
+         Taxon = gsub("Tanacetum tatsinense", "Tanacetum tatsienense", Taxon),
+         Taxon = gsub("Halenis eleptica", "Halenia elliptica", Taxon),
+         Taxon = gsub("Robresia cercostachys", "Kobresia cercostachys", Taxon)) %>% 
   select(-Species, -Date) %>%  # remove columns before merging
   # Dealing with duplicates: sort data by leaf area, give them id
   group_by(Site, Elevation, Taxon, Individual_Number, Leaf_Number) %>% 
   arrange(LeafArea2) %>% 
-  mutate(LeafID = 1:n())
+  # remove duplicates
+  mutate(LeafID = 1:n()) %>% 
+  filter(!(Taxon %in% c("Carex sp1", "Potentilla leuconota") & LeafID == 2)) %>% 
+  ungroup() %>% 
+  mutate(Individual_Number = ifelse(Site == "L" & Taxon == "Geum aleppicum" & Leaf_Number == "2", "1", Individual_Number))
+# %>% filter(LeafID >1)
+
+
+
 
 # No leaf area calculated
 # Leaf area caclculation did not work: Swertia macrosperma, Prenanthes macrophylla
@@ -79,6 +106,6 @@ Newleafarea2015 <- leafarea2015 %>%
 # Check large Anaphalis flavescense leaves!
 
 setdiff(trait2015$Taxon, Newleafarea2015$Taxon)
-setdiff(Newleafarea2015$Taxon, trait2015$Taxon)
+setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
 
   
