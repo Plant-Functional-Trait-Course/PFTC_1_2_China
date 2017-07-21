@@ -108,29 +108,37 @@ traits_raw %>%
 
 
 # Clean the trait data
-traits_raw %>% 
-  filter(Taxon == "Rumex nepalensis")
+# remove yellow leaf|leaf yellow|brown|not Rumex
+# eaten, folded, cut leaves seem not problematic, but some with part of leaf too white!!!
+traits <- traits_raw %>% 
+  filter(!grepl("yellow leaf|leaf yellow|brown|not Rumex|black", allComments)) %>% 
+  filter(!grepl("^leaf folded$", allComments)) %>% 
+  mutate(allComments = gsub("NA", NA, allComments)) %>% # remove "NA" in comments
+  mutate(allComments = gsub("add", NA, allComments)) %>% # remove add in comments
+  mutate(allComments = gsub(", add, |, add|add _ add, |add _ |add, ", "", allComments)) %>% # remove add in comments
+# FLAG DATA
+# Wet mass > Dry mass
+# Very small wet mass
+# large residual for dry mass vs. leaf area
+# SLA > 500 and < 5
+  mutate(flag = ifelse(Dry_Mass_g - Wet_Mass_g > 0, paste("Wet>Dry", sep = "_"), NA)) %>% 
+  mutate(flag = ifelse(Wet_Mass_g < 0.0005, paste(flag, "WetTiny", sep = "_"), NA)) %>% 
+  mutate(flag = ifelse(SLA_cm2_g > 500, paste(flag, "LargeSLA", sep = "_"), NA))
 
 
-traits_raw %>%  
-  mutate(year = as.factor(year(Date))) %>%
-  filter(year == "2015") %>% 
-  mutate(allComments = ifelse(allComments == "NA", NA, allComments)) %>% 
-  mutate(allComments = gsub("_NA", "", allComments)) %>%  
-  mutate(allComments = gsub(", add", "", allComments)) %>%  
-  filter(grepl("black line", allComments)|is.na(allComments)) %>% 
-  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = allComments)) + 
-  geom_point() +   
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_log10() + 
-  scale_y_log10() + 
-  facet_wrap(~ year)
+# calculate large residuals: Area vs. DryMass
+LargeResid <- traits %>% filter(!is.na(Leaf_Area_cm2), !is.na(Dry_Mass_g))
+fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_g), data = LargeResid)
+LargeResid$resid_Area_Dry <- resid(fit)
+LargeResid <- LargeResid %>% select(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, Dry_Mass_g, Leaf_Area_cm2, resid_Area_Dry)
 
+traits <- traits %>% 
+  left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% 
+  mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA))
+  
 
-
-
-##some plots
-#wet vs dry
+## Check data with some plots
+# wet vs dry
 traits %>% mutate(year = as.factor(year(Date))) %>%
 ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) + 
   geom_point() +   
@@ -141,21 +149,16 @@ ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) +
 
 # dry vs area  
 traits %>% mutate(year = as.factor(year(Date))) %>%
-  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = Site)) + 
+  filter(year == 2015) %>% 
+  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = allComments)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
   scale_y_log10() + 
-  facet_wrap(~ year) +
-  theme(legend.position="none")
+  facet_wrap(~ year)
 
 
-# calculate large residuals: Area vs. DryMass
-LargeResid <- traits %>% filter(!is.na(Leaf_Area_cm2), !is.na(Dry_Mass_g))
-fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_g), data = LargeResid)
-LargeResid$resid_Area_Dry <- resid(fit)
-LargeResid <- LargeResid %>% select(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, Dry_Mass_g, Leaf_Area_cm2, resid_Area_Dry)
-
+# large resids
 LargeResid %>% mutate(year = as.factor(year(Date))) %>%
   ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = abs(resid_Area_Dry) > 1.2)) + 
   geom_point() +   
@@ -184,7 +187,7 @@ traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
 
 traits %>% 
   mutate(year = year(Date)) %>% 
-  arrange(SLA_cm2_g) %>% filter(SLA_cm2_g > 500)
+  arrange(SLA_cm2_g) %>%
   ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = SLA_cm2_g > 500)) + 
   geom_point() + 
   geom_abline(slope = 1, intercept = 0) + 
@@ -193,20 +196,7 @@ traits %>%
   facet_wrap(~ year)
 
 
-# yellow leaf|leaf yellow|brown|not Rumex
-  
-### FLAG DATA
-# Wet mass > Dry mass
-# Very small wet mass
-# large residual for dry mass vs. leaf area
-# SLA > 500 and < 5
-traits<- traits %>% 
-  mutate(flag = NA) %>% 
-  mutate(flag = ifelse(Dry_Mass_g - Wet_Mass_g > 0, "Wet>Dry", NA)) %>% 
-  mutate(flag = ifelse(Wet_Mass_g < 0.0005, paste(flag, "WetTiny", sep = "_"), NA)) %>% 
-  left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% 
-  mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA)) %>% 
-  mutate(flag = ifelse(SLA_cm2_g > 500, paste(flag, "LargeSLA", sep = "_"), NA))
+
   
 
 
