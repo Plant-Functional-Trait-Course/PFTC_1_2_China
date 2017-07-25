@@ -30,6 +30,7 @@ Newleafarea2015 <- leafarea2015 %>%
   # summarize areas from different part of  leaves
   group_by(File_Name, Taxon) %>%
   summarise(LeafArea2 = sum(LeafArea), allComments = paste(unique(comment), collapse = " _ ")) %>% 
+  # Fix File_Name problems
   ungroup() %>% 
   filter(!grepl("Gentiana_yunnanensis-\\d\\.", File_Name)) %>% 
   mutate(File_Name = gsub("(.*)\\.jpe*g$", "\\1", File_Name)) %>% # remove jpg or jpeg
@@ -47,6 +48,7 @@ Newleafarea2015 <- leafarea2015 %>%
     File_Name)) %>% # Fix missing Ind nr for Halensis e.
   mutate(File_Name = if_else(grepl("\\d-\\d$", File_Name), File_Name, gsub("(.*)(-\\d$)", "\\1-1\\2",  File_Name))) %>% # add missing Individual_numbers
   mutate(File_Name = gsub("20150820-m-3500-Gentiana_crassuloides-S-1-1", "20150820-m-3500-Gentiana_crassuloides-1-1", File_Name)) %>%  # remove -S in 20150820-m-3500-Gentiana_crassuloides-S-1-1 Gentiana crassuloides
+  # Separate File_Name
   separate(col = File_Name, into = c("Date", "Site", "Elevation", "Species", "Individual_Number", "Leaf_Number"), sep = "-") %>% 
   # fixing wrong variables
   filter(!(Elevation == 300 & Species == "Hemiphragma_heterophyllum")) %>% # duplicates with wrong file names
@@ -63,9 +65,11 @@ Newleafarea2015 <- leafarea2015 %>%
     Leaf_Number = gsub("1 004", "1", Leaf_Number), # Thalictrum javanicum
     Leaf_Number = gsub("2 007", "2", Leaf_Number), # Arundinaria faberi
     Leaf_Number = gsub(" 00\\d", "", Leaf_Number)) %>% # remove 00 from Leaf_Number
-  mutate(Individual_Number = ifelse(Site == "L" & Taxon == "Thalictrum javanicum" & Individual_Number == "1", "1.1", Individual_Number)) %>% 
   mutate(Species = gsub("_", " ", Species)) %>% 
   mutate(Taxon = ifelse(is.na(Taxon), Species, Taxon)) %>%
+  mutate(
+    Individual_Number = ifelse(Site == "L" & Taxon == "Thalictrum javanicum" & Individual_Number == "1", "1.1", Individual_Number)
+  ) %>% 
   mutate(Taxon = gsub("Anaphanis flavescens", "Anaphalis flavescens", Taxon),
          Taxon = gsub("Codonopsis nervosa|Codonopsis foetens subsp. Nervosa", "Codonopsis foetens subsp. nervosa", Taxon),
          Taxon = gsub("Saussurea cetrach", "Saussurea ceterach", Taxon),
@@ -82,17 +86,16 @@ Newleafarea2015 <- leafarea2015 %>%
          Taxon = gsub("Potentilla leucolata", "Potentilla leuconota", Taxon),
          Taxon = gsub("Tanacetum tatsinense", "Tanacetum tatsienense", Taxon),
          Taxon = gsub("Halenis eleptica", "Halenia elliptica", Taxon),
-         Taxon = gsub("Robresia cercostachys", "Kobresia cercostachys", Taxon)) %>% 
+         Taxon = gsub("Robresia cercostachys", "Kobresia cercostachys", Taxon),
+         Taxon = gsub("Bistorta viviapara", "Polygonum viviparum", Taxon)) %>% 
   select(-Species, -Date) %>%  # remove columns before merging
   # Dealing with duplicates: sort data by leaf area, give them id
   group_by(Site, Elevation, Taxon, Individual_Number, Leaf_Number) %>% 
   arrange(LeafArea2) %>% 
   # remove duplicates
   mutate(LeafID = 1:n()) %>% 
-  filter(!(Taxon %in% c("Carex sp1", "Potentilla leuconota") & LeafID == 2)) %>% 
-  ungroup() %>% 
-  mutate(Individual_Number = ifelse(Site == "L" & Taxon == "Geum aleppicum" & Leaf_Number == "2", "1", Individual_Number))
-# %>% filter(LeafID >1)
+  filter(!(Taxon %in% c("Carex sp1", "Potentilla leuconota") & LeafID == 2))
+
 
 
 
@@ -105,7 +108,6 @@ Newleafarea2015 <- leafarea2015 %>%
 
 # Check large Anaphalis flavescense leaves!
 
-setdiff(trait2015$Taxon, Newleafarea2015$Taxon)
-setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
+
 
   
