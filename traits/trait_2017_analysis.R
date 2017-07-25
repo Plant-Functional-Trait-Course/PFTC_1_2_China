@@ -5,9 +5,15 @@ library("lubridate")
 
 pn <- . %>% print(n = Inf)
 
-#import data 2015
-trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
+# Import recalculation of leaf area data 2015
+source("traits/LeafArea2_2015.R")
 
+#### IMPORT DATA 2015 ####
+trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
+trait2015_Halenia <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017 Halenia_elliptica.csv", delim = ";", comment = "")
+
+trait2015 <- trait2015 %>% 
+  bind_rows(trait2015_Halenia %>% mutate(Leaf_Number = as.character(Leaf_Number)))
 
 #fix character variables
 trait2015 %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
@@ -32,6 +38,11 @@ trait2015 <- trait2015 %>%
   mutate(Individual_Number = ifelse(Taxon_FoC_corrected %in% c("Rhodiola yunnanensis", "Gentiana yunnanensis") & Site == "M", substr(Individual_Number, 1, 1), Individual_Number))
 
 
+# CHECKS!!!
+setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
+setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
+
+
 # merge Newleafarea2015 with trait2015 data
 trait2015 <- trait2015 %>% 
   # Dealing with duplicates: sort data by DryMass, give them id
@@ -44,28 +55,71 @@ trait2015 <- trait2015 %>%
 
 # Check if there are areas that do not match with traits
 trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
-### NEED TO CHECK THESE 3 SPECIES
-# Three species without traits: Galium asperifolium var.sikkimense-L Ind 1-5, check if same leaves (Maitner lowland 3-5; vigdis lowland 1 & 2)
-# Halenia elliptica-A; Bistorta viviapara-A
 
 
-#import data 2016
+
+#### IMPORT DATA 2016 ####
 # leaf area
 trait2016LeafArea <- read_delim("traits/data/2016_PFTC2_Leaf_Area_corrCP_30032017.csv", delim = ",", comment = "")
 
 trait2016LeafArea <- trait2016LeafArea %>% 
+  ### Fixing wrong variables
+  mutate(Envelope_Name_Corrected = gsub("-", "_", Envelope_Name_Corrected),
+         Individual_number = ifelse(is.na(Individual_number), "", Individual_number),
+         Leaf_number = ifelse(Envelope_Name_Corrected == "20160811_3500_M_MO_LOCAL_Epilobium_fangii_1_3 (2)", "3 (2)", Leaf_number),
+         Leaf_number = ifelse(Envelope_Name_Corrected == "20160811_3000_L_M2_1_Veronica_szechuanica_Unknown_Unknown", "Unknown", Leaf_number),
+         Location = ifelse(grepl("20160815_4100_H_A5_C_Viola_biflora_var_rockiana_U_", Envelope_Name_Corrected), "H5", Location),
+         Date = ifelse(grepl("20160815_4100_H_HO_LOCAL_Gentiana_trichomata_", Envelope_Name_Corrected), 20160815L, Date)) %>% 
   mutate(Date = ymd(Date))
 
 
 # leaf traits
-trait2016LeafTrait <- read_delim("traits/data/2016_China_envelope_names_CPcorr_30032017.csv", delim = ",", comment = "")
+trait2016LeafTrait <-readLines(con = "traits/data/2016_China_envelope_names_CPcorr_30032017.csv") %>% 
+  gsub("elevation C2, entered values", "elevation C2; entered values", .) %>% 
+  read.table(text = ., sep = ",", comment = "", header = TRUE, fill = TRUE, stringsAsFactors = FALSE) %>% 
+  as_tibble()
+# trait2016LeafTrait <- read_delim("traits/data/2016_China_envelope_names_CPcorr_30032017.csv", delim = ",", comment = "")
 
-trait2016 <- trait2016LeafTrait %>% 
+trait2016LeafTrait <- trait2016LeafTrait %>% 
   mutate(Date = ymd(Date)) %>% 
   # NA's are created, because there is text in these columns
   rename(Elevation = Elevation_m, Individual_number = Individual_plant_number, Taxon = Plant_species) %>% 
-  inner_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number")) %>%  # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
-  mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE))
+  mutate(Leaf_Thickness_Ave_mm = rowMeans(select(., matches("Leaf_Thickness_\\d_mm")), na.rm = TRUE)) %>% 
+  mutate(Leaf_number = as.character(Leaf_number)) %>% 
+  ### Fixing wrong variables
+  mutate(Envelope_Name_Corrected = gsub("-", "_", Envelope_Name_Corrected),
+         Taxon = ifelse(grepl("Carex_nibigella", Envelope_Name_Corrected), "Carex_nibigella", Taxon),
+         Taxon = ifelse(grepl("Cyanthus_husincans", Envelope_Name_Corrected), "Cyanthus_husincans", Taxon),
+         Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U", Envelope_Name_Corrected), "2", Project)) 
+
+
+
+### Check scans with missing traits and vice versa
+ScansNoTraits <- trait2016LeafArea %>% 
+  anti_join(trait2016LeafTrait, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
+
+TraitsNoScans <- trait2016LeafTrait %>%
+  anti_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
+
+allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),
+          TraitsNoScans %>% mutate(scan = FALSE)) %>% select(-FileName)
+  
+### ADD COMMENTS TO ALL ALLTHECRAP FILES
+
+table(allTheCrap$Taxon)
+allTheCrap %>% filter(grepl("Galium_hoffmeisteri", Envelope_Name_Corrected)) %>% as.data.frame()
+dir("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016/", pattern = "M6.OTC.Epilobium.fangii", recursive = TRUE, full.names = TRUE)
+
+
+
+trait2016 <- trait2016LeafTrait %>% 
+    # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
+  inner_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
+  
+
+
+
+
 
 #import trait taxonomy dictionary
 trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",", comment = "#")
@@ -86,7 +140,7 @@ trait2015 <- trait2015 %>%
   
 
 trait2016 <- trait2016 %>%
-  select(-`Difference_(Uncropped_minus_Cropped)`, -Uncropped_Leaf_Area, -X20,  -Notes, -Dry_Mass_g_Multiple2, -Dry_Mass_g_Multiple3, -Corrections.x, -`dry:wet`, -Corrections.y) %>%
+  select(-`Difference_(Uncropped_minus_Cropped)`, -Uncropped_Leaf_Area, -X, -X.1, -Notes, -Dry_Mass_g_Multiple2, -Dry_Mass_g_Multiple3, -Corrections.x, -dry.wet, -Corrections.y) %>%
   rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
   mutate(Leaf_number = as.character(Leaf_number)) %>% 
   mutate(allComments = NA)
@@ -107,47 +161,59 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName)
          ) 
 
-
+### NEED TO FIX THIS!!! FULL_ENV_NAME DOES NOT MATCH?!?
 # CN Analysis
 # read in ID
-CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE)
+CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
 
 CN_ID <- CN_ID %>% 
   as_tibble() %>% 
   filter(stoich.vial.label != "") %>% 
-  mutate(Full_Envelope_Name = as.character(Full_Envelope_Name)) %>% 
-  mutate(stoich.vial.label = as.character(stoich.vial.label)) %>% 
+  mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
   select(Full_Envelope_Name, stoich.vial.label)
 
 # CN data
-CNdata <- read_excel(path = "traits/data/China_CNP_July18_2017.xls")
+CNdata <- read_excel(path = "traits/data/China_CNP_July18_2017.xls", col_types = c(rep("text", 2), rep("numeric", 5), "text", rep("numeric", 3), "text"))
 
 CNdata <- CNdata %>% 
   select(-SITE) %>%
   rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
-  mutate(StoichLabel = as.character(StoichLabel)) %>% 
-  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
+  mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
+  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label")) %>% 
+  mutate(Full_Envelope_Name = gsub("\\-O\\-", "\\-0\\-", Full_Envelope_Name)
+         #Full_Envelope_Name = gsub("Viola\\_biflora\\_var\\_rockiana", "Viola\\_biflora\\_var\\.\\_rockiana", Full_Envelope_Name)
+         )
+
+setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
 # Merge CN Data with traits
 traits_raw <- traits_raw %>% 
-  left_join(CNdata, by = c("Full_Envelope_Name"))
+  full_join(CNdata, by = c(Envelope_Name_Corrected = "Full_Envelope_Name"))
 
-summary(CNdata)
+
 # Check duplicate rows
 traits_raw %>% 
   group_by(Site, Taxon, Individual_number, Leaf_number, Project, Location) %>% 
-  filter(n() > 1)
+  filter(n() > 1) %>% filter(year(Date) == 2016)
+
+
+trait2016LeafTrait %>% 
+  +   group_by(Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% 
+  +   filter(n() > 1) %>% group_by(Full_Envelope_Name, Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% count() %>% arrange(n) %>% pn
 
 
 # Clean the trait data
 # remove yellow leaf|leaf yellow|brown|not Rumex
 # eaten, folded, cut leaves seem not problematic, but some with part of leaf too white!!!
 traits <- traits_raw %>% 
-  filter(!grepl("yellow leaf|leaf yellow|brown|not Rumex|black", allComments)) %>% 
-  filter(!grepl("^leaf folded$", allComments)) %>% 
+  # Remove unneeded comments
   mutate(allComments = gsub("NA", NA, allComments)) %>% # remove "NA" in comments
   mutate(allComments = gsub("add", NA, allComments)) %>% # remove add in comments
-  mutate(allComments = gsub(", add, |, add|add _ add, |add _ |add, ", "", allComments)) %>% # remove add in comments
+  mutate(allComments = gsub(", add, |, add|add _ add, |add _ |add, ", "", allComments)) %>%
+  # remove problematic leaves
+  filter(!grepl("|not Rumex|black", allComments)) %>% 
+  #filter(!grepl("yellow leaf|leaf yellow|brown", allComments)) %>% 
+  #filter(!grepl("^leaf folded$", allComments)) %>% 
 # FLAG DATA
 # Wet mass > Dry mass
 # Very small wet mass
@@ -173,8 +239,9 @@ traits <- traits %>%
 
 ## Check data with some plots
 # wet vs dry
+# colour: Wet_Mass_g < 0.0005
 traits %>% mutate(year = as.factor(year(Date))) %>%
-ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) + 
+ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = allComments)) + 
   geom_point() +   
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
