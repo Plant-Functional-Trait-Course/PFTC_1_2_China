@@ -6,6 +6,8 @@ library("lubridate")
 ### All scans from 2015
 AllImages2015 <- dir(path = paste0("/Volumes/My Passport/2015 ChinaDataAllComputers/leaftraitdata"), pattern = "jpeg|jpg", recursive = TRUE, full.names = TRUE)
 
+save(AllImages2015, file = "AllImages2015.Rdata")
+
 FixedNames <- data_frame(full = AllImages2015, x = basename(AllImages2015)) %>% 
                            mutate(x = gsub(" 00\\d\\.", ".", x),
                                   x = gsub("_\\d{8}_000\\d", "", x),
@@ -98,6 +100,8 @@ ToDo <- ExpectedMissingScans %>%
 
 # All scans form 2016
 AllImages2016 <- dir(path = paste0("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016"), pattern = "jpeg|jpg", recursive = TRUE, full.names = TRUE)
+
+save(AllImages2016, file = "AllImages2016.Rdata")
 
 # remove duplicates, fix names
 AllImages2016 <- AllImages2016 %>% 

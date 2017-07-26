@@ -4,6 +4,7 @@ library("readr")
 library("lubridate")
 
 pn <- . %>% print(n = Inf)
+`%g%` <- function(x, pattern){grepl(pattern, x)}
 
 #### IMPORT DATA 2015 ####
 
@@ -95,7 +96,9 @@ trait2016LeafTrait <- trait2016LeafTrait %>%
   mutate(Envelope_Name_Corrected = gsub("-", "_", Envelope_Name_Corrected),
          Taxon = ifelse(grepl("Carex_nibigella", Envelope_Name_Corrected), "Carex_nibigella", Taxon),
          Taxon = ifelse(grepl("Cyanthus_husincans", Envelope_Name_Corrected), "Cyanthus_husincans", Taxon),
-         Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U", Envelope_Name_Corrected), "2", Project)) 
+         Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U", Envelope_Name_Corrected), "2", Project)) %>% 
+  # Create flag columns
+  mutate(AreaFlag = "", WetFlag = "", DryFlag = "", ThickFlag = "")
 
 
 ### Check for scans with missing traits and vice versa
@@ -106,33 +109,58 @@ TraitsNoScans <- trait2016LeafTrait %>%
   anti_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
 
 # contains leaves with missing scans etc.
-allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),
-          TraitsNoScans %>% mutate(scan = FALSE)) %>% select(-FileName)
+allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),TraitsNoScans %>% mutate(scan = FALSE)) %>% 
+  # remove from list, because leaf area needs calculation
+  filter(!Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4")) %>% 
+  # remove because no envelope
+  filter(Envelope_Name_Corrected != "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5") %>% 
+  # remove because no leaf and no envelope
+  filter(Envelope_Name_Corrected != "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2") %>% 
+  filter(!grepl("20160813_4100_H_HO_LOCAL_Carex_sp1_5_", Envelope_Name_Corrected))
+# remaining leaves have no scan
+  
 
 # Useful code to check allTheCrap
 #allTheCrap %>% filter(grepl("Galium_hoffmeisteri", Envelope_Name_Corrected)) %>% as.data.frame()
 #dir("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016/", pattern = "M6.OTC.Epilobium.fangii", recursive = TRUE, full.names = TRUE)
 
-# Add comments for missing traits and area
-allTheCrapComments <- allTheCrap %>% 
+
+# Add flags for missing traits and area
+trait2016LeafTrait <- trait2016LeafTrait %>% 
   # next line can go if we have calculated leaf area!!!
-  mutate(Corrections = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "added_leaf area missing", Corrections),
-         Corrections = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", Corrections),
-         Corrections = ifelse(Envelope_Name_Corrected == "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2", "envelope and scan missing", Corrections),
-         Corrections = ifelse(Corrections == "", "scan missing", Corrections),
-         Corrections = ifelse(Corrections == "added", "added_scan missing", Corrections),
-         Corrections = ifelse(Corrections == "T and scan missing", "envelope and scan missing", Corrections),
-         Corrections = ifelse(Envelope_Name_Corrected == "20160810_3000_L_LO_LOCAL_Trifolium_repens_4_1", "C7_scan missing", Corrections),
-         Corrections = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M5_2_Potentilla_leuconota_U_4", "Is treatment 2 not 1_scan missing", Corrections)) %>% 
-  select(Envelope_Name_Corrected, Corrections)
+  mutate(AreaFlag = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "leaf area missing; need scaning", AreaFlag),
+         WetFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", WetFlag),
+         DryFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", DryFlag),
+         ThickFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", ThickFlag),
+         AreaFlag = ifelse(Envelope_Name_Corrected == "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2" | Corrections == "T and scan missing", "scan missing", AreaFlag),
+         WetFlag = ifelse(Envelope_Name_Corrected == "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2" | Corrections == "T and scan missing", "envelope missing", WetFlag),
+         DryFlag = ifelse(Envelope_Name_Corrected == "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2" | Corrections == "T and scan missing", "envelope missing", DryFlag),
+         ThickFlag = ifelse(Envelope_Name_Corrected == "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2" | Corrections == "T and scan missing", "envelope missing", ThickFlag),
+         AreaFlag = ifelse(Envelope_Name_Corrected %in% allTheCrap$Envelope_Name_Corrected, "scan missing", AreaFlag))
 
-# Replace Corrections
-trait2016LeafTrait[, "Envelope_Name_Corrected" == "allTheCrapComments$Envelope_Name_Corrected"] <- allTheCrapComments$Corrections
+# Remove duplicates
+trait2016LeafTrait <- trait2016LeafTrait %>%
+  group_by(Envelope_Name_Corrected, Site, Taxon, Individual_number, Leaf_number, Project, Location) %>% 
+  mutate(LeafID = 1:n()) %>% 
+  filter(!(grepl("_M5_0_Geranium_pylzowianum_U", Envelope_Name_Corrected) & LeafID == 2)) %>% 
+  filter(!(grepl("L3_0_Geranium_pylzowianum_1_1", Envelope_Name_Corrected) & LeafID == 2)) %>% 
+  select(-LeafID)
 
-# join Trait and Area data for 2016
+# Check duplicate rows
+DuplicatesRow2016 <- trait2016LeafTrait %>%
+  group_by(Envelope_Name_Corrected, Site, Taxon, Individual_number, Leaf_number, Project, Location) %>% 
+  filter(n() > 1) %>% group_by(Envelope_Name_Corrected, Site, Taxon, Individual_number, Leaf_number, Project, Location) %>%
+  count() %>% arrange(n)
+
+# add AreaFlag for duplicate envelope with only one area; It is very hard to assign area to leaf!
+trait2016LeafTrait <- trait2016LeafTrait %>% 
+  mutate(AreaFlag = ifelse(Envelope_Name_Corrected %in% DuplicatesRow2016$Envelope_Name_Corrected, "Duplicate envelop only one area #zap", AreaFlag))
+
+
+
+### Join Trait and Area data for 2016
 trait2016 <- trait2016LeafTrait %>% 
-  # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
-  inner_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
+  anti_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
   
 
 #import trait taxonomy dictionary
@@ -203,19 +231,10 @@ traits_raw <- traits_raw %>%
   full_join(CNdata, by = c(Envelope_Name_Corrected = "Full_Envelope_Name"))
 
 
-# Check duplicate rows
-traits_raw %>% 
-  group_by(Site, Taxon, Individual_number, Leaf_number, Project, Location) %>% 
-  filter(n() > 1) %>% filter(year(Date) == 2016)
 
 
-trait2016LeafTrait %>% 
-  group_by(Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% 
-  filter(n() > 1) %>% group_by(Full_Envelope_Name, Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% count() %>% arrange(n) %>% pn
+# More Cleaning
 
-
-# Cleaning
-traits_raw %>% 
   
 
 # Need fixing? Date, Individual_number; Leaf_number; Project: O-0
