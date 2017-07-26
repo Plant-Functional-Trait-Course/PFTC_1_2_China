@@ -84,12 +84,26 @@ CNAnalysis <- traits %>%
   filter(Project %in% c("LOCAL", "0", "C")) %>%
   filter(!is.na(TraitCover)) %>% 
   mutate(Year = year(Date)) %>% 
-  filter(is.na(flag)) %>% 
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  filter(mean > 4)
+  #ungroup() %>% group_by(Site, Taxon, Individual_number) %>% 
+  #summarise(mean(Five)) 
+  #ungroup() %>% summarise(sum(`mean(Five)`))
+  
+
+CNAnalysis2015 <- CNAnalysis %>%
+  filter(Year == 2015) %>% 
+  select(-Full_Envelope_Name, -Envelope_Name_Corrected) %>% 
+  mutate(Full_Envelope_Name = paste(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, sep = "_"))
+
+write_csv(CNAnalysis2015, "CNAnalysis2015.csv", col_names = TRUE)
+  
+  
+# calculate how many
+CNAnalysis %>% 
   arrange(Site, desc(Year), Taxon, Individual_number, Leaf_number) %>% 
-  select(Year, Site, Taxon, Individual_number, Leaf_number, flag, resid_Area_Dry, `2015`, `2016`, nturfs, max, mean, sum.nLeaves, Five) %>%
-  ungroup() %>% group_by(Site, Taxon) %>% 
-  summarise(mean(Five)) %>% 
-  ungroup() %>% summarise(sum(`mean(Five)`))
+  select(Year, Site, Taxon, Individual_number, Leaf_number, flag, `2015`, `2016`, nturfs, max, mean, sum.nLeaves, Five) %>%
+  
 
 table(CNAnalysis$Taxon, year(CNAnalysis$Date), CNAnalysis$Site)
 

@@ -1,0 +1,167 @@
+---
+title: "Data Cleaning Documentation"
+author: "Aud Halbritter"
+date: "18 Juli 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+#knitr::read_chunk("Climate Data Check.R")
+
+library("tidyverse")
+library("lubridate")
+library("knitr")
+
+#load("traits.Rdata")
+
+
+```
+
+# Content
+
+This document contains explanations for the collection and processing of the following data sets:
+- Plant community composition
+- Leaf functional traits
+- Biomass
+
+# Site information
+The study is conducted along an elevational gradient ranging from sub-alpine to alpine meadows in the Hengduan Mountain of southwest China. The elevational gradient contains of four sites: lowland (L 3000m), middle (M 3500m), alpine (A 3850m) and high alpine (H 4100m).
+
+Add table with coordinates etc.
+
+# Experiments
+Each site (L, M, A, H) is divded into 5 (H) - 7 blocks within a fence to protect the site from grazing. Each block contains up to 7 different plots: OTC (open top chamber), C (untouched control), 0 (local transplant), 1 (transplant one step down, warm1), 2 (transplant one step up, cold1), 3 (transplant all the way down, warm3), 4 (transplant all the way up, cold4).
+
+
+# Plant community composition
+The dataset contains plant community composition data from the an elevational gradient in the Hengduan Mountains
+
+The dataset contains the sub-plot frequency, cover, and some performance data on 108 taxa of vascular plants, along with some plot-level predictor variables, in 140 25 x 25 cm vegetation plots.
+
+The dataset covers the years 2012-2015. 2016 has not been added yet.
+
+For each species in each subplot it was noted down whether it was present as sterile (x), dominant (covered more than 50% of the sub-plot: D), fertile (circle around the X or D), juvenile (J), or a seedling (S) ??? juvenile and seedlings probably not? 
+
+For the entire 25 x 25 cm plot, the percentage cover of each vascular plant species was then visually estimated. 
+
+Other variables that were measured for each plot:
+- vegetation height (mean of 4 measurements)
+- moss % cover
+- moss layer depth (mean of 4 measurements)
+- litter % cover 
+- bare ground % cover
+- rock % cover
+- date of analysis
+- recorder / scribe (if any)
+- comments
+
+Other variables that were measured for each sub-plot:
+- moss % cover
+- litter % cover 
+- bare % ground cover
+- rock % cover
+
+Nomenclature follows the Plant list???
+Each species of vascular plant was classified by functional type (graminoid, forb, woody)
+
+Data cleaning
+The information from the field data sheets was manually entered into digital worksheets, manually proof-read and stored in the a database. 
+Species’ occurrences were compared over the years to search for and correct data identification, recording and entry errors. Specifically, maps of each species in each sub-turf over the years were scrutinized to search for species identification errors. Based on this, corrections were made. for example:
+If it was obvious from the data that a species of a difficult taxa, such as Carex, had occasionally been misidentified in a year when it did not flower, the erroneous IDs were corrected.   
+If it was obvious that a  species could not be accurately identified to the species level on the spatial and temporal scale of the dataset, e.g., because they were not identifiable even to experts when sterile, the species were merged.
+All corrections are  recorded and documented. All post-proofreading corrections (e.g., taxonomic mergers) are done in code post-database.
+
+
+# Leaf functional traits
+
+Functional traits include:
+LDMC (Leaf Dry Matter Content)
+SLA (Specific leaf area)
+LA (Leaf area)
+LT (Leaf thickness)
+LN (Leaf Nitrogen)
+LC (Leaf Carbon)
+
+Gradient leaves
+The dataset contains leaf functional trait data from plant species at 4 sites along an elevational gradient.The data was collected in 2015 and 2016.
+
+Leaf sampling
+Up to 5 leaves from preferably different healthy individuals were collected outside the experimental sites. 
+
+Singular leaves were then separated from the shoot or the individual for the measurements. Collected leaves from each plot were put in zip-lock plastic bag, per species, and stored in a cooler to keep them from drying. The leaves were scanned, weighing (wet and dry), and leaf thickness was measured. All measurements were completed within 24 hours of collection.
+
+Trait measurements
+Data analyses was measured according to Pérez-Harguindeguy et al. 2012 as well as the Enquist Macrosystems protocol. The text has been modified as followed: 
+
+Leaf form
+Leaves were denoted as simple and compound.
+
+Leaf area in cm2
+Each leaf (including petiole) was cut from the stem. Leaf area was measured with a flatbed scanner, set on 300dpi, and used with colours to provide maximal information. The leaves were carefully flattened and laid down in the position that gave the largest area before measurement to avoid squashing, overlapping or curled leaves. To determine the leaf area in squared centimeters ImageJ was used with the Ben Bolder’s macro method.  
+Allium prattii was harder to make flat so it was flattened as much as possible and the once still overlapping was manually taken care of by doubling the leaf area. 
+
+Simple leaves - Leaf lamina and petioles are measured independently for 5 leaves per individual, when possible. The petiole and lamina are then scanned and area is measured.
+Compound leaves - The rachis and petiole was removed. The fresh area was measured for the rachis and petiole of 5 leaves including all leaflets and petiolules per individual. The area of the rachis plus petiole was measured separately from the lamina plus petiolules.
+
+Leaf mass in grams
+Wet leaf mass was measured in grams. Leaves was then dried at 60-65°C for 72 hours and weighed for dry mass in milligrams.
+
+Leaf thickness
+The leaf thickness was measured carefully with a digital micrometer. Three random spots were selected for each leaf that includes midrib, lamina with veins and lamina without veins. The average value of these three spots was used to obtain leaf thickness. Some leaves were so small that three spots measurement was impossible. On this small leaves only one or two spots were measured and then this was used to get the average value. 
+
+Specific leaf area
+Whole leaf SLA. Specific leaf area is calculated from the leaf area for the whole leaf (measured with the scanner), divided by the dry mass (measured after 72 hours drying) for the whole leaf. SLA = leaf area (cm2)/dry mass (g).
+
+Leaf Dry Matter Content 
+LDMC was measured with the dry mass divided by the wet mass. 
+LDMC = Leaf dry mass (mg)/ leaf wet mass (g).  
+
+Difference in the 2015 data
+Collection was different!!!
+
+
+Experimental leaves
+The dataset contains leaf functional trait data from common plant species in plots from an elevational transplant and climate warming experiment. Trait data of the most common species, based on the community data of the Transplant project and excluding graminoids, were collected. All data was collected in summer 2016. 
+
+Used vegetational data from previous year to find the most abundant species at the four locations. The selected species is as followed: 
+Aletris pauciflora, Allium prattii, Artemesia flaccida, Cerastium szechuense, Epilobium fangii, Galium hoffmeisteri, Hypericum wightianum, Pedicularis davidii, Plantago asiatica, Polygonum macrophyllum, Polygonum viviparum, Potentilla leuconota, Pseudostellaria davidii, Ranunculus tanguticus, Veronica szechuanica, Viola biflora var. rockiana. 
+
+Following this species list, up to 5 leaves from preferably different individuals within each plot (25 x 25 cm) were collected. If the turf had only one individual of a target species, only one leaf was collected. When the individual did not look healthy, no leaves were collected. 
+In the OTCs leaves were collected throughout the entire chamber. 
+	In Control plots, leaves from around the edges could also be collected.
+Whereas in all transplant treatments leaves were only collected from individuals definitely inside the plots. 
+
+
+Data cleaning
+2015 data
+- Reweighing dry weights and replace it unless Dry_Weight_2016 is missing (flaged)
+- Fix wrong values for joining NewLeafArea2015 data
+
+Leaf Area:
+- recalculating leaf areas 2015; remove dirt, black lines and double and empty scans
+- Fixing wrong values for joining with trait2015 data (elevation, site, species names, individual and leaf numbers); remove double scans
+
+2016 data
+- Fixing wrong Envelope names, etc.
+
+Merge 2015 and 2016 data.
+- Calculating SLA, LMDC
+- Fix taxon names
+
+Checking, cleaning and flagging data
+- Checking values. Removing impossible values
+- SLA < 0.5 or > 500, etc.
+- Flaging suspiscious values.
+
+
+# Biomass
+20 x 50x50cm plots
+biomass sorted by species
+cover estimates
+
+Data cleaning
+- merge species that are the same
+- huge seedlings?
+- fix taxonomic names
+
