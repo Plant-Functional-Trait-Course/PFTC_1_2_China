@@ -160,7 +160,7 @@ trait2016LeafTrait <- trait2016LeafTrait %>%
 
 ### Join Trait and Area data for 2016
 trait2016 <- trait2016LeafTrait %>% 
-  anti_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
+  full_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
   
 
 #import trait taxonomy dictionary
@@ -181,6 +181,7 @@ trait2015 <- trait2015 %>%
     )
   
 trait2016 <- trait2016 %>%
+  ungroup() %>% 
   select(-`Difference_(Uncropped_minus_Cropped)`, -Uncropped_Leaf_Area, -X, -X.1, -Notes, -Dry_Mass_g_Multiple2, -Dry_Mass_g_Multiple3, -Corrections.x, -dry.wet, -Corrections.y) %>%
   rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
   mutate(Leaf_number = as.character(Leaf_number)) %>% 
@@ -210,39 +211,52 @@ CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", f
 CN_ID <- CN_ID %>% 
   as_tibble() %>% 
   filter(stoich.vial.label != "") %>% 
-  mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% # needed to match with trait2016
-  select(Full_Envelope_Name, stoich.vial.label)
+  select(Full_Envelope_Name, stoich.vial.label) %>% 
+  mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
+  mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name))
 
 # CN data
 CNdata <- read_excel(path = "traits/data/China_CNP_July18_2017.xls", col_types = c(rep("text", 2), rep("numeric", 5), "text", rep("numeric", 3), "text"))
 
+
+# one leaf does not join!!! FIX LATER; and change to full_join
 CNdata <- CNdata %>% 
   select(-SITE) %>%
   rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
   mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
-  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label")) %>% 
-  mutate(Full_Envelope_Name = gsub("\\-O\\-", "\\-0\\-", Full_Envelope_Name))
+  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
 
 
 setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
 # Merge CN Data with traits
-traits_raw <- traits_raw %>% 
-  full_join(CNdata, by = c(Envelope_Name_Corrected = "Full_Envelope_Name"))
+# Using left join, because not all leaves have CN data
+traits_raw %>% 
+  mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
+  mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name)) %>% 
+  left_join(CNdata, by = c("Full_Envelope_Name"))
 
 
 
 
 # More Cleaning
+# Need to fix Project, Individual_number, Leaf_number (Unknown, 6, 2.1, 3_(2))???
+traits_raw %>% 
+  select(Leaf_number) %>% distinct %>% pn
 
-  
-
-# Need fixing? Date, Individual_number; Leaf_number; Project: O-0
-# What to do with "2015-01-01"  
 # Also check if problematic 2016 leaves, where project and location do not match
-  trait2016 %>% mutate(loc1 = substr(Location, 1, 1)) %>%
-  count(loc1, Site, Project) %>% print(n = 100)
+traits_raw %>% mutate(loc1 = substr(Location, 1, 1)) %>%
+  count(loc1, Site, Project) %>% filter(Project == "Unknown")
   
+loc1  Site Project     n
+2     A      A       2     1
+3     A      M       2     1
+4     H      A       2     5
+1     H      H       6    12
+1     A      A Unknown     1
+
+
+
 
 # Clean the trait data
 # remove yellow leaf|leaf yellow|brown|not Rumex
@@ -278,68 +292,4 @@ traits <- traits %>%
   left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% 
   mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA))
   
-
-## Check data with some plots
-# wet vs dry
-# colour: Wet_Mass_g < 0.0005
-traits %>% mutate(year = as.factor(year(Date))) %>%
-ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = allComments)) + 
-  geom_point() +   
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_log10() + 
-  scale_y_log10() + 
-  facet_wrap(~ year)
-
-# dry vs area  
-traits %>% mutate(year = as.factor(year(Date))) %>%
-  filter(year == 2015) %>% 
-  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = allComments)) + 
-  geom_point() +   
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_log10() + 
-  scale_y_log10() + 
-  facet_wrap(~ year)
-
-
-# large resids
-LargeResid %>% mutate(year = as.factor(year(Date))) %>%
-  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2, color = abs(resid_Area_Dry) > 1.2)) + 
-  geom_point() +   
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_log10() + 
-  scale_y_log10() + 
-  facet_wrap(~ year)
-
-
-#thickness
-ggplot(traits, aes(y = Leaf_Thickness_Ave_mm, x = Site, fill = as.factor(year(Date)))) + 
-  geom_boxplot()
-
-traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
-ggplot(aes(y = Leaf_Thickness_Ave_mm, x = Site, fill = as.factor(year(Date)))) + 
-  geom_boxplot(show.legend = FALSE) +
-  facet_wrap(~ Taxon)
-
-traits %>% group_by(Taxon) %>% filter(n() > 100) %>%
-  select(Date, Site, Taxon, matches("Leaf_Thickness_\\d_mm")) %>%
-  gather(key = measurement, value = thickness, -Date, -Site, -Taxon) %>% 
-  ggplot(aes(x = measurement, y = thickness, colour = as.factor(year(Date)))) + 
-  geom_boxplot(show.legend = FALSE) + 
-  facet_grid(Taxon ~ Site, scales = "free")
-
-
-traits %>% 
-  mutate(year = year(Date)) %>% 
-  arrange(SLA_cm2_g) %>%
-  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = SLA_cm2_g > 500)) + 
-  geom_point() + 
-  geom_abline(slope = 1, intercept = 0) + 
-  scale_x_log10() + 
-  scale_y_log10() + 
-  facet_wrap(~ year)
-
-
-
-  
-
 
