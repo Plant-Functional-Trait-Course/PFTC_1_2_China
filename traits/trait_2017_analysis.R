@@ -106,26 +106,23 @@ allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),
   
 ### ADD COMMENTS TO ALL ALLTHECRAP FILES
 
-table(allTheCrap$Taxon)
-allTheCrap %>% filter(grepl("Galium_hoffmeisteri", Envelope_Name_Corrected)) %>% as.data.frame()
-dir("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016/", pattern = "M6.OTC.Epilobium.fangii", recursive = TRUE, full.names = TRUE)
+# Useful code to check allTheCrap
+#allTheCrap %>% filter(grepl("Galium_hoffmeisteri", Envelope_Name_Corrected)) %>% as.data.frame()
+#dir("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016/", pattern = "M6.OTC.Epilobium.fangii", recursive = TRUE, full.names = TRUE)
 
 
-
+# join Trait and Area data for 2016
 trait2016 <- trait2016LeafTrait %>% 
     # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
   inner_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
   
 
 
-
-
-
 #import trait taxonomy dictionary
 trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",", comment = "#")
 
 
-##combine 2015 & 2016 trait data
+#### COMBINE 2015 & 2016 TRAIT DATA ####
 #remove unneeded columns, rename columns
 
 trait2015 <- trait2015 %>%
@@ -198,9 +195,20 @@ traits_raw %>%
 
 
 trait2016LeafTrait %>% 
-  +   group_by(Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% 
-  +   filter(n() > 1) %>% group_by(Full_Envelope_Name, Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% count() %>% arrange(n) %>% pn
+  group_by(Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% 
+  filter(n() > 1) %>% group_by(Full_Envelope_Name, Site, Plant_species, Individual_plant_number, Leaf_number, Project, Location) %>% count() %>% arrange(n) %>% pn
 
+
+# Cleaning
+traits_raw %>% 
+  
+
+# Need fixing? Date, Individual_number; Leaf_number; Project: O-0
+# What to do with "2015-01-01"  
+# Also check if problematic 2016 leaves, where project and location do not match
+  trait2016 %>% mutate(loc1 = substr(Location, 1, 1)) %>%
+  count(loc1, Site, Project) %>% print(n = 100)
+  
 
 # Clean the trait data
 # remove yellow leaf|leaf yellow|brown|not Rumex
