@@ -1,24 +1,28 @@
-#import packages
+#load libraries
 library("tidyverse")
 library("readr")
 library("lubridate")
 
 pn <- . %>% print(n = Inf)
 
-# Import recalculation of leaf area data 2015
+#### IMPORT DATA 2015 ####
+
+# Import leaf area
 source("traits/LeafArea2_2015.R")
 
-#### IMPORT DATA 2015 ####
+# import trait data
 trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
+# import missing trait data from Halenia leaves and r_bind to data set
 trait2015_Halenia <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017 Halenia_elliptica.csv", delim = ";", comment = "")
 
 trait2015 <- trait2015 %>% 
   bind_rows(trait2015_Halenia %>% mutate(Leaf_Number = as.character(Leaf_Number)))
 
-#fix character variables
+#check character variables
 trait2015 %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
 trait2015 %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
 
+# fix some variables, replace missing 2016 dry mass with 2015 dry mass
 trait2015 <- trait2015 %>% 
   mutate(Dry_Mass_2016_g = as.numeric(Dry_Mass_2016_g)) %>%
   mutate(Leaf_Area_m2 = as.numeric(Leaf_Area_m2)) %>%
@@ -38,7 +42,7 @@ trait2015 <- trait2015 %>%
   mutate(Individual_Number = ifelse(Taxon_FoC_corrected %in% c("Rhodiola yunnanensis", "Gentiana yunnanensis") & Site == "M", substr(Individual_Number, 1, 1), Individual_Number))
 
 
-# CHECKS!!!
+# Check if species in traits but not in area and vice versa (there should be no leafs in area and missing in trait!)
 setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
 setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
 
@@ -53,15 +57,16 @@ trait2015 <- trait2015 %>%
   ungroup()
 
 
-# Check if there are areas that do not match with traits
+# Check if there are areas that do not match with traits (should be zero!)
 trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
 
 
 
 #### IMPORT DATA 2016 ####
-# leaf area
+# import leaf area
 trait2016LeafArea <- read_delim("traits/data/2016_PFTC2_Leaf_Area_corrCP_30032017.csv", delim = ",", comment = "")
 
+# fix some ind. and leaf_numbers, location and date
 trait2016LeafArea <- trait2016LeafArea %>% 
   ### Fixing wrong variables
   mutate(Envelope_Name_Corrected = gsub("-", "_", Envelope_Name_Corrected),
@@ -73,13 +78,13 @@ trait2016LeafArea <- trait2016LeafArea %>%
   mutate(Date = ymd(Date))
 
 
-# leaf traits
+# import leaf trait data
 trait2016LeafTrait <-readLines(con = "traits/data/2016_China_envelope_names_CPcorr_30032017.csv") %>% 
   gsub("elevation C2, entered values", "elevation C2; entered values", .) %>% 
   read.table(text = ., sep = ",", comment = "", header = TRUE, fill = TRUE, stringsAsFactors = FALSE) %>% 
   as_tibble()
-# trait2016LeafTrait <- read_delim("traits/data/2016_China_envelope_names_CPcorr_30032017.csv", delim = ",", comment = "")
 
+# fix some variables
 trait2016LeafTrait <- trait2016LeafTrait %>% 
   mutate(Date = ymd(Date)) %>% 
   # NA's are created, because there is text in these columns
@@ -93,38 +98,50 @@ trait2016LeafTrait <- trait2016LeafTrait %>%
          Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U", Envelope_Name_Corrected), "2", Project)) 
 
 
-
-### Check scans with missing traits and vice versa
+### Check for scans with missing traits and vice versa
 ScansNoTraits <- trait2016LeafArea %>% 
   anti_join(trait2016LeafTrait, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
 
 TraitsNoScans <- trait2016LeafTrait %>%
   anti_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
 
+# contains leaves with missing scans etc.
 allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),
           TraitsNoScans %>% mutate(scan = FALSE)) %>% select(-FileName)
-  
-### ADD COMMENTS TO ALL ALLTHECRAP FILES
 
 # Useful code to check allTheCrap
 #allTheCrap %>% filter(grepl("Galium_hoffmeisteri", Envelope_Name_Corrected)) %>% as.data.frame()
 #dir("/Volumes/My Passport/Traits - scans and envelopes/China Leaf Scans 2016/", pattern = "M6.OTC.Epilobium.fangii", recursive = TRUE, full.names = TRUE)
 
+# Add comments for missing traits and area
+allTheCrapComments <- allTheCrap %>% 
+  # next line can go if we have calculated leaf area!!!
+  mutate(Corrections = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "added_leaf area missing", Corrections),
+         Corrections = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", Corrections),
+         Corrections = ifelse(Envelope_Name_Corrected == "20160811_3000_L_L7_0_Galium_hoffmeisteri_2_2", "envelope and scan missing", Corrections),
+         Corrections = ifelse(Corrections == "", "scan missing", Corrections),
+         Corrections = ifelse(Corrections == "added", "added_scan missing", Corrections),
+         Corrections = ifelse(Corrections == "T and scan missing", "envelope and scan missing", Corrections),
+         Corrections = ifelse(Envelope_Name_Corrected == "20160810_3000_L_LO_LOCAL_Trifolium_repens_4_1", "C7_scan missing", Corrections),
+         Corrections = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M5_2_Potentilla_leuconota_U_4", "Is treatment 2 not 1_scan missing", Corrections)) %>% 
+  select(Envelope_Name_Corrected, Corrections)
+
+# Replace Corrections
+trait2016LeafTrait[, "Envelope_Name_Corrected" == "allTheCrapComments$Envelope_Name_Corrected"] <- allTheCrapComments$Corrections
 
 # join Trait and Area data for 2016
 trait2016 <- trait2016LeafTrait %>% 
-    # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
+  # retains rows in both data sets. Needs to be changes once all the names are correct!!!!
   inner_join(trait2016LeafArea, by = c("Envelope_Name_Corrected", "Date", "Elevation", "Site", "Location", "Project", "Taxon", "Individual_number", "Leaf_number"))
   
-
 
 #import trait taxonomy dictionary
 trait_taxa <- read_delim("traits/data/trait_name_changes.csv", delim = ",", comment = "#")
 
 
 #### COMBINE 2015 & 2016 TRAIT DATA ####
-#remove unneeded columns, rename columns
 
+#remove unneeded columns, rename columns
 trait2015 <- trait2015 %>%
   mutate(Date = ymd(Date)) %>%
   select(-Leaf_Area_cm2, -Leaf_Area_m2, -Wet_Mass_WeighingScale, -Dry_Mass_WeighingScale, -Dry_Mass_g, -`LMA g -m2`, -`log LMA`, -`wet-dry`, -notes, -corrections) %>%
@@ -135,7 +152,6 @@ trait2015 <- trait2015 %>%
     Project = "LOCAL"
     )
   
-
 trait2016 <- trait2016 %>%
   select(-`Difference_(Uncropped_minus_Cropped)`, -Uncropped_Leaf_Area, -X, -X.1, -Notes, -Dry_Mass_g_Multiple2, -Dry_Mass_g_Multiple3, -Corrections.x, -dry.wet, -Corrections.y) %>%
   rename(Leaf_Area_cm2 = Cropped_Leaf_Area) %>%
@@ -166,7 +182,7 @@ CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", f
 CN_ID <- CN_ID %>% 
   as_tibble() %>% 
   filter(stoich.vial.label != "") %>% 
-  mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
+  mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% # needed to match with trait2016
   select(Full_Envelope_Name, stoich.vial.label)
 
 # CN data
@@ -177,9 +193,8 @@ CNdata <- CNdata %>%
   rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
   mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
   left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label")) %>% 
-  mutate(Full_Envelope_Name = gsub("\\-O\\-", "\\-0\\-", Full_Envelope_Name)
-         #Full_Envelope_Name = gsub("Viola\\_biflora\\_var\\_rockiana", "Viola\\_biflora\\_var\\.\\_rockiana", Full_Envelope_Name)
-         )
+  mutate(Full_Envelope_Name = gsub("\\-O\\-", "\\-0\\-", Full_Envelope_Name))
+
 
 setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
@@ -219,7 +234,7 @@ traits <- traits_raw %>%
   mutate(allComments = gsub("add", NA, allComments)) %>% # remove add in comments
   mutate(allComments = gsub(", add, |, add|add _ add, |add _ |add, ", "", allComments)) %>%
   # remove problematic leaves
-  filter(!grepl("|not Rumex|black", allComments)) %>% 
+  filter(!grepl("not Rumex|black", allComments)) %>% 
   #filter(!grepl("yellow leaf|leaf yellow|brown", allComments)) %>% 
   #filter(!grepl("^leaf folded$", allComments)) %>% 
 # FLAG DATA
