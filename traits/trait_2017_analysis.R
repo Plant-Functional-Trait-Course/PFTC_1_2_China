@@ -98,7 +98,7 @@ trait2016LeafTrait <- trait2016LeafTrait %>%
          Taxon = ifelse(grepl("Cyanthus_husincans", Envelope_Name_Corrected), "Cyanthus_husincans", Taxon),
          Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U", Envelope_Name_Corrected), "2", Project)) %>% 
   # Create flag columns
-  mutate(AreaFlag = "", WetFlag = "", DryFlag = "", ThickFlag = "")
+  mutate(AreaFlag = "", WetFlag = "", DryFlag = "", ThickFlag = "", GeneralFlag = "")
 
 
 ### Check for scans with missing traits and vice versa
