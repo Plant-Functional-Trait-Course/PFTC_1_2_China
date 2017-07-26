@@ -240,56 +240,58 @@ traits_raw %>%
 
 
 # More Cleaning
-# Need to fix Project, Individual_number, Leaf_number (Unknown, 6, 2.1, 3_(2))???
-traits_raw %>% 
-  select(Leaf_number) %>% distinct %>% pn
-
 # Also check if problematic 2016 leaves, where project and location do not match
 traits_raw %>% mutate(loc1 = substr(Location, 1, 1)) %>%
   count(loc1, Site, Project) %>% filter(Project == "Unknown")
   
-loc1  Site Project     n
-2     A      A       2     1
-3     A      M       2     1
-4     H      A       2     5
-1     H      H       6    12
-1     A      A Unknown     1
+#loc1  Site Project     n
+#2     A      A       2     1
+#3     A      M       2     1
+#4     H      A       2     5
+#1     H      H       6    12
+#1     A      A Unknown     1
 
 
 
 
-# Clean the trait data
-# remove yellow leaf|leaf yellow|brown|not Rumex
-# eaten, folded, cut leaves seem not problematic, but some with part of leaf too white!!!
+#### FLAG DATA ####
+# separate flag for Area (AreaFlag), Wet mass (WetFlag), Dry mass (DryFlag) and Leaf Thickness (ThickFlag) and one for general comments (GeneralFlag)
+# add #zap in the comment if it should be removed
+# all other comments are only warnings
 traits <- traits_raw %>% 
   # Remove unneeded comments
   mutate(allComments = gsub("NA", NA, allComments)) %>% # remove "NA" in comments
-  mutate(allComments = gsub("add", NA, allComments)) %>% # remove add in comments
-  mutate(allComments = gsub(", add, |, add|add _ add, |add _ |add, ", "", allComments)) %>%
+  # remove add in comments
+  mutate(allComments = gsub("add|, add, |, add|add _ add, |add _ |add, | _ add|add_", "", allComments)) %>%
   # remove problematic leaves
-  filter(!grepl("not Rumex|black", allComments)) %>% 
-  #filter(!grepl("yellow leaf|leaf yellow|brown", allComments)) %>% 
-  #filter(!grepl("^leaf folded$", allComments)) %>% 
-# FLAG DATA
-# Wet mass > Dry mass
-# Very small wet mass
-# large residual for dry mass vs. leaf area
-# SLA > 500 and < 5
-  mutate(flag = ifelse(Dry_Mass_g - Wet_Mass_g > 0, paste("Wet>Dry", sep = "_"), NA)) %>% 
-  mutate(flag = ifelse(Wet_Mass_g < 0.0005, paste(flag, "WetTiny", sep = "_"), NA)) %>% 
-  mutate(flag = ifelse(SLA_cm2_g > 500, paste(flag, "LargeSLA", sep = "_"), NA))
+  filter(!grepl("not Rumex", allComments)) %>% 
+  # Flag possibly problematic leaves: eaten, folded, cut, too white, etc.
+  mutate(AreaFlag = ifelse(grepl("leaf eaten|white|stalk missing|folded|cut|leaf not recognised", allComments), paste(AreaFlag, "Area might be incorrect"), AreaFlag),
+         # SLA wrong
+         AreaFlag = ifelse(SLA_cm2_g > 500, paste(AreaFlag, "Area might be incorrect SLA too large"), AreaFlag),
+         AreaFlag = ifelse(SLA_cm2_g < 5, paste(AreaFlag, "Area might be incorrect SLA too small"), AreaFlag),
+         DryFlag = ifelse(SLA_cm2_g > 500, paste(DryFlag, "Dry mass might be incorrect SLA too large"), DryFlag),
+         DryFlag = ifelse(SLA_cm2_g < 5, paste(DryFlag, "Dry mass might be incorrect SLA too small"), DryFlag),
+         # brown and yellow leaves
+         WetFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(WetFlag, "Wet mass might be too low"), WetFlag),
+         # Wet < Dry
+         WetFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(WetFlag, "Wet mass might be incorrect Wet < Dry", sep = "_"), WetFlag),
+         # Tiny Wet mass
+         WetFlag = ifelse(Wet_Mass_g < 0.0005, paste(WetFlag, "Wet mass might be incorrect Tiny Wet mass", sep = "_"), WetFlag),
+         DryFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(DryFlag, "Wet mass might be incorrect Wet < Dry", sep = "_"), DryFlag),
+         DryFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(DryFlag, "Dry mass might be too low"), DryFlag),
+         # Missing Dry_Mass_2016_g for 2015 leaves
+         DryFlag = ifelse(year(Date) == "2015" & flag == "DryMass2015", paste(DryFlag, "Area might be incorrect 2015 weighing"), DryFlag))
+  
 
-### Remove leaf area for brown leafs, yellow, eaten etc. But other data can still be good.
 
-
+### Is this needed???
 # calculate large residuals: Area vs. DryMass
 LargeResid <- traits %>% filter(!is.na(Leaf_Area_cm2), !is.na(Dry_Mass_g))
 fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_g), data = LargeResid)
 LargeResid$resid_Area_Dry <- resid(fit)
 LargeResid <- LargeResid %>% select(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, Dry_Mass_g, Leaf_Area_cm2, resid_Area_Dry)
 
-traits <- traits %>% 
-  left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% 
-  mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA))
+#traits <- traits %>% left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA))
   
 
