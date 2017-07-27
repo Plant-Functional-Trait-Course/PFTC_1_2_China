@@ -227,11 +227,11 @@ CNdata <- CNdata %>%
   left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
 
 
-setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
+#setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
 # Merge CN Data with traits
 # Using left join, because not all leaves have CN data
-traits_raw %>% 
+traits_raw <- traits_raw %>% 
   mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
   mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name)) %>% 
   left_join(CNdata, by = c("Full_Envelope_Name"))
@@ -240,18 +240,22 @@ traits_raw %>%
 
 
 # More Cleaning
-# Also check if problematic 2016 leaves, where project and location do not match
+# Check for problematic 2016 leaves, where site, project and location do not match
 traits_raw %>% mutate(loc1 = substr(Location, 1, 1)) %>%
-  count(loc1, Site, Project) %>% filter(Project == "Unknown")
-  
-#loc1  Site Project     n
-#2     A      A       2     1
-#3     A      M       2     1
-#4     H      A       2     5
-#1     H      H       6    12
-#1     A      A Unknown     1
+  count(loc1, Site, Project) %>% pn
 
-
+traits_raw <- traits_raw %>% 
+  mutate(GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_A7_2_Potentilla_leuconota_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
+         GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3500_M_A5_2_Artemisia_flaccida_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
+         GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Polygonum_viviparum_", Envelope_Name_Corrected), paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
+         Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), "1", Project),
+         GeneralFlag = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), paste(GeneralFlag, "Possible wrong Site Location Project; changed Project from 2 to 1"), GeneralFlag),
+         Project = ifelse(grepl("20160815_4100_H_H2_6_Allium_prattii_U_|20160815_4100_H_H2_6_Polygonum_macrophyllum_U_|20160815_4100_H_H2_6_Viola_biflora_var_rockiana_1_", Envelope_Name_Corrected), "C", Project),
+         GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Allium_prattii_U_|20160815_4100_H_H2_6_Polygonum_macrophyllum_U_|20160815_4100_H_H2_6_Viola_biflora_var_rockiana_1_", Envelope_Name_Corrected), paste(GeneralFlag, "Project might be wrong changed 6 to C"), GeneralFlag),
+         
+         Project = ifelse(Envelope_Name_Corrected == "20160812_3850_A_A7_Unknown_Veronica_szechuanica_U_1", "0", Project),
+         GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_A7_Unknown_Veronica_szechuanica_U_1", paste(GeneralFlag, "Project might be wrong changed Unknown to 0"), GeneralFlag)
+         )
 
 
 #### FLAG DATA ####
