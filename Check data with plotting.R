@@ -1,5 +1,6 @@
 #### Check data with some plots ####
-
+source("traits/LeafArea2_2015.R")
+source("traits/trait_2017_analysis.R")
 
 # Dry_Mass_2015 vs Dry_Mass_2016
 trait2015_all %>% filter(year(ymd(Date)) == "2015") %>%
@@ -14,6 +15,25 @@ trait2015_all %>% filter(year(ymd(Date)) == "2015") %>%
 # colour Tiny wet mass: Wet_Mass_g < 0.0005
 traits %>% mutate(year = as.factor(year(Date))) %>%
   ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) + 
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+
+# colour: Wet < Dry
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < Dry_Mass_g)) + 
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+
+# colour DryFlag
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  filter(year == 2016) %>% 
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = DryFlag)) + 
   geom_point() +
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   scale_x_log10() + 
