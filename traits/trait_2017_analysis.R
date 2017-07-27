@@ -203,7 +203,6 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName)
          ) 
 
-### NEED TO FIX THIS!!! FULL_ENV_NAME DOES NOT MATCH?!?
 # CN Analysis
 # read in ID
 CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
@@ -238,11 +237,10 @@ traits_raw <- traits_raw %>%
 
 
 
-
-# More Cleaning
+#### FLAG DATA ####
+# And more Cleaning
 # Check for problematic 2016 leaves, where site, project and location do not match
-traits_raw %>% mutate(loc1 = substr(Location, 1, 1)) %>%
-  count(loc1, Site, Project) %>% pn
+#traits_raw %>% mutate(loc1 = substr(Location, 1, 1)) %>% count(loc1, Site, Project) %>% pn
 
 traits_raw <- traits_raw %>% 
   mutate(GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_A7_2_Potentilla_leuconota_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
@@ -258,7 +256,8 @@ traits_raw <- traits_raw %>%
          )
 
 
-#### FLAG DATA ####
+
+
 # separate flag for Area (AreaFlag), Wet mass (WetFlag), Dry mass (DryFlag) and Leaf Thickness (ThickFlag) and one for general comments (GeneralFlag)
 # add #zap in the comment if it should be removed
 # all other comments are only warnings
@@ -285,7 +284,15 @@ traits <- traits_raw %>%
          DryFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(DryFlag, "Wet mass might be incorrect Wet < Dry", sep = "_"), DryFlag),
          DryFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(DryFlag, "Dry mass might be too low"), DryFlag),
          # Missing Dry_Mass_2016_g for 2015 leaves
-         DryFlag = ifelse(year(Date) == "2015" & flag == "DryMass2015", paste(DryFlag, "Area might be incorrect 2015 weighing"), DryFlag))
+         DryFlag = ifelse(year(Date) == "2015" & flag == "DryMass2015", paste(DryFlag, "Area might be incorrect 2015 weighing"), DryFlag)) %>% 
+  # Flag wrong Individual and leaf number
+  mutate(GeneralFlag = ifelse(Individual_number %in% c("", "Unknown", "U", "1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.2", "5.2"), paste(GeneralFlag, "Wrong Ind. number due to duplicate FileName"), GeneralFlag),
+         GeneralFlag = ifelse(Individual_number %in% c(""), paste(GeneralFlag, "Missing Ind. number"), GeneralFlag),
+         GeneralFlag = ifelse(Leaf_number %in% c("Unknown", "3 (2)", "4 (2)", "5 (2)", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"), paste(GeneralFlag, "Wrong leaf number due to duplicate or missing Ind. nr"), GeneralFlag),
+         GeneralFlag = ifelse(is.na(Leaf_number), paste(GeneralFlag, "Missing leaf number"), GeneralFlag)) %>% 
+  # Flag duplicate leaves where the area was merged by arranging by arranging dry mass and size
+  mutate(AreaFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(AreaFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), AreaFlag),
+         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), DryFlag))
   
 
 
