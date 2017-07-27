@@ -12,19 +12,19 @@ pn <- . %>% print(n = Inf)
 source("traits/LeafArea2_2015.R")
 
 # import trait data
-trait2015 <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
+trait2015_all <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
 # import missing trait data from Halenia leaves and r_bind to data set
 trait2015_Halenia <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017 Halenia_elliptica.csv", delim = ";", comment = "")
 
-trait2015 <- trait2015 %>% 
+trait2015_all <- trait2015_all %>% 
   bind_rows(trait2015_Halenia %>% mutate(Leaf_Number = as.character(Leaf_Number)))
 
 #check character variables
-trait2015 %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
-trait2015 %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
+trait2015_all %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
+trait2015_all %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
 
 # fix some variables, replace missing 2016 dry mass with 2015 dry mass
-trait2015 <- trait2015 %>% 
+trait2015 <- trait2015_all %>% 
   mutate(Dry_Mass_2016_g = as.numeric(Dry_Mass_2016_g)) %>%
   mutate(Leaf_Area_m2 = as.numeric(Leaf_Area_m2)) %>%
   # if Dry_Mass_2016 is missing

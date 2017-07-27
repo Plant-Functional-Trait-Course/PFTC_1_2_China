@@ -2,7 +2,7 @@
 
 
 # Dry_Mass_2015 vs Dry_Mass_2016
-Eearlytrait2015 %>% filter(year(ymd(Date)) == "2015") %>%
+trait2015_all %>% filter(year(ymd(Date)) == "2015") %>%
   ggplot(aes(x = Dry_Mass_g, y = Dry_Mass_2016_g)) + 
   geom_point() +
   geom_abline(intercept = 0, slope = 1, colour = "red") +
