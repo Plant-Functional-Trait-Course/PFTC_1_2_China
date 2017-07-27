@@ -269,7 +269,7 @@ traits <- traits_raw %>%
   # remove problematic leaves
   filter(!grepl("not Rumex", allComments)) %>% 
   # Flag possibly problematic leaves: eaten, folded, cut, too white, etc.
-  mutate(AreaFlag = ifelse(grepl("leaf eaten|white|stalk missing|folded|cut|leaf not recognised", allComments), paste(AreaFlag, "Area might be incorrect"), AreaFlag),
+  mutate(AreaFlag = ifelse(grepl("leaf eaten|white|stalk missing|folded|cut|leaf not recognised", allComments), paste(AreaFlag, "Area might be incorrect eaten cut white etc"), AreaFlag),
          # SLA wrong
          AreaFlag = ifelse(SLA_cm2_g > 500, paste(AreaFlag, "Area might be incorrect SLA too large"), AreaFlag),
          AreaFlag = ifelse(SLA_cm2_g < 5, paste(AreaFlag, "Area might be incorrect SLA too small"), AreaFlag),
@@ -278,10 +278,10 @@ traits <- traits_raw %>%
          # brown and yellow leaves
          WetFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(WetFlag, "Wet mass might be too low"), WetFlag),
          # Wet < Dry
-         WetFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(WetFlag, "Wet mass might be incorrect Wet < Dry", sep = "_"), WetFlag),
+         WetFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(WetFlag, "Wet mass might be incorrect Wet < Dry #zap"), WetFlag),
          # Tiny Wet mass
-         WetFlag = ifelse(Wet_Mass_g < 0.0005, paste(WetFlag, "Wet mass might be incorrect Tiny Wet mass", sep = "_"), WetFlag),
-         DryFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(DryFlag, "Wet mass might be incorrect Wet < Dry", sep = "_"), DryFlag),
+         WetFlag = ifelse(Wet_Mass_g < 0.0005, paste(WetFlag, "Wet mass might be incorrect Tiny Wet mass"), WetFlag),
+         DryFlag = ifelse(Wet_Mass_g < Dry_Mass_g, paste(DryFlag, "Wet mass might be incorrect Wet < Dry"), DryFlag),
          DryFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(DryFlag, "Dry mass might be too low"), DryFlag),
          # Missing Dry_Mass_2016_g for 2015 leaves
          DryFlag = ifelse(year(Date) == "2015" & flag == "DryMass2015", paste(DryFlag, "Area might be incorrect 2015 weighing"), DryFlag)) %>% 
@@ -292,7 +292,18 @@ traits <- traits_raw %>%
          GeneralFlag = ifelse(is.na(Leaf_number), paste(GeneralFlag, "Missing leaf number"), GeneralFlag)) %>% 
   # Flag duplicate leaves where the area was merged by arranging by arranging dry mass and size
   mutate(AreaFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(AreaFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), AreaFlag),
-         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), DryFlag))
+         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), DryFlag)) %>% 
+  mutate(DryFlag = gsub("NA |^ ", "", DryFlag),
+         AreaFlag = gsub("NA |^ ", "", AreaFlag),
+         WetFlag = gsub("NA |^ ", "", WetFlag),
+         ThickFlag = gsub("NA |^ ", "", ThickFlag),
+         GeneralFlag = gsub("NA |^ ", "", GeneralFlag))
+  
+
+#Check all combinaitons of Flags, maybe one can be removed
+# Check figures and remove
+# Remove impossible values
+#traits %>% filter(grepl("#zap", AreaFlag))
   
 
 
