@@ -305,6 +305,7 @@ traits <- traits_raw %>%
 # Remove impossible values
 #traits %>% filter(grepl("#zap", AreaFlag))
   
+save(traits, file = "traits/traits.Rdata")
 
 
 ### Is this needed???
