@@ -1,0 +1,28 @@
+---
+title: "Untitled"
+author: "Richard J. Telford"
+date: "September 21, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE, cache.lazy = TRUE)
+
+##load packages
+library("tidyverse")
+library("vegan")
+library("ggvegan")
+library("lubridate")
+library("gridExtra")
+
+knitr::read_chunk("Yans_ms.R")
+```
+
+```{r setup, include=FALSE}
+```
+
+```{r responses}
+```
+
+```{r ordination, results = 'hide'}
+```
