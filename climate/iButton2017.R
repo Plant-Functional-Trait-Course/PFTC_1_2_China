@@ -93,6 +93,7 @@ monthlyiButton <- iButton %>%
   mutate(site = factor(site)) %>% 
   mutate(site = plyr::mapvalues(site, c("A", "H", "L", "M"), c("H", "A", "M", "L")))
  
+save(monthlyiButton, file = "Temperature_monthlyiButton.RData")
 
 # Plot monthly data by site and depth
 monthlyiButton %>% 
