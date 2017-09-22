@@ -1,13 +1,18 @@
 plot_three_treatments <- function(data, column, ylab = "")  {
-    gc <- ggplot(data %>% filter(TTtreat %in% c("local", "control"), year == 2016), 
+  data <- data %>% filter(year == 2016, TTtreat %in% c("local", "control", "OTC", "warm1"))
+  ymin <- min(data[, column])
+  ymax <- max(data[, column])
+  
+    gc <- ggplot(data %>% filter(TTtreat %in% c("local", "control")), 
                  aes_string(x = "mean", y = column, colour = "originSiteID", shape = "TTtreat", group = 1)) + 
     geom_jitter(height = 0, width = 0.1) +
     geom_smooth(method = "lm") +
     scale_shape(limits = levels(data$TTtreat)) +
     labs(x = "Temperature °C", y = ylab, colour = "Site", shape = "Treatment") +
+    ylim(ymin, ymax) +  
     ggtitle("Gradient")
   
-  gw <- gc %+% (data %>% filter(TTtreat %in% c("local", "warm1"), year == 2016)) + 
+  gw <- gc %+% (data %>% filter(TTtreat %in% c("local", "warm1"))) + 
     aes(x = contrast, group = originSiteID) +
     ggtitle("Transplant") + 
     scale_x_continuous(breaks = scales::pretty_breaks(n = 3)) +
@@ -15,7 +20,7 @@ plot_three_treatments <- function(data, column, ylab = "")  {
     labs(x = "Temperature Contrast °C")
   
   
-  go <- gw %+% (data %>% filter(TTtreat %in% c("control", "OTC"), year == 2016)) + 
+  go <- gw %+% (data %>% filter(TTtreat %in% c("control", "OTC"))) + 
     ggtitle("OTC")
   
   g <- ggplotGrob(gc)$grobs
