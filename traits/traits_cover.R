@@ -6,6 +6,7 @@ source("traits/trait_2017_analysis.R")
 trait2016 %>% mutate(loc1 = substr(Location, 1, 1)) %>%
   count(loc1, Site, Project) %>% print(n = 100)
 
+noGraminoids <- taxa %>% filter(!functionalGroup %in% c("gramineae", "sedge")) %>% select(speciesName)
 
 # Merge traits and cover
 # Only Local, and controls from experiments
@@ -34,6 +35,7 @@ TraitsAndCover <- AllLeaves %>%
   filter(nturfs > 0, `2015` > 0 | `2016` > 0) %>% 
   ungroup() %>% 
   mutate(Five = ifelse(sum.nLeaves >5, 5, sum.nLeaves)) %>% 
+  mutate(TraitCover = "TraitAndCover") %>% 
   summarise(total = sum(Five))
  
 # Cover but no trait data
@@ -51,7 +53,7 @@ traits %>%
   ungroup() %>% 
   summarise(sum = sum(Five))
   slice(1:5)
-  
+
   
 TraitsWithoutCover <- AllLeaves %>% 
   filter(!is.na(sum.nLeaves), is.na(nturfs)) %>% print(n = Inf)
@@ -74,3 +76,35 @@ dd <- cover_thin %>%
   summarise(prop = sum(cover) / first(sumCover)) 
 
 dd %>% filter(prop < 0.8) 
+
+
+# Traits and cover, no Graminoids
+CNAnalysis <- traits %>% 
+  left_join(TraitsAndCover, by = c("Taxon", "Site")) %>% 
+  filter(Project %in% c("LOCAL", "0", "C")) %>%
+  filter(!is.na(TraitCover)) %>% 
+  mutate(Year = year(Date)) %>% 
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  filter(mean > 4)
+  #ungroup() %>% group_by(Site, Taxon, Individual_number) %>% 
+  #summarise(mean(Five)) 
+  #ungroup() %>% summarise(sum(`mean(Five)`))
+  
+
+CNAnalysis2015 <- CNAnalysis %>%
+  filter(Year == 2015) %>% 
+  select(-Full_Envelope_Name, -Envelope_Name_Corrected) %>% 
+  mutate(Full_Envelope_Name = paste(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, sep = "_"))
+
+write_csv(CNAnalysis2015, "CNAnalysis2015.csv", col_names = TRUE)
+  
+  
+# calculate how many
+CNAnalysis %>% 
+  arrange(Site, desc(Year), Taxon, Individual_number, Leaf_number) %>% 
+  select(Year, Site, Taxon, Individual_number, Leaf_number, flag, `2015`, `2016`, nturfs, max, mean, sum.nLeaves, Five) %>%
+  
+
+table(CNAnalysis$Taxon, year(CNAnalysis$Date), CNAnalysis$Site)
+
+write_csv(CNAnalysis, "CNAnalysis.csv", col_names = TRUE)
