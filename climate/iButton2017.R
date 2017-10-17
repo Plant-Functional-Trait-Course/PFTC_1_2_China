@@ -3,11 +3,12 @@ library("tidyverse")
 library("lubridate")
 library("readxl")
 library("stringi")
+library("data.table")
 
 pn <- . %>% print(n = Inf)
 
 # Extract file names from all iButton files to create dictionary
-myfiles <- dir(path = paste0("~/Dropbox/iButtonDataChina"), pattern = "xls", recursive = TRUE, full.names = TRUE)
+myfiles <- dir(path = "~/Dropbox/iButtonDataChina", pattern = "xls", recursive = TRUE, full.names = TRUE)
 
 myfiles <- myfiles[!grepl("^l\\.xls", basename(myfiles), ignore.case = TRUE)] # remove l.xls file, is duplicate
 
@@ -40,8 +41,10 @@ iButton <- mdat %>%
   mutate(depth = stri_extract(regex = "\\d+(?=\\)*CM)", ID)) %>%  # extract depth
   select(-ID) %>%  # remove ID
   mutate(depth = plyr::mapvalues(depth, c("5",  "0",  "30"), c("soil", "ground", "air"))) %>% 
-  mutate(site = plyr::mapvalues(site, c("H",  "A",  "M", "L"), c("H",  "A",  "M", "L")))
+  mutate(site = factor(site, levels = c("H",  "A",  "M", "L")))
 
+
+iButton <- setDT(iButton)
 
 # Check for duplicate values
 iButton %>% 
@@ -52,32 +55,52 @@ iButton %>%
 # remove duplicates
 iButton <- iButton %>%
   group_by(date, turfID, depth, value) %>% 
-  mutate(n = 1:n()) %>%
-  filter(n == 1)
+  slice(1)
 
 # Clean data
 iButton <- iButton %>% 
-  select(-n) %>% 
   ungroup() %>% 
+  # remove everything before 1. May in 2017 (before put to the field)
+  filter(!date < "2017-05-01 01:00:00") %>% 
   # zap strongly negative and positive spikes
   mutate(value = ifelse(depth == "soil" & value > 25, NA, value)) %>% # soil +25
   mutate(value = ifelse(depth %in% c("soil", "ground") & value < -7, NA, value)) # soil -7
 
-
 save(iButton, file = "TemperatureiButton.RData")
+
 
 # Check each turf
 iButton %>% 
-  ggplot(aes(x = date, y = value, color = depth)) +
+  filter(depth == "ground") %>% 
+  ggplot(aes(x = date, y = value)) +
   geom_line() +
-  scale_color_manual(values = c("blue", "green", "brown")) +
+  #scale_color_manual(values = c("blue", "green", "brown")) +
   facet_wrap( ~ turfID)
 
-  
-ggplot(iButton, aes(x = date, y = value, color = depth)) +
+# Plot data from any hours of the day
+iButton %>% 
+  filter(between(hour(date), 3,5), depth == "air") %>% 
+  mutate(month = ymd(format(date, "%Y-%m-15"))) %>% 
+  select(-date) %>%
+  group_by(month, site, treatment, depth) %>%
+  filter(!is.na(value)) %>%
+  summarise(Tmean = mean(value, na.rm = TRUE), n = n()) %>% 
+  ggplot(aes(x = month, y = Tmean, color = treatment)) +
   geom_line() +
-  scale_color_manual(values = c("blue", "green", "brown")) +
+  facet_grid(depth ~ site)
+  
+
+# Plot day and night temperature
+iButton %>% 
+  filter(depth == "soil") %>% 
+  mutate(date = dmy(format(date, "%d.%b.%Y"))) %>%
+  group_by(date, depth, site, treatment) %>%
+  summarise(n = n(), min = min(value), max = max(value)) %>% 
+  mutate(diff = max - min) %>% 
+  ggplot(aes(x = date, y = diff, color = treatment)) +
+  geom_line() +
   facet_grid(treatment ~ site)
+  
 
 
 monthlyiButton <- iButton %>% 
@@ -90,16 +113,18 @@ monthlyiButton <- iButton %>%
   # filter(n > 6 * 24 * 7 * 3)  #at least three weeks of data
   select(-n) %>% 
   ungroup() %>% 
-  mutate(site = factor(site)) %>% 
-  mutate(site = plyr::mapvalues(site, c("A", "H", "L", "M"), c("H", "A", "M", "L")))
+  mutate(site = factor(site, levels = c("H", "A", "M", "L")))
  
 save(monthlyiButton, file = "Temperature_monthlyiButton.RData")
+
 
 # Plot monthly data by site and depth
 monthlyiButton %>% 
   ggplot(aes(x = month, y = Tmean, color = treatment)) +
   geom_line() +
   facet_grid(depth ~ site)
+
+
 
 monthlyiButton %>% 
   group_by(site, month, depth, treatment) %>% 
