@@ -4,18 +4,41 @@ library("tidyverse")
 library("vegan")
 library("ggvegan")
 
-#read excel file
-biomass <- plyr::ldply(1:4, read_excel, path = "biomass/data/biomass2015.xls")
-names(biomass) <- make.names(names(biomass))
+pn <- . %>% print(n = Inf)
 
-biomass <- biomass %>% 
+#read excel file
+Biomass <- plyr::ldply(1:4, read_excel, path = "biomass/data/biomass2015.xls")
+names(Biomass) <- make.names(names(Biomass))
+
+
+# There are duplicate species in the data set. Those are species that were thought to be different species, but turned out to be the same.
+
+# Sum biomass and cover for duplicate species
+BiomassCover <- Biomass %>% 
   mutate(
     site = factor(site, levels = c("H", "A", "M", "L")),
     species = trimws(species)
     ) %>% 
   rename(biomass = production) %>% 
-  select(site, plot, species, matches("^H\\d+$"), cover, biomass) %>% 
-  mutate(mean_height = rowMeans(select(., matches("^H\\d+$")), na.rm = TRUE)) 
+  select(site, plot, species, cover, biomass) %>% 
+  group_by(site, plot, species) %>% 
+  summarize(biomass = sum(biomass), cover = sum(cover))
+
+# Gather heights and calculate average height including duplicate species
+Height <- Biomass %>% 
+  mutate(
+    site = factor(site, levels = c("H", "A", "M", "L")),
+    species = trimws(species)
+  ) %>% 
+  select(site, plot, species, matches("^H\\d+$")) %>% 
+  gather(key = individual, value = height, -site, -plot, -species) %>% 
+  group_by(site, plot, species) %>% 
+  filter(!is.na(height)) %>% 
+  summarise(height = mean(height), n = n())
+  
+# Merge BiomassCover and Height
+biomass <- BiomassCover %>% 
+  left_join(Height, by = c("site", "plot", "species"))
 
 
 # split authority from name
@@ -54,17 +77,14 @@ biomass <- biomass %>%
 biomass_taxa <- read_delim("biomass/data/biomass_taxonomic_corrections.csv", delim = ",", comment = "#")
 
 biomass <- biomass %>%
-  mutate(speciesName = plyr::mapvalues(speciesName, from = biomass_taxa$wrongName, to = biomass_taxa$correctName)) %>% 
+  mutate(speciesName = plyr::mapvalues(speciesName, from = biomass_taxa$wrongName, to = biomass_taxa$correctName, warn_missing = FALSE)) %>% 
   group_by(site, plot)
-                              
-##problem - duplicate taxa
-biomass %>% count(site, plot, speciesName) %>% filter(n >1)
-biomass %>% group_by(site, plot, speciesName) %>% filter(n() >1) %>% arrange(site, plot, speciesName)
-stop("duplicate taxa")
-
+          
+save(biomass, file = "biomass/biomass_cleaned.Rdata")
+                    
 
 ##sum unknows
-biomass %>% filter(genus == "Unkown") %>% summarise(sum = sum(biomass)) %>% arrange(desc(sum))
+biomass %>% filter(genus == "Unkown") %>% group_by(site, plot, speciesName) %>% summarise(biomass = sum(biomass)) %>% arrange(desc(biomass)) %>% pn
 
 
 
@@ -73,7 +93,7 @@ ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(~ site)
 
-ggplot(biomass, aes(x = mean_height, y = biomass, color = speciesName)) +
+ggplot(biomass, aes(x = height, y = biomass, color = speciesName)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(~ site)
 
