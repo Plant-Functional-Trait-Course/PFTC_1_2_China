@@ -66,7 +66,7 @@ stop("duplicate taxa")
 ##sum unknows
 biomass %>% filter(genus == "Unkown") %>% summarise(sum = sum(biomass)) %>% arrange(desc(sum))
 
-
+biomass %>% filter(genus == "Unkown") %>% select(speciesName, site, plot, biomass) %>% arrange(desc(biomass)) 
 
 # make plots
 ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +
