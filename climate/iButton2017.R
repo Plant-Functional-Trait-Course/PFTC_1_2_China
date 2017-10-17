@@ -87,6 +87,7 @@ iButton %>%
   summarise(Tmean = mean(value, na.rm = TRUE), n = n()) %>% 
   ggplot(aes(x = month, y = Tmean, color = treatment)) +
   geom_line() +
+  labs(y = "Mean monthly night temperature") +
   facet_grid(depth ~ site)
   
 
