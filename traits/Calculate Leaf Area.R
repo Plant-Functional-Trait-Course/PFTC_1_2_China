@@ -1,9 +1,11 @@
 ### CALCULATE LEAF AREA
+#devtools::install_github("richardjtelford/LeafArea")
+
 library(LeafArea)
 
 
 # Auds code for second batch 2015 leaves
-list.of.files <- dir(path = paste0("~/Desktop/TestLeaf"), pattern = "jpeg|jpg", recursive = TRUE, full.names = TRUE)
+list.of.files <- dir(path = paste0("~/Desktop/TestLeafs"), pattern = "jpeg|jpg", recursive = TRUE, full.names = TRUE)
 new.folder <- "~/Desktop/Temp"
 output.folder <- "~/Desktop/Output"
 
@@ -21,7 +23,7 @@ loop.files <-  function(files){
                                                          "/", gsub("-NA$", "", newfile)))
   }
   print(files)
-  area <- try(run.ij(set.directory = "~/Desktop/Temp", distance.pixel = 237, known.distance = 2, log = TRUE, low.size = 0.005, save.image = TRUE))
+  area <- try(run.ij(set.directory = "~/Desktop/Temp", distance.pixel = 237, known.distance = 2, log = TRUE, low.size = 0.005, trim.pixel = 200, save.image = TRUE))
   if(inherits(area, "try-error")){
     return(data.frame(File_Name =files, LeafArea = NA))
   }
