@@ -215,7 +215,7 @@ CN_ID <- CN_ID %>%
   mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name))
 
 # CN data
-CNdata <- read_excel(path = "traits/data/China_CNP_July18_2017.xls", col_types = c(rep("text", 2), rep("numeric", 5), "text", rep("numeric", 3), "text"))
+CNdata <- read_excel(path = "traits/data/CHINA_CNP_3November2017.xls")
 
 
 # one leaf does not join!!! FIX LATER; and change to full_join
