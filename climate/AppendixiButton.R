@@ -5,6 +5,8 @@ library("lubridate")
 
 load(file = "Temperature_monthlyiButton.RData")
 
+Sys.setlocale("LC_ALL", "en_GB")
+
 head(monthlyiButton)
 WarmAirT <- monthlyiButton %>% 
   filter(depth == "air", treatment == "C", site != "H") %>%
@@ -17,10 +19,11 @@ monthlyiButton %>%
   filter(depth == "air") %>% 
   mutate(destSite = site) %>% 
   rename(origSite = site) %>% 
+  bind_rows(WarmAirT) %>%
   mutate(destSite = factor(destSite, levels = c("H", "A", "M", "L"))) %>% 
-  bind_rows(WarmAirT) %>% 
   ggplot(aes(x = month, y = Tmean, color = treatment)) +
   geom_line() +
   scale_color_manual(name = "Treatment", values = c("grey", "red", "purple")) +
-  facet_wrap(~ destSite) +
+  labs(x = "", y = "Mean monthly temperature °C") +
+  facet_grid(~ destSite) +
   theme_minimal()

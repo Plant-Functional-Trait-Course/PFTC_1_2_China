@@ -1,6 +1,9 @@
 library("raster")
-library("ggplot2")
-library("dplyr")
+library("tidyverse")
+library("ggthemes")
+library('osmar')
+library("grid")
+library("ggsn")
 
 ### COORDINATES FIELD SITES
 coords <- data.frame(site = c("L", "M", "A", "H"),
@@ -10,7 +13,7 @@ coords <- data.frame(site = c("L", "M", "A", "H"),
 ### CHINA MAP
 #### Get Wolrdclim elevation data ####
 elev <- getData('worldclim', var='alt', res=2.5)
-e <- extent(75,125,10,55)
+e <- extent(72,130,5,55)
 elev.china <- crop(elev, e)
 
 # To convert your RasterLayer to a data.frame, you need to convert it to
@@ -18,24 +21,25 @@ elev.china <- crop(elev, e)
 elev.china.spdf <- as(elev.china, "SpatialPixelsDataFrame")
 elev.china.df <- as.data.frame(elev.china.spdf)
 
-square = data.frame(x = c(100, 100, 104, 104, 100, 100),
-                    y = c(32, 27, 27, 32, 32, 27))
+square = data.frame(x = c(102, 102, 102, 102),
+                    y = c(29.92, 29.80, 29.80, 29.92))
+
 # plot China map
 border <- map_data("world")
 ChinaMap <- ggplot() +
-  geom_raster(data = elev.china.df, aes(x=x, y=y, fill = alt)) +
-  geom_map(aes(map_id = region), data = border, map = border, fill = NA, color = "white") +
-  geom_path(data = square, aes(x = x, y = y), color = "white", size = 1) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
+  #geom_raster(data = elev.china.df, aes(x=x, y=y, fill = alt)) +
+  geom_map(aes(map_id = region), data = border, map = border, fill = "grey90", color = "grey20") +
+  geom_polygon(data = square, aes(x = x, y = y), color = "red", size = 2, fill = NA) +
+  scale_x_continuous(expand = c(0,0), limits = c(72, 130)) +
+  scale_y_continuous(expand = c(0,0), limits = c(5, 55)) +
   coord_equal() +
-  scale_fill_gradient(name = "Elevation", low = "grey0", high = "grey100", limits=c(0,7000)) + 
-  #geom_point(aes(x=long, y=lat, colour  = "red"), shape = 17, data = coords, size=3, show.legend = FALSE) +
-  annotate("text", x = 76.5, y = 52, label = "B)", size= 5, color = "white") +
-  labs(x = "", y = "") +
-  theme_minimal(base_size = 20)
+  scale_fill_gradient(name = "Elevation m", low = "grey0", high = "grey100", limits=c(0,7000)) + 
+  labs(x = "", y = "")
+  #theme_map(base_size = 10) +
+  #theme(legend.position = c(0,1), legend.justification = c(0,1))
 
 ggsave("ChinaMap.pdf", path = "~/Dropbox/Bergen/China/Master thesis _Li/Phenology/PhenologyLi", width = 6, height = 5, dpi = 300)
+
 
 
 
@@ -64,15 +68,15 @@ name <- c("elev", "x", "y")
 elev.gongga <- rbind(setNames(gongga.df, name), setNames(gongga2.df, name))
 
 # Crop
-gongga <- elev.gongga %>% filter(x > 102, x < 102.05, y > 29.80, y < 29.95)
+gongga <- elev.gongga %>% filter(x > 102, x < 102.05, y > 29.825, y < 29.92)
 
 
 # EXTRACT ROADS FROM OPENSTREETMAP AND PLOT THEM WITH RANDOM POINTS #
 # Load libraries
-library('osmar')
+
 
 # Define the spatial extend of the OSM data we want to retrieve
-moxi.box <- center_bbox(center_lon = 102.045, center_lat = 29.875, width =  4500, height = 5000)
+moxi.box <- center_bbox(center_lon = 102.045, center_lat = 29.875, width =  9000, height = 9000)
 
 # Download all osm data inside this area
 api <- osmsource_api()
@@ -89,6 +93,10 @@ hw_lines <- as_sp(ways, "lines")
 save(gongga, file = "gongga.RData")
 load(file = "gongga.RData")
   
+
+# scalebar
+bb2 <- data.frame(long = c(102, 102.05), lat = c(29.825, 29.92))
+
 GonggaMap <- fortify(hw_lines) %>%
   ggplot() +
   geom_raster(data = gongga, aes(x=x, y=y, fill = elev)) +
@@ -96,12 +104,33 @@ GonggaMap <- fortify(hw_lines) %>%
   coord_equal() +
   scale_fill_gradient(name = "Elevation", low = "grey0", high = "grey100") + 
   geom_point(aes(x=long, y=lat), colour  = "red", shape = 17, data = coords, size=3) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
-  annotate("text", x = 102.002, y = 29.945, label = "A)", size= 5, color = "white") +
+  scale_x_continuous(expand = c(0,0), limits = c(102, 102.05), breaks = scales::pretty_breaks(n = 2)) +
+  scale_y_continuous(expand = c(0,0), limits = c(29.825, 29.92), breaks = scales::pretty_breaks(n = 2)) +
+  #annotate("text", x = 102.002, y = 29.945, label = "A)", size= 5, color = "white") +
   labs(x = "", y = "") +
-  theme(aspect.ratio=1/1, text = element_text(size=15))
+  theme(text = element_text(size=12), legend.justification = c(1,0)) +
+  scalebar(bb2, dist = 1, dd2km = TRUE, model  = "WGS84", location = "bottomright", st.size = 3, anchor = c(x = bb2$long[1] + 0.55 * (bb2$long[2] - bb2$long[1]), y = bb2$lat[1] + 0.08 * (bb2$lat[2] - bb2$lat[1])))
 
 ggsave("GonggaMap.pdf", path = "~/Dropbox/Bergen/China/Master thesis _Li/Phenology/PhenologyLi", width = 6, height = 6)
 
 save(gongga, file = "gongga.RData")
+
+
+maptheme <- theme(
+  axis.text = element_blank(),
+  axis.ticks = element_blank(),
+  axis.title = element_blank(),
+  panel.grid = element_blank(),
+  panel.border = element_rect(fill = NA, colour = "black"),
+  panel.background = element_blank(),
+  plot.margin = unit(c(1, 1, 1, 1), "points")
+)
+
+# Plot both maps on the same plot
+grid.newpage()
+vp_Gongga <- viewport(width = 1, height = 1, x = 0.5, y = 0.5)
+vp_China <- viewport(width = 0.4, height = 0.4, x = 0.65, y = 0.78)
+print(GonggaMap, vp = vp_Gongga)
+print(ChinaMap + maptheme, vp = vp_China)
+
+
