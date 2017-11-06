@@ -80,6 +80,8 @@ biomass <- biomass %>%
   mutate(speciesName = plyr::mapvalues(speciesName, from = biomass_taxa$wrongName, to = biomass_taxa$correctName, warn_missing = FALSE)) %>% 
   group_by(site, plot)
           
+#get family
+biomass <- biomass %>% mutate(family = tpl::tpl.get(genus)$family)
 save(biomass, file = "biomass/biomass_cleaned.Rdata")
                     
 
