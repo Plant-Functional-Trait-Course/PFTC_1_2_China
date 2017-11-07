@@ -57,6 +57,7 @@ allsites <- plyr::ldply(flist, function(fl){
   onesite <- plyr::ldply(excel_sheets(fl), function(sheet){
     print(sheet)
     dat <- read_excel(fl, sheet = sheet)
+    names(dat) <- gsub("__\\d$", "", names(dat)) #force duplicate columns to have same name. Probably won't work with future versions of tibble
 
     #fix metadata
     dat <- dat[!is.na(dat$Measure), ]
