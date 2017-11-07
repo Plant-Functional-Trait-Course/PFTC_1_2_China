@@ -171,7 +171,7 @@ ggplot(traits, aes(x = Wet_Mass_g, y = Dry_Mass_g)) + geom_point() + geom_abline
 
 ggplot(traits, aes(x = Dry_Mass_g, y = Leaf_Area_cm2, colour = grepl(2015, Date))) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
 
-ggplot(traits, aes(x = Leaf_Area_cm2, y = SLA_cm2.g, colour = grepl(2015, Date))) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
+ggplot(traits, aes(x = Leaf_Area_cm2, y = SLA_cm2_g, colour = grepl(2015, Date))) + geom_point() + geom_abline(slope = 1, intercept = 0) + scale_x_log10() + scale_y_log10()
 ggplot(traits, aes(x = SLA_cm2.g, colour = grepl(2015, Date))) + geom_histogram() + scale_x_log10() + geom_vline(xintercept = 500)
 
 #### Save output
