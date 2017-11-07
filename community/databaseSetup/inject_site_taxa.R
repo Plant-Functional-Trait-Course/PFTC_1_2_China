@@ -19,6 +19,12 @@ dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE
 #load csv file
 dat <- read.csv("community/databaseSetup/data/allsites.csv", stringsAsFactors = FALSE)
 
+#fix ".." error
+dat <- dat %>% mutate(
+  litterThickness = gsub("\\.\\.", "\\.",litterThickness),
+  litterThickness = as.numeric(litterThickness)
+  )
+
 # make database
 if(file.exists("community/data/transplant.sqlite")){
   file.remove("community/data/transplant.sqlite")
