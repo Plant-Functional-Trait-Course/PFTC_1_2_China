@@ -11,8 +11,7 @@ library("lubridate")
 library("gridExtra")
 
 
-## ---- setup
-source("yans_ms_functions.R")
+## ---- load_data
 
 ##load data
 #climate
@@ -52,13 +51,13 @@ warning("using estimated OTC effect for site L")
 
 
 #community
-source("start_here.R")
 cover_thin <- cover_thin %>% 
   filter(TTtreat %in% c("control", "local", "warm1", "OTC"))
 
 
-
 #turf environment
+turf_env <- tbl(con, "turfEnvironment") %>% collect()
+
 
 ## functional groups
 fun_gp <- tbl(con, "taxon") %>% 
@@ -120,13 +119,15 @@ grid.arrange(g %+% HA + ggtitle("H - A"),
 ## ---- responses
 responses <- cover_thin %>% 
   left_join(fun_gp) %>% 
+  left_join(turf_env) %>% 
   group_by(turfID, originBlockID, TTtreat, originSiteID, year) %>%  
   summarise(richness = n(), 
             diversity = diversity(cover), 
             N1 = exp(diversity),
             evenness = diversity/log(richness),
             sumCover = sum(cover),
-            propGraminoid = sum(cover[functionalGroup %in% c("gramineae", "sedge")])/sumCover
+            propGraminoid = sum(cover[functionalGroup %in% c("gramineae", "sedge")])/sumCover,
+            total_vascular = first(totalVascular)
             ) %>% 
   group_by(originBlockID, TTtreat, originSiteID, year) %>%
   select(-turfID) %>% 
@@ -140,6 +141,7 @@ plot_three_treatments(responses, column = "evenness", ylab = "Species Evenness")
 plot_three_treatments(responses, column = "diversity", ylab = "Diversity")
 plot_three_treatments(responses, column = "sumCover", ylab = "Sum of Covers")
 plot_three_treatments(responses, column = "propGraminoid", ylab = "Proportional Graminoids")
+plot_three_treatments(responses, column = "total_vascular", ylab = "Total vascular cover")
 
 # table of effects
 
