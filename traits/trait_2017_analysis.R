@@ -204,19 +204,29 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          ) 
 
 # CN Analysis
-# read in ID
-CN_ID <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
+# read in ID for 2016
+CN_ID2016 <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
 
-CN_ID <- CN_ID %>% 
+CN_ID2016 <- CN_ID2016 %>% 
   as_tibble() %>% 
   filter(stoich.vial.label != "") %>% 
   select(Full_Envelope_Name, stoich.vial.label) %>% 
   mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
   mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name))
 
+
+# 2015 ID
+CN_ID2015 <- read.csv("traits/data/CNAnalysis_2017-08-20.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
+
+CN_ID2015 <- CN_ID2015 %>% 
+  as_tibble() %>% 
+  filter(stoich.vial.label != "") %>% 
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, stoich.vial.label) %>% 
+  mutate(stoich.vial.label = as.character(stoich.vial.label)) %>% 
+  bind_rows(CN_ID2016)
+
 # CN data
 CNdata <- read_excel(path = "traits/data/CHINA_CNP_3November2017.xls")
-
 
 # one leaf does not join!!! FIX LATER; and change to full_join
 CNdata <- CNdata %>% 
@@ -226,14 +236,34 @@ CNdata <- CNdata %>%
   left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
 
 
+CN2015 <- CNdata %>% 
+  filter(is.na(Full_Envelope_Name)) %>% 
+  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number))
+  
+CN2016 <- CNdata %>% 
+  filter(!is.na(Full_Envelope_Name))
+
+
+
 #setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
-# Merge CN Data with traits
+# Merge CN Data with traits data separate for each year
 # Using left join, because not all leaves have CN data
-traits_raw <- traits_raw %>% 
+# 2015 data
+traits_raw2015 <- traits_raw %>% 
+  filter(is.na(Full_Envelope_Name)) %>% 
+  left_join(CN2015, by = c("Date", "Elevation", "Site", "Taxon", "Individual_number", "Leaf_number"))
+  
+# 2016 data
+traits_raw2016 <- traits_raw %>% 
+  filter(!is.na(Full_Envelope_Name)) %>% 
   mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
   mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name)) %>% 
   left_join(CNdata, by = c("Full_Envelope_Name"))
+
+
+traits_raw2 <- traits_raw2015 %>% 
+  bind_rows(traits_raw2016)
 
 
 
@@ -242,7 +272,7 @@ traits_raw <- traits_raw %>%
 # Check for problematic 2016 leaves, where site, project and location do not match
 #traits_raw %>% mutate(loc1 = substr(Location, 1, 1)) %>% count(loc1, Site, Project) %>% pn
 
-traits_raw <- traits_raw %>% 
+traits_raw2 <- traits_raw2 %>% 
   mutate(GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_A7_2_Potentilla_leuconota_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
          GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3500_M_A5_2_Artemisia_flaccida_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
          GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Polygonum_viviparum_", Envelope_Name_Corrected), paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
@@ -261,7 +291,7 @@ traits_raw <- traits_raw %>%
 # separate flag for Area (AreaFlag), Wet mass (WetFlag), Dry mass (DryFlag) and Leaf Thickness (ThickFlag) and one for general comments (GeneralFlag)
 # add #zap in the comment if it should be removed
 # all other comments are only warnings
-traits <- traits_raw %>% 
+traits <- traits_raw2 %>% 
   # Remove unneeded comments
   mutate(allComments = gsub("NA", NA, allComments)) %>% # remove "NA" in comments
   # remove add in comments
