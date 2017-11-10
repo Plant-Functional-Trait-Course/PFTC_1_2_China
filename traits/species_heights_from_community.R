@@ -2,6 +2,7 @@
 
 library("tidyverse")
 library("readxl")
+library("assertthat")
 
 originDestination <- read.table(header = TRUE, stringsAsFactors = FALSE, text = "
   origin, destination
@@ -86,11 +87,46 @@ heights <- map_df(files, .f = function(fname){
   })
 })  
 
-#fix taxonomy
+#fix taxonomy - step 1
 heights <- heights %>% mutate(
   taxon = make.names(taxon),
   taxon = plyr::mapvalues(taxon, from = taxonomy$oldCode, to = taxonomy$newCode, warn_missing = FALSE) 
-)
+) %>% 
+  filter(!taxon %in% c("litter", "moss", "lichen"))
+
+#fix taxonomy step 2
+global <- read_csv("community/databaseSetup/data/globalCorrections.csv")
+taxonomy <- tbl(con, "taxon") %>% select(species, speciesName) %>% collect()
+global <- global %>% mutate(
+  new = trimws(new),
+  #convert names to code
+  old = plyr::mapvalues(old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE),
+  new = plyr::mapvalues(new, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
+  
+  )
+
+heights <- heights %>% left_join(global,  by = c("taxon" = "old")) %>% 
+  mutate(taxon = if_else(is.na(new), taxon, new)) %>% 
+  select(-new)
+
+
+#fix taxonomy step 3
+local <- read_csv("community/databaseSetup/data/localDatacorrections_plots_China.csv")
+local <- local %>% 
+  filter(year == 2016, !is.na(new)) %>% 
+  select(turfID, year, new, old) %>% 
+  distinct(turfID, year, new, old)
+
+
+heights <- heights %>% left_join(
+  local %>% filter(year == 2016, !is.na(new)) %>% select(turfID, year, new, old),
+  by = c("turfID" = "turfID", "year" = "year", "taxon" = "old")
+) %>% 
+  mutate(taxon = if_else(is.na(new), taxon, new)) %>% 
+  select(-new)
+
+test <- heights %>% left_join(cover_thin, by = c("turfID" = "turfID", "year" = "year", "taxon" = "species"))
+
 
 
 ggplot(heights, aes(x = DestinationSite, y = height, fill = TTtreat)) +
