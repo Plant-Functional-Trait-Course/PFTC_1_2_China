@@ -8,29 +8,29 @@ classoption: a4paper
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
-```
 
-
-```{r importChunk, echo = FALSE}
 #load packages
 library("tidyverse")
 library("DBI")# also needs RMySQL installed
 
+knitr::read_chunk("R/load_comm.R")
+knitr::read_chunk("R/load_subturfcomm.R")
+knitr::read_chunk("start_here.R")
+```
 
-#source functions
-source("R/load_subturfcomm.R")
-source("R/load_comm.R")
+```{r load_comm}
+```
 
-#make database connection
-con <- dbConnect(RSQLite::SQLite(), dbname = "data/transplant.sqlite")
+```{r load_subturfcomm}
+```
 
-#load cover data and metadata
+```{r load_community}
+```
+
+```{r importChunk, echo = FALSE}
+
 subturf_thin <- load_subturfcomm(con = con)
-#  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
-cover_thin <-load_comm(con = con)
-
 #merge cover amd subturf
-
 subturf_cover_thin <- left_join(subturf_thin, cover_thin)
 
 ```
