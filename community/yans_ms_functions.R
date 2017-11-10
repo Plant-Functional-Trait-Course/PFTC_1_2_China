@@ -1,3 +1,5 @@
+## ---- functions_for_Yans_papers
+
 plot_three_treatments <- function(data, column, ylab = "")  {
   data <- data %>% filter(year == 2016, TTtreat %in% c("local", "control", "OTC", "warm1"))
   ymin <- min(data[, column])
