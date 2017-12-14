@@ -8,31 +8,29 @@ classoption: a4paper
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+
+#load packages
+library("tidyverse")
+library("DBI")# also needs RMySQL installed
+
+knitr::read_chunk("R/load_comm.R")
+knitr::read_chunk("R/load_subturfcomm.R")
+knitr::read_chunk("start_here.R")
 ```
 
+```{r load_comm}
+```
+
+```{r load_subturfcomm}
+```
+
+```{r load_community}
+```
 
 ```{r importChunk, echo = FALSE}
-#load packages
-library("tidyr")
-library("plyr")
-library("DBI")# also needs RMySQL installed
-library("dplyr")
-library("ggplot2")
 
-#source functions
-source("R/load_subturfcomm.R")
-source("R/load_comm.R")
-
-#make database connection
-con <- dbConnect(RSQLite::SQLite(), dbname = "data/transplant.sqlite")
-
-#load cover data and metadata
 subturf_thin <- load_subturfcomm(con = con)
-#  spread(subturf.thin, key = "subTurf", value = "adult", fill = 0)
-cover_thin <-load_comm(con = con)
-
 #merge cover amd subturf
-
 subturf_cover_thin <- left_join(subturf_thin, cover_thin)
 
 ```
@@ -40,7 +38,7 @@ subturf_cover_thin <- left_join(subturf_thin, cover_thin)
 #Subturf maps
 
 ```{r, fig.height=11, fig.width = 7}
-plyr::d_ply(subturf_cover_thin, .(turfID), function(df){
+plyr::d_ply(subturf_cover_thin, plyr::.(turfID), function(df){
   print(
   ggplot(df, aes(x = (subTurf - 1) %/% 5, y = (subTurf - 1) %% 5, fill = cover, colour = "outline")) +
     geom_tile() +

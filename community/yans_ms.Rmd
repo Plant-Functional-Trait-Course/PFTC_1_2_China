@@ -1,24 +1,42 @@
 ---
 title: "Untitled"
 author: "Richard J. Telford"
-date: "September 21, 2017"
+date: "`r format(Sys.Date(), '%e %B %Y')`"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE, cache.lazy = TRUE)
-
+#knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 ##load packages
 library("tidyverse")
 library("vegan")
 library("ggvegan")
 library("lubridate")
 library("gridExtra")
+library("DBI")# also needs RSQLite installed
 
+knitr::read_chunk("yans_ms_functions.R")
 knitr::read_chunk("Yans_ms.R")
+knitr::read_chunk("R/load_comm.R")
+knitr::read_chunk("R/load_subturfcomm.R")
+knitr::read_chunk("start_here.R")
+
 ```
 
-```{r setup, include=FALSE}
+```{r load_comm}
+```
+
+```{r load_subturfcomm}
+```
+
+```{r functions_for_Yans_papers}
+```
+
+```{r load_community}
+```
+
+```{r load_data, include=FALSE}
 ```
 
 ```{r responses}

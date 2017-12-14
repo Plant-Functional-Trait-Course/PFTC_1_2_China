@@ -4,7 +4,7 @@ Agr.ner,Agr.ner,,Agrostis nervosa Nees ex Trinius,Poaceae,gramineae
 Aju.dec,Aju.dec,,Ajuga decumbens Thunb.,Labiatae,forb
 Ale.pau,Ale.pau,,Aletris pauciflora (Klotzsch) Handel-Mazzetti,Liliaceae,forb
 All.pra,All.pra,,Allium prattii C. H. Wright ex Hemsley,Liliaceae,forb
-All.sik,All.sik,0,Allium sikkimense,Liliaceae,forb
+All.sik,All.sik,,Allium sikkimense,Liliaceae,forb
 Ana.dem,Ane.dem,0,Anemone demissa J. D. Hooker & Thomson,Ranunculaceae,forb
 Ana.fla,Ana.fla,,Anaphalis flavescens Handel-Mazzetti,Asteraceae,forb
 Ana.lac,Ana.lac,,Anaphalis lactea Maximowicz,Asteraceae,forb
@@ -81,18 +81,18 @@ Jun.set,Jun.set,,Juncus setchuensis Buchen.,Juncaceae,gramineae
 Kob.cer,Kob.cer,,Kobresia cercostachys (Franchet) C. B. Clarke,Cyperaceae,sedge
 Kob.pgy,Kob.pyg,0,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,Cyperaceae,sedge
 Kob.pyg,Kob.pyg,,Kobresia pygmaea (C. B. Clarke) C. B. Clarke,Cyperaceae,sedge
-Kob.middle,Kob.spp,0,Kob spp,Cyperaceae,sedge
+Kob.middle,Kob.spp,,Kobresia spp.,Cyperaceae,sedge
 Kob.sigan,Kob.spp,0,Kob spp,Cyperaceae,sedge
 Kob.small,Kob.spp,0,Kob spp,Cyperaceae,sedge
 Lig.ple,Lig.ple,,Ligularia pleurocaulis (Franchet) Handel-Mazzetti,Asteraceae,forb
 Lig.sca,Lig.sca,,Ligusticum scapiforme H. Wolff,Umbelliferae,forb
 Lil.lop,Lil.lop,,Lilium lophophorum (Bureau & Franchet) Franchet,Liliaceae,forb
-Lom.mac,Lom.mac,0,Lomatogonium macranthum,Gentianaceae,forb
+Lom.mac,Lom.mac,,Lomatogonium macranthum,Gentianaceae,forb
 Luzula,Luzula,,Luzula spp,Juncaceae,gramineae
 Luz.mul,Luzula,0,Luzula spp,Juncaceae,gramineae
 Mal.mom,Mal.mon,0,Malaxis monophyllos (Linnaeus) Swartz,Orchidaceae,forb
 Mal.mon,Mal.mon,,Malaxis monophyllos (Linnaeus) Swartz,Orchidaceae,forb
-Mai.hen,Mai.hen,0,Maianthemum henryi,Liliaceae,forb
+Mai.hen,Mai.hen,,Maianthemum henryi,Liliaceae,forb
 Mic.sik,Mic.sik,,Microula sikkimensis Hemsl.,Boraginaceae,forb
 Mor.nep,Mor.nep,,Morina nepalensis,Dipsacaceae,forb
 Myr.nep,Myr.nep,,Myriactis nepalensis,Gentianaceae,forb

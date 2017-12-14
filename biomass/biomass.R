@@ -80,13 +80,15 @@ biomass <- biomass %>%
   mutate(speciesName = plyr::mapvalues(speciesName, from = biomass_taxa$wrongName, to = biomass_taxa$correctName, warn_missing = FALSE)) %>% 
   group_by(site, plot)
           
+#get family
+biomass <- biomass %>% mutate(family = tpl::tpl.get(genus)$family)
 save(biomass, file = "biomass/biomass_cleaned.Rdata")
                     
 
 ##sum unknows
 biomass %>% filter(genus == "Unkown") %>% group_by(site, plot, speciesName) %>% summarise(biomass = sum(biomass)) %>% arrange(desc(biomass)) %>% pn
 
-
+biomass %>% filter(genus == "Unkown") %>% select(speciesName, site, plot, biomass) %>% arrange(desc(biomass)) 
 
 # make plots
 ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +

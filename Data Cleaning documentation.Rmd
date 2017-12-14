@@ -12,8 +12,9 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library("tidyverse")
 library("lubridate")
 library("knitr")
+library("ggplot2")
 
-#load("traits.Rdata")
+load("traits/traits.Rdata")
 
 
 ```
@@ -170,6 +171,85 @@ Whereas in all transplant treatments leaves were only collected from individuals
 * Wrong and missing individual number, leaf number have been flagged. Does not affect analysis, unless these variables are included (GeneralFlag)
 * Impossible combinations of location, site and project have been assigned the right combination if possible. If not the leaves have been excluded
 
+
+#### WET VS. DRY MASS
+colour Tiny wet mass: Wet_Mass_g < 0.0005
+```{r, echo = FALSE}
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < 0.0005)) + 
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+```
+
+colour: Wet < Dry
+
+```{r, echo = FALSE}
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = Wet_Mass_g < Dry_Mass_g)) + 
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+```
+
+2016 - problems with area
+
+```{r, echo = FALSE}
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  filter(year == 2016) %>% 
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = AreaFlag)) + 
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+```  
+
+2016 - problems with dry mass
+
+```{r, echo = FALSE}
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  filter(year == 2016) %>% 
+  ggplot(aes(x = Wet_Mass_g, y = Dry_Mass_g, colour = DryFlag)) + 
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+```
+
+
+## DRY VS. AREA 
+Problems with Area
+
+```{r, echo = FALSE}
+traits %>% mutate(year = as.factor(year(Date))) %>%
+  ggplot(aes(x = Dry_Mass_g, y = Leaf_Area_cm2)) + 
+  geom_point() +   
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+```
+
+## SLA
+SLA > 500
+
+```{r, echo = FALSE}
+traits %>% 
+  mutate(year = year(Date)) %>% 
+  arrange(SLA_cm2_g) %>%
+  ggplot(aes(x = Leaf_Area_cm2, y = Dry_Mass_g, colour = SLA_cm2_g > 500)) + 
+  geom_point() + 
+  geom_abline(slope = 1, intercept = 0) + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  facet_wrap(~ year)
+```
 
 
 ## Biomass

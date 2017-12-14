@@ -69,9 +69,20 @@ iButton <- iButton %>%
 save(iButton, file = "TemperatureiButton.RData")
 
 
+### CALCULATE DAILY DATA ###
+dailyiButton <- iButton %>%
+  mutate(date = dmy(format(date, "%d.%b.%Y"))) %>%
+  group_by(date, depth, site, treatment) %>%
+  summarise(n = n(), mean = mean(value), min = min(value), max = max(value)) %>%
+  filter(n > 6) %>%
+  select(-n)
+
+
+
+
 # Check each turf
 iButton %>% 
-  filter(depth == "ground") %>% 
+  filter(depth == "air") %>% 
   ggplot(aes(x = date, y = value)) +
   geom_line() +
   #scale_color_manual(values = c("blue", "green", "brown")) +
@@ -103,15 +114,15 @@ iButton %>%
   facet_grid(treatment ~ site)
   
 
-
+# Calculate Monthly data
 monthlyiButton <- iButton %>% 
   mutate(month = lubridate::ymd(format(date, "%Y-%m-15"))) %>% 
   select(-date) %>%
   group_by(month, site, treatment, depth) %>%
   filter(!is.na(value)) %>%
-  summarise(Tmean = mean(value, na.rm = TRUE), n = n()) %>% 
-  # no need for this, very little failure
-  # filter(n > 6 * 24 * 7 * 3)  #at least three weeks of data
+  summarise(Tmean = mean(value, na.rm = TRUE), Tmin = min(value, na.rm = TRUE), Tmax = max(value, na.rm = TRUE), n = n()) %>% 
+  # remove April and September at L site, because there is too little data
+  filter(n > 100) %>% 
   select(-n) %>% 
   ungroup() %>% 
   mutate(site = factor(site, levels = c("H", "A", "M", "L")))
