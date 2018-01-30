@@ -68,7 +68,7 @@ fun_gp %>% count(functionalGroup)
 
 ## ---- ordination
 cover_fat <- cover_thin %>% 
-  select(-speciesName) %>% 
+  select(-speciesName, -flag) %>% 
   arrange(year) %>%
   filter(TTtreat %in% c("local", "control", "warm1", "OTC")) %>%
   spread(key = species, value = cover, fill = 0) %>%
@@ -84,7 +84,7 @@ fNMDS <- fortify(NMDS) %>%
 
 treat_colours <- c("black", "grey50", "red", "green")
 
-g <- ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
+g <- ggplot(fNMDS, aes(x = NMDS1, y = NMDS2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
   geom_point(aes(size = ifelse(year == min(year), "First", "Other"))) +
   geom_path() + 
   coord_equal() +
