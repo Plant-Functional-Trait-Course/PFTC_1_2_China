@@ -2,8 +2,12 @@ library("DBI")
 library("RSQLite")
 library("readxl")
 library("taxize")
-library("dplyr")
+library("tidyverse")
 library("assertthat")
+library("readr")
+
+#compile all data into one csv file
+#source("community/databaseSetup/xls_to_csv.R")#uncomment to re-compile excel sheets
 
 #function to add data to database - padding for missing columns
 dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE, ...){
@@ -17,7 +21,7 @@ dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE
 
 
 #load csv file
-dat <- read.csv("community/databaseSetup/data/allsites.csv", stringsAsFactors = FALSE)
+dat <- read_csv("community/databaseSetup/data/allsites.csv", guess_max = 20000)
 
 #fix ".." error
 dat <- dat %>% mutate(
@@ -47,7 +51,7 @@ dbListTables(con)
 
 #taxa - replace with full info
 
-taxonomy0 <- readr::read_csv("community/databaseSetup/data/transplant_taxonomy.csv")
+taxonomy0 <- read_csv("community/databaseSetup/data/transplant_taxonomy.csv")
 taxonomy0 <- taxonomy0[, names(taxonomy0) != ""]#zap blank columns
 
 #keep only correct names
@@ -97,6 +101,7 @@ dbPadWriteTable(con, table = "taxon", value = taxonomy)
 
 dbGetQuery(con, "select * from taxon;")
 
+rm(spp, meta)
 
 #sites
 sites <- data.frame(siteID = unique(dat$DestinationSite))
@@ -120,7 +125,7 @@ source("community/databaseSetup/doCorrections.R")
 
 #import community and environment data
 source("community/databaseSetup/importcommunity.r")
-import.data(dat, mergedictionary = setNames(taxonomy0[, c("oldCode", "newCode")], c("oldID", "newID")))
+import.data(dat, mergedictionary = select(taxonomy0, oldID = oldCode, newID = newCode), flags = flags)
 
 dbDisconnect(con)
 
