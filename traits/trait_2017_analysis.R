@@ -218,7 +218,7 @@ CN_ID2016 <- CN_ID2016 %>%
 # 2015 ID
 CN_ID2015 <- read.csv("traits/data/CNAnalysis_2017-08-20.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
 
-CN_ID2015 <- CN_ID2015 %>% 
+CN_ID <- CN_ID2015 %>% 
   as_tibble() %>% 
   filter(stoich.vial.label != "") %>% 
   select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, stoich.vial.label) %>% 
@@ -226,7 +226,7 @@ CN_ID2015 <- CN_ID2015 %>%
   bind_rows(CN_ID2016)
 
 # CN data
-CNdata <- read_excel(path = "traits/data/CHINA_CNP_3November2017.xls")
+CNdata <- read_excel(path = "traits/data/CHINA_CNP_19January2018.xls")
 
 # one leaf does not join!!! FIX LATER; and change to full_join
 CNdata <- CNdata %>% 
@@ -238,10 +238,12 @@ CNdata <- CNdata %>%
 
 CN2015 <- CNdata %>% 
   filter(is.na(Full_Envelope_Name)) %>% 
+  select(-Full_Envelope_Name) %>% 
   mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number))
   
 CN2016 <- CNdata %>% 
-  filter(!is.na(Full_Envelope_Name))
+  filter(!is.na(Full_Envelope_Name)) %>% 
+  select(-Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
 
 
 
@@ -259,7 +261,7 @@ traits_raw2016 <- traits_raw %>%
   filter(!is.na(Full_Envelope_Name)) %>% 
   mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
   mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name)) %>% 
-  left_join(CNdata, by = c("Full_Envelope_Name"))
+  left_join(CN2016, by = c("Full_Envelope_Name"))
 
 
 traits_raw2 <- traits_raw2015 %>% 
