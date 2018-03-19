@@ -144,8 +144,56 @@ plot_three_treatments(responses, column = "propGraminoid", ylab = "Proportional 
 plot_three_treatments(responses, column = "total_vascular", ylab = "Total vascular cover")
 
 # table of effects
+## ---- regressions
+gradient <- responses %>% 
+  filter(year == 2016, TTtreat %in% c("local", "control")) %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value)) %>% 
+  group_by(variable) %>% 
+  mutate(value = scale(value)) %>% 
+  do({
+    mod = lme(value ~ mean, random =  ~ 1|originSiteID, data = .)
+    tidy(mod, effects = "fixed")
+  })
+  
+transplant <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "warm1"), originSiteID != "L") %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value)) %>% 
+  group_by(variable) %>% 
+  mutate(value = scale(value)) %>% 
+  do({
+    mod = lme(value ~ contrast, random =  ~ 1|originSiteID, data = .)
+    tidy(mod, effects = "fixed")
+  })
 
-## ---- other
+otc <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "OTC")) %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value)) %>% 
+  group_by(variable) %>% 
+  mutate(value = scale(value)) %>% 
+  do({
+    mod = lme(value ~ contrast, random =  ~ 1|originSiteID, data = .)
+    tidy(mod, effects = "fixed")
+  })
+
+effects <- bind_rows(Gradient = gradient, Transplant = transplant, OTC = otc, .id = "Experiment") %>% 
+  mutate(Experiment = factor(Experiment, levels = c("Gradient", "OTC", "Transplant" ))) %>% 
+  filter(term != "(Intercept)")  
+
+effects %>% 
+  ggplot(aes(x = Experiment, y = estimate, ymax = estimate + 2 * std.error, ymin = estimate - 2 * std.error)) + 
+  geom_point() +
+  geom_errorbar() +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
+  facet_wrap(~ variable) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Estimate")
+
+effects %>% arrange(variable) %>% select(variable, Experiment, estimate, std.error, p.value) %>% knitr::kable()
+
+## ---- other 
 
 ## turnover on gradient
 turnover <- data_frame(
