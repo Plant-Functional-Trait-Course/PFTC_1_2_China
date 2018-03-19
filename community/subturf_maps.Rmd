@@ -31,8 +31,29 @@ knitr::read_chunk("start_here.R")
 
 subturf_thin <- load_subturfcomm(con = con)
 #merge cover amd subturf
-subturf_cover_thin <- left_join(subturf_thin, cover_thin)
-
+subturf_cover_thin <- left_join(
+  subturf_thin, 
+  cover_thin, 
+  by = c("originSiteID", "originBlockID", "originPlotID", "turfID", "destPlotID", "destBlockID", "destSiteID", "TTtreat", "year","species", "speciesName"), 
+  suffix = c("_subturf", "_cover")
+  ) %>% 
+  mutate(
+    flag_subturf = if_else(is.na(flag_subturf), "", flag_subturf),
+    flag_cover = if_else(is.na(flag_cover), "", flag_cover),
+    
+    flag = case_when(
+      is.na(flag_subturf) & is.na(flag_cover) ~ "",
+      #both NA
+      is.na(flag_subturf) ~ flag_cover,
+      is.na(flag_cover) ~ flag_subturf,
+      flag_subturf == flag_cover ~ flag_subturf,
+      #identical
+      TRUE ~ paste(flag_cover, flag_subturf)
+      ), #remainder = not identical
+    flag = trimws(flag),
+    flag = factor(flag)
+    )
+      
 ```
 
 #Subturf maps
@@ -40,13 +61,13 @@ subturf_cover_thin <- left_join(subturf_thin, cover_thin)
 ```{r, fig.height=11, fig.width = 7}
 plyr::d_ply(subturf_cover_thin, plyr::.(turfID), function(df){
   print(
-  ggplot(df, aes(x = (subTurf - 1) %/% 5, y = (subTurf - 1) %% 5, fill = cover, colour = "outline")) +
+  ggplot(df, aes(x = (subTurf - 1) %/% 5, y = (subTurf - 1) %% 5, fill = flag, alpha = cover, colour = "outline")) +
     geom_tile() +
     facet_grid(species ~ year) +
     ggtitle(paste(df$turfID[1], "subturf map")) +
     scale_x_continuous(expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0)) +
-    scale_fill_distiller(type = "seq", palette = "Greens", direction = 1) + 
+    scale_fill_manual(limits = levels(df$flag), values = c("black", scales::hue_pal()(nlevels(df$flag) - 1))) + 
     scale_colour_manual(values = "black", guide = "none") + 
     theme(
       axis.text = element_blank(), 
