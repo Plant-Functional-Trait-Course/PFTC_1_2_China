@@ -12,7 +12,7 @@ library("readr")
 #function to add data to database - padding for missing columns
 dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE, ...){
   #get extra columns from DB
-  allCols <- dbGetQuery(con, paste("select * from", table))
+  allCols <- dbGetQuery(con, paste("select * from", table, "limit 0;"))
   value <- bind_rows(allCols, value)
   
   #add to database

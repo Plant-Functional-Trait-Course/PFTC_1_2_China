@@ -54,3 +54,4 @@ vignettes/*.pdf
 *.pdf
 *.jpeg
 .my.cnf
+*.md
