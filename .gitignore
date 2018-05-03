@@ -28,6 +28,7 @@ vignettes/*.pdf
 *.Rdata
 *.odb
 *.zip
+*.jpg
 *.sql
 *.xlsx
 !globalCorrections.csv
