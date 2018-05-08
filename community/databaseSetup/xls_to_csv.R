@@ -1,8 +1,3 @@
-#packages
-library("readxl")
-library("assertthat")
-library("dplyr")
-
 #list of xls files
 flist <- dir("community/databaseSetup/data/commXLSx", pattern = "*.xls", full.names = TRUE, recursive = TRUE)
 
@@ -109,8 +104,8 @@ allsites <- plyr::ldply(flist, function(fl){
     assert_that(all(table(names(dat)) == 1))#check no duplicates
     
     #assume correction file if no comments
-    if(is.null(dat$comment)){
-      dat$comment <- "correction"
+    if(grepl("corrections/", fl)){
+      dat$comment <- "Yans correction"# use this for flag
     }
     
     #check date in date format

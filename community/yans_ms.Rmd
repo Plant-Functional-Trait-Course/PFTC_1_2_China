@@ -2,26 +2,29 @@
 title: "Untitled"
 author: "Richard J. Telford"
 date: "`r format(Sys.Date(), '%e %B %Y')`"
-output: html_document
+output: 
+  html_document:
+    keep_md: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE, cache.lazy = TRUE)
-#knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+```{r load_packages, cache = FALSE, message=FALSE}
 ##load packages
 library("tidyverse")
 library("vegan")
 library("ggvegan")
 library("lubridate")
 library("gridExtra")
-library("DBI")# also needs RSQLite installed
+library("nlme")
+library("broom")
 
 knitr::read_chunk("yans_ms_functions.R")
 knitr::read_chunk("Yans_ms.R")
 knitr::read_chunk("R/load_comm.R")
 knitr::read_chunk("R/load_subturfcomm.R")
 knitr::read_chunk("start_here.R")
-
 ```
 
 ```{r load_comm}
@@ -33,7 +36,7 @@ knitr::read_chunk("start_here.R")
 ```{r functions_for_Yans_papers}
 ```
 
-```{r load_community}
+```{r load_community, cache = FALSE, }
 ```
 
 ```{r load_data, include=FALSE}
@@ -41,6 +44,11 @@ knitr::read_chunk("start_here.R")
 
 ```{r responses}
 ```
+
+
+```{r regressions}
+```
+
 
 ```{r ordination, results = 'hide'}
 ```

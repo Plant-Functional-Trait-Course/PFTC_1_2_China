@@ -1,5 +1,3 @@
-library("tibble")
-
 #Implement corrections
 #could be applied at several stages in pipeline from excel files to analysis. 
 #want to have database corrected, so don't need to always remember to apply corrections
@@ -18,7 +16,7 @@ library("tibble")
 #Designed to be run through inject_site_taxa
 ############
 #global edits - apply to all sites/turfs/years
-global <- read.table("community/databaseSetup/data/globalCorrections.csv", sep = ",", header  = TRUE, stringsAsFactors = FALSE)
+global <- read_csv("community/databaseSetup/data/globalCorrections.csv")
 global$new <- trimws(global$new)
 #check names in taxonomy stopifnot
 setdiff(global$old, taxonomy$speciesName)
@@ -53,11 +51,13 @@ for(i in 1:nrow(global)){
 dat <- dat[, !names(dat) %in% global$old]
 
 
+#don't flag global edits (equivalent to taxonomic table merges)
+
 message("Swe.mac not deleted")#?
 
 #### local edits - apply to particular sites/turfs/years
-local <- read.table("community/databaseSetup/data/localDatacorrections_plots_China.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
-local <- local[local$new != "" | local$special != "", ]#remove extra rows
+local <- read_csv("community/databaseSetup/data/localDatacorrections_plots_China.csv", comment = "#")
+local <- local[!is.na(local$new) | !is.na(local$special), ]#remove extra rows
 setdiff(local$turfID, dat$turfID)
 local$turfID <- trimws(local$turfID)#zap trailing space
 assert_that(all(local$turfID %in% dat$turfID))
@@ -69,8 +69,10 @@ local[local == "Kob.pgy"] <- "Kob.pyg"
 local[local == "pol.cya"] <- "Pol.cya"
 local[local == "Potentilla stenophylla"] <- "Potentilla stenophylla var. emergens"
 local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
+all_local <- c(local$old, local$new)
+all_local <- all_local[!is.na(all_local)]
 
-assert_that(all(c(local$old, local$new) %in% c("", taxonomy$speciesName, taxonomy$species)))
+assert_that(all(all_local %in% c("", taxonomy$speciesName, taxonomy$species)))
 
 #convert names to code
 local$old <- plyr::mapvalues(local$old, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
@@ -173,11 +175,31 @@ for(i in 1:nrow(local)) {print(i)
 #remove dummy taxon
 dat$dummyTaxon <- NULL
 
+##local flags
+flags <- local %>% 
+  filter(new != "dummyTaxon") %>% 
+  rowwise() %>% 
+  do({
+    row <- .
+    dat %>% 
+      select_("year", "turfID", "subPlot", row$new) %>% 
+      filter(year == row$year, turfID == row$turfID) %>% 
+      gather(key = species, value = plant, -year, -turfID, -subPlot) %>% 
+      filter(plant > 0) %>% 
+      mutate(
+        flag = "Yan's local correction"
+        ) %>% 
+      select(year, turfID, subPlot, species, flag) 
+  }) %>% 
+  ungroup() %>% 
+  distinct()
+
 
 #special edits (manually as hopefully few)
 special$special <- plyr::mapvalues(special$special, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
 special$special2 <- plyr::mapvalues(special$special2, from = taxonomy$speciesName, to = taxonomy$species, warn_missing = FALSE)
-special
+special <- special %>% filter(!is.na(old))#need to know what is being corrected!!!
+
 
 for(i in 1:nrow(special)) {
   target <- dat$year == special$year[i] &
@@ -207,6 +229,8 @@ for(i in 1:nrow(special)) {
   }
 }
 
+
+
 ##manual presence absence corrections for aju.dec/pru.his/cli.pol L1-C
 target <- dat$Measure == "Presence" & dat$turfID == "L1-C" & dat$year == 2014
 
@@ -215,8 +239,13 @@ dat$Pru.his[target] <- dat$Pru.his[dat$Measure == "Presence" & dat$turfID == "L1
 
 dat$Aju.dec[target] <- NA#Aju.dec is wiped
 
+#manual flags
+flags <- flags %>% bind_rows(
+  crossing(year = 2014, turfID = "L1-C", species = c("Cli.pol", "Pru.his"), subPlot = c(1:25, "cover%")))  
+
+
 ####corrections to percent values 
-perc_subplot <- read.csv("community/databaseSetup/data/cover_correction.csv", comment = "", stringsAsFactors = FALSE)
+perc_subplot <- read_csv("community/databaseSetup/data/cover_correction.csv", col_types = "iccddc")
 
 #zap blank rows
 perc_subplot <- perc_subplot[!is.na(perc_subplot$year), ]
@@ -226,22 +255,53 @@ assert_that(all(perc_subplot$species %in%  taxonomy$species))#check no bad turfs
 
 dat$comment[is.na(dat$comment)] <- "" #cannot have NAs for logical test below
 
-perc <- perc_subplot[!is.na(perc_subplot$`should.be`), ]
+perc <- perc_subplot[!is.na(perc_subplot$`should be`), ]
 
 for(i in 1:nrow(perc)){
   dat[dat$year == perc$year[i] &
-        dat$turfID == perc$`X.turf`[i] &
+        dat$turfID == perc$`#turf`[i] &
         dat$Measure == "cover%" & 
-        dat$comment != "correction", perc$species[i]] <- perc$`should.be`[i] # don't 'correct' corrections
+        dat$comment != "Yans correction", perc$species[i]] <- perc$`should be`[i] # don't 'correct' corrections
 }
 
+flags <- flags %>% bind_rows(
+  perc %>% 
+    select(year, turfID = `#turf`, species, old = `old cover`) %>%
+    mutate(
+      subPlot = "cover%",
+      flag = if_else(is.na(old), "imputation", "corrected cover")
+    ) %>%
+    select(-old)
+)
+
 ####additional subplots
-subplot <- perc_subplot[!is.na(perc_subplot$`updated..subplot`), ]
+subplot <- perc_subplot[!is.na(perc_subplot$`updated #subplot`), ]
 
 for(i in 1:nrow(subplot)){
   dat[dat$year == subplot$year[i] &
-        dat$turfID == subplot$`X.turf`[i] &
+        dat$turfID == subplot$`#turf`[i] &
         dat$Measure == "Presence" & 
-        as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated..subplot`[i], ",")[[1]]) &
+        dat$comment != "Yans correction" &
+        as.numeric(dat$subPlot) %in% as.numeric(strsplit(subplot$`updated #subplot`[i], ",")[[1]]) &
         dat$comment != "correction", subplot$species[i]] <- 1
 }
+
+#extrasubplot flags
+flags <- bind_rows(
+  flags,
+  subplot %>%
+    rowwise() %>%
+    do({
+      cbind(., data_frame(subPlot = str_split(.$`updated #subplot`, ",")[[1]]))
+    }) %>%
+    select(year, turfID = `#turf`, subPlot, species) %>%
+    mutate(flag = "extra subplot") %>%
+    ungroup()
+)
+
+
+flags %>% group_by(year, turfID, species, subPlot) %>% filter(n() > 1)
+
+flags <- flags %>% 
+  group_by(year, turfID, species, subPlot) %>% 
+  summarise(flag = paste(flag, collapse = "/"))

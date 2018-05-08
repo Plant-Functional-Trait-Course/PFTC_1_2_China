@@ -73,7 +73,7 @@ save(iButton, file = "TemperatureiButton.RData")
 dailyiButton <- iButton %>%
   mutate(date = dmy(format(date, "%d.%b.%Y"))) %>%
   group_by(date, depth, site, treatment) %>%
-  summarise(n = n(), mean = mean(value), min = min(value), max = max(value)) %>%
+  summarise(n = n(), mean = mean(value), se = sd(value)/sqrt(n), min = min(value), max = max(value)) %>%
   filter(n > 6) %>%
   select(-n)
 
@@ -120,7 +120,7 @@ monthlyiButton <- iButton %>%
   select(-date) %>%
   group_by(month, site, treatment, depth) %>%
   filter(!is.na(value)) %>%
-  summarise(Tmean = mean(value, na.rm = TRUE), Tmin = min(value, na.rm = TRUE), Tmax = max(value, na.rm = TRUE), n = n()) %>% 
+  summarise(n = n(), Tmean = mean(value, na.rm = TRUE), Tse = sd(value)/sqrt(n), Tmin = min(value, na.rm = TRUE), Tmax = max(value, na.rm = TRUE)) %>% 
   # remove April and September at L site, because there is too little data
   filter(n > 100) %>% 
   select(-n) %>% 
