@@ -8,6 +8,7 @@ library("cowplot")
 library("nlme")
 library("broom")
 
+source("community/start_here.R")
 source("community/yans_ms_functions.R")
 
 
@@ -71,48 +72,42 @@ cover_fat <- cover_thin %>%
 
 cover_fat_spp <- cover_fat %>% select(-(originSiteID:year))
 
+set.seed(32)
 NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30)#DNC
 
 fNMDS <- fortify(NMDS) %>% 
   filter(Score == "sites") %>%
   bind_cols(cover_fat %>% select(originSiteID:year))
 
-treat_colours <- c("black", "grey50", "red", "green")
+treat_colours <- c("grey", "grey40", "orange", "purple")
 
 g <- ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
   geom_point(aes(size = ifelse(year == min(year), "First", "Other"))) +
   geom_path() + 
   coord_equal() +
   scale_size_discrete(range = c(1, 2.5), limits = c("Other", "First"), breaks = c("First", "Other")) +
-  scale_colour_manual(values = treat_colours, limits = levels(cover_fat$TTtreat)) +
-  scale_fill_manual(values = treat_colours, limits = levels(cover_fat$TTtreat)) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID)) +
+  scale_colour_manual(values = treat_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Transplant", "OTC")) +
+  scale_fill_manual(values = treat_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Transplant", "OTC")) +
+  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
   labs(x = "NMDS 1", y = "NMDS 2", colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year")
 
+set.seed(32)
 HA <- two_sites_nmds("H", "A")
 AM <- two_sites_nmds("A", "M")
 ML <- two_sites_nmds("M", "L")
-LM <- two_sites_nmds("L", "M")
+LM <- two_sites_nmds("L", "M") 
+
+HA <- HA %>% mutate(Dim1 = Dim1 * -1)
+ML <- ML %>% mutate(Dim1 = Dim1 * -1)
+LM <- LM %>% mutate(Dim1 = Dim1 * -1)
 
 
-gg <- ggplotGrob(g)$grobs
-legend <- gg[[which(sapply(gg, function(x) x$name) == "guide-box")]]
-p <- g + theme(legend.position = "none", axis.title = element_blank())
-OrdinationPlot <- grid.arrange(p %+% HA + ggtitle("H - A"),
-             p %+% AM + ggtitle("A - M"),
-             p %+% ML + ggtitle("M - L"),
-             p %+% LM + ggtitle("L - "),
-             legend,
-             layout_matrix = rbind(c(1, 2, 5), c(3, 4, 5)), widths = c(.4, .4, .2),
-             bottom = "NMDS1", left = "NMDS2")
-
-
-HA <- p %+% HA + ggtitle("H - A")
-AM <- p %+% AM + ggtitle("A - M")
-ML <- p %+% ML + ggtitle("M - L")
-LM <- p %+% LM + ggtitle("L - ")
-pp <- plot_grid(HA, AM, ML, LM, nrow = 2, align = "hv")
+HA2 <- p %+% HA + ggtitle("H - A")
+AM2 <- p %+% AM + ggtitle("A - M")
+ML2 <- p %+% ML + ggtitle("M - L")
+LM2 <- p %+% LM + ggtitle(" - L")
+pp <- plot_grid(HA2, AM2, ML2, LM2, nrow = 2, align = "hv")
 ppp <- plot_grid(pp, legend, rel_widths = c(1, .27))
 
 OrdinationPlot <- ggdraw(ppp) + 
@@ -162,7 +157,11 @@ dd <- Transplant %>%
   gather(key = response, value = value, richness, evenness, sumCover, propGraminoid) %>% 
   mutate(response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(response = factor(response, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
-  mutate(dummycolor = ifelse(experiment == "Gradient", "Gradient", as.character(originSiteID)))
+  mutate(dummycolor = ifelse(experiment == "Gradient", "Gradient", as.character(originSiteID))) %>% 
+  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(TTtreat = plyr::mapvalues(TTtreat, c("warm1", "local", "control", "OTC"), c("Transplant", "Local transplant", "Control", "OTC"))) %>% 
+  mutate(TTtreat = factor(TTtreat, levels = c("Control", "Local transplant", "OTC", "Transplant")))
 
 p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtreat)) + 
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
@@ -171,7 +170,7 @@ p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtrea
   facet_grid(response ~experiment, scales = "free", space = "free_x") +
   scale_x_continuous(breaks = c(0,2,8,10,12)) +
   scale_color_brewer(palette = "Set1") +
-  scale_shape_manual(values = c(1, 16, 17, 18)) +
+  scale_shape_manual(values = c(1, 16, 18, 17)) +
   labs(x = "", y = "", colour = "Site", shape = "Treatment")
 p
 
@@ -186,7 +185,7 @@ CommunityPlot <- ggdraw(p) +
              vjust = 1, hjust = 1, size = 14) +
   draw_label("Temperature °C", x = 0.36, y = 0.03,
              vjust = 1, hjust = 1, size = 14) +
-  draw_label("Contrasts °C", x = 0.71, y = 0.03,
+  draw_label("Contrasts °C", x = 0.68, y = 0.03,
              vjust = 1, hjust = 1, size = 14)
 ggsave(filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
 
@@ -238,11 +237,12 @@ EffectPlot <- effects %>%
   ungroup() %>% 
   mutate(variable = plyr::mapvalues(variable, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(variable = factor(variable, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
-  ggplot(aes(x = Experiment, y = estimate, ymax = estimate + 2 * std.error, ymin = estimate - 2 * std.error, shape = Experiment)) + 
+  ggplot(aes(x = Experiment, y = estimate, ymax = estimate + 2 * std.error, ymin = estimate - 2 * std.error, shape = Experiment, color = Experiment)) + 
   geom_point(size = 3) +
   geom_errorbar(width = 0.1) +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
   scale_shape_manual(values = c(16, 18, 17)) +
+  scale_color_manual(values = c("grey", "purple", "orange")) +
   labs(y = "Estimate", x = "") +
   facet_wrap(~ variable) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")

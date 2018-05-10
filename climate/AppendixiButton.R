@@ -16,19 +16,29 @@ WarmAirT <- monthlyiButton %>%
   mutate(destSite = origSite) %>% 
   mutate(destSite = plyr::mapvalues(destSite, c("A", "M", "L"), c("H", "A", "M")))
 
-monthlyiButton %>% 
+ClimatePlot <- monthlyiButton %>% 
   filter(depth == "air") %>% 
   mutate(destSite = site) %>% 
   rename(origSite = site) %>% 
   bind_rows(WarmAirT) %>%
   gather(key = Temperature, value = value, Tmean, Tmin, Tmax) %>%
-  mutate(destSite = factor(destSite, levels = c("H", "A", "M", "L"))) %>% 
+  mutate(Temperature = plyr::mapvalues(Temperature, c("Tmean", "Tmin", "Tmax"), c("Mean", "Minimum", "Maximum"))) %>% 
+  mutate(Temperature = factor(Temperature, levels = c("Maximum", "Mean", "Minimum"))) %>% 
+  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   ggplot(aes(x = month, y = value, color = treatment)) +
   geom_line() +
   scale_color_manual(name = "Treatment", values = c("grey", "purple", "orange")) +
-  labs(x = "", y = "Mean monthly temperature °C") +
+  labs(x = "", y = "Monthly temperature °C") +
   facet_grid(Temperature ~ destSite, scales = "free") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text=element_text(size = 15), 
+        axis.title=element_text(size = 17), 
+        strip.text = element_text(size = 15),
+        legend.title=element_text(size = 15), 
+        legend.text=element_text(size = 10))
+
+ggsave(ClimatePlot, filename = "community/FinalFigures/ClimatePlot.jpg", height = 7, width = 10, dpi = 300)
 
 monthlyTemps <- monthlyiButton %>% 
   filter(depth == "air") %>% 
