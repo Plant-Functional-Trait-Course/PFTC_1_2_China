@@ -31,11 +31,12 @@ source("trait_distributions/r_scripts/trait_selecting_fx.R")
 
 n_replicates<-100 #number of replicated draws of traits per turf, per year
 multiplier<-1 #number of draws from the trait pool per percent cover.  1 is normal, 10 samples 10xpercent cover, etc.
-for(i in 1: length(unique(cbind(cover_thin$turfID,cover_thin$year)))){
+for(i in 1: nrow(unique(cbind(cover_thin$turfID,cover_thin$year)))){
 
-print(paste(  round(i/  length(unique(cbind(cover_thin$turfID,cover_thin$year)))*100,digits = 2  ),"percent finished" )) 
-    
+print(paste(  round(i/  nrow(unique(cbind(cover_thin$turfID,cover_thin$year)))*100,digits = 2  ),"percent finished" )) 
+  
 turfID<-unique(cbind(cover_thin$turfID,cover_thin$year))[i,][1]
+
 year<-unique(cbind(cover_thin$turfID,cover_thin$year))[i,][2]
 origin_site<-as.character(unique(cover_thin$originSiteID[which(cover_thin$turfID==turfID)]  ))
 destination_site<-as.character(unique(cover_thin$destSiteID[which(cover_thin$turfID==turfID)]  ))  
