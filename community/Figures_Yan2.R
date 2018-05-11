@@ -158,8 +158,8 @@ dd <- Transplant %>%
   mutate(response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(response = factor(response, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(dummycolor = ifelse(experiment == "Gradient", "Gradient", as.character(originSiteID))) %>% 
-  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
-  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(originSiteID = factor(originSiteID, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   mutate(TTtreat = plyr::mapvalues(TTtreat, c("warm1", "local", "control", "OTC"), c("Transplant", "Local transplant", "Control", "OTC"))) %>% 
   mutate(TTtreat = factor(TTtreat, levels = c("Control", "Local transplant", "OTC", "Transplant")))
 
@@ -248,3 +248,53 @@ EffectPlot <- effects %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
 
 ggsave(EffectPlot, filename = "community/FinalFigures/EffectPlot.jpg", height = 5, width = 5, dpi = 300)
+
+
+effects_Table <- bind_rows(Gradient = gradient, Transplant = transplant, OTC = otc, .id = "Experiment") %>% 
+  mutate(Experiment = factor(Experiment, levels = c("Gradient", "OTC", "Transplant" ))) %>% 
+  ungroup %>% 
+  filter(variable %in% c("richness", "evenness", "sumCover", "propGraminoid")) %>% 
+  mutate(variable = plyr::mapvalues(variable, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
+  mutate(variable = factor(variable, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
+  mutate(term = plyr::mapvalues(term, c("(Intercept)", "mean", "contrast"), c("Intercept", "Slope", "Slope"))) %>% 
+  select(-std.error) %>% 
+  mutate(estimate = round(estimate, 2), statistic = round(statistic, 2), p.value = round(p.value, 3)) %>% 
+  rename(Response = variable, Term = term, Estimate = estimate, Statistic = statistic, P.value = p.value)
+
+write.csv(effects_Table, "Effects_Table.csv", row.names = FALSE)
+
+
+
+#### Colonization Plot
+
+# dest controls in 2016 compared to origin control in 2012
+destC16 <- cover_thin %>% 
+  filter(year %in% c(2016)) %>% # first and last year
+  filter(TTtreat %in% c("control")) %>% 
+  select(turfID, destSiteID, TTtreat, species, cover)
+
+temp <- cover_thin %>% 
+  filter(year %in% c(2012)) %>% # first and last year
+  filter(TTtreat %in% c("control")) %>% 
+  select(turfID, originSiteID, TTtreat, species, cover) %>% 
+  full_join(destC16, by = c("originSiteID" = "destSiteID", "turfID", "TTtreat", "species"), suffix = c(".12", ".16")) %>% 
+  filter(is.na(cover.12)) %>% 
+  mutate(TTtreat = "temporal") %>% 
+  rename(First = cover.12, Last = cover.16)
+
+
+cover_thin %>% 
+  filter(year %in% c(2012, 2016)) %>% # first and last year
+  filter(TTtreat %in% c("control", "local", "warm1", "OTC")) %>% # 4 treatments
+  mutate(year = plyr::mapvalues(year, c(2012, 2016), c("First", "Last"))) %>% 
+  spread(key = year, value = cover) %>% # spread by year
+  select(turfID, originSiteID, TTtreat, species, First, Last) %>% 
+  filter(is.na(First)) %>% # filter all species which were not there in the first year
+  bind_rows(temp) %>% 
+  ggplot(aes(x = TTtreat, y = Last)) +
+  geom_boxplot() +
+  facet_wrap(~ originSiteID)
+  
+
+
+  
