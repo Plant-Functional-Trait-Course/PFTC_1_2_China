@@ -88,9 +88,9 @@ g <- ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtrea
   scale_size_discrete(range = c(1, 2.5), limits = c("Other", "First"), breaks = c("First", "Other")) +
   scale_colour_manual(values = treat_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Transplant", "OTC")) +
   scale_fill_manual(values = treat_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Transplant", "OTC")) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
+  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Low")) +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
-  labs(x = "NMDS 1", y = "NMDS 2", colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year")
+  labs(x = " ", y = " ", colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") 
 
 set.seed(32)
 HA <- two_sites_nmds("H", "A")
@@ -102,11 +102,13 @@ HA <- HA %>% mutate(Dim1 = Dim1 * -1)
 ML <- ML %>% mutate(Dim1 = Dim1 * -1)
 LM <- LM %>% mutate(Dim1 = Dim1 * -1)
 
+gg <- ggplotGrob(g)$grobs
+legend <- gg[[which(sapply(gg, function(x) x$name) == "guide-box")]]
 
-HA2 <- p %+% HA + ggtitle("H - A")
-AM2 <- p %+% AM + ggtitle("A - M")
-ML2 <- p %+% ML + ggtitle("M - L")
-LM2 <- p %+% LM + ggtitle(" - L")
+HA2 <- g %+% HA + ggtitle("H - A") + theme(legend.position="none")
+AM2 <- g %+% AM + ggtitle("A - M") + theme(legend.position="none")
+ML2 <- g %+% ML + ggtitle("M - L") + theme(legend.position="none")
+LM2 <- g %+% LM + ggtitle(" - L") + theme(legend.position="none")
 pp <- plot_grid(HA2, AM2, ML2, LM2, nrow = 2, align = "hv")
 ppp <- plot_grid(pp, legend, rel_widths = c(1, .27))
 
