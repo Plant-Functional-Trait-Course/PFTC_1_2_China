@@ -5,14 +5,6 @@
     #Do this using donor, recipient site 
 #Store the distributions at each site/time as separate CSV file
 
-
-#Visuals
-  #overlapping distribution: origin dist, recipient dist, experiment dist
-
-#Plots
-  # skewness vs time, mean vs time, variance vs delta mean (change in mean from beginning to end)
-
-
 ##################################################
 
 
@@ -64,34 +56,37 @@ plastic_traits<-plastic_traits[,c("assigned_species","Wet_Mass_g", "Dry_Mass_g",
 fixed_trait_distributions<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = fixed_traits)
 plastic_trait_distributions<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = plastic_traits)
 
-
+rm(fixed_traits,plastic_traits,pct_cover)
 #Save outputs
 
 #Fixed traits
-for(f in length(fixed_trait_distributions)){
+for(f in 1:length(fixed_trait_distributions)){
 
 trait_f<-names(fixed_trait_distributions)[[f]]    
 dist_f<-fixed_trait_distributions[[f]]  
+#print(trait_f)
+write.csv(x = dist_f,file = paste("trait_distributions/using_native_site/",turfID,".",year,".",trait_f,".","Fixed",".csv",sep = ""),row.names = F  )
+rm(trait_f,dist_f)  
 
-write.csv(x = dist_f,file = paste("trait_distributions/using_native_site/",turfID,"_",year,"_",trait_f,"_","Fixed",".csv",sep = "")  )
-  
 }
 
 
 #Plastic traits
-for(f in length(plastic_trait_distributions)){
+for(f in 1:length(plastic_trait_distributions)){
   
   trait_f<-names(fixed_trait_distributions)[[f]]    
   dist_f<-fixed_trait_distributions[[f]]  
   
-  paste("trait_distributions/using_recipient site/",turfID,"_",year,"_",trait_f,"_","Plastic",".csv",sep = "")  
   
-  write.csv(x = dist_f,file = paste("trait_distributions/using_recipient site/",turfID,"_",year,"_",trait_f,"_","Plastic",".csv",sep = "")  )
-  
+  write.csv(x = dist_f,file = paste("trait_distributions/using_recipient site/",turfID,".",year,".",trait_f,".","Plastic",".csv",sep = ""),row.names = F  )
+  rm(trait_f,dist_f)
+    
 }
 
-
+rm(year,origin_site,turfID,destination_site,fixed_trait_distributions,plastic_trait_distributions)
 
 
 
 }#for i loop
+
+rm(f,i,multiplier,n_replicates)
