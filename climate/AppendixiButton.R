@@ -24,8 +24,8 @@ ClimatePlot <- monthlyiButton %>%
   gather(key = Temperature, value = value, Tmean, Tmin, Tmax) %>%
   mutate(Temperature = plyr::mapvalues(Temperature, c("Tmean", "Tmin", "Tmax"), c("Mean", "Minimum", "Maximum"))) %>% 
   mutate(Temperature = factor(Temperature, levels = c("Maximum", "Mean", "Minimum"))) %>% 
-  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
-  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Low"))) %>% 
+  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Low"))) %>% 
   ggplot(aes(x = month, y = value, color = treatment)) +
   geom_line() +
   scale_color_manual(name = "Treatment", values = c("grey", "purple", "orange")) +
