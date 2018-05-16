@@ -46,33 +46,33 @@ for(i in 1:length(unique(species))){
 species_i<-unique(species)[i]  
 genus_i<-strsplit(x = species_i,split = " ")[[1]][1]
 
-#1) species in destination site control
-out_i<-traits_dataframe[which(traits_dataframe$Taxon==species_i & 
+#1) species in specified site control
+out_i<-na.omit(traits_dataframe[which(traits_dataframe$Taxon==species_i & 
                          traits_dataframe$Site == site &
-                         traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),]
+                         traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),])
   
 #2) species in any control
 if(nrow(out_i)==0){
-  out_i<-traits_dataframe[which(traits_dataframe$Taxon==species_i & 
-                                  traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),]
+  out_i<-na.omit(traits_dataframe[which(traits_dataframe$Taxon==species_i & 
+                                  traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),])
   
 }
 
 #3) species anywhere
 if(nrow(out_i)==0){
-  out_i<-traits_dataframe[which(traits_dataframe$Taxon==species_i ),]
+  out_i<-na.omit(traits_dataframe[which(traits_dataframe$Taxon==species_i ),])
   
 }
 
 
 
-#4) genus in destination site control
+#4) genus in specified site control
 
 if(nrow(out_i)==0){
 
-out_i<-traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = function(x){strsplit(x,split = " ")[[1]][1]} )  )==genus_i & 
+out_i<-na.omit(traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = function(x){strsplit(x,split = " ")[[1]][1]} )  )==genus_i & 
                                 traits_dataframe$Site == site &
-                                traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),]
+                                traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),])
 
 }
 
@@ -81,8 +81,8 @@ out_i<-traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = fu
 #5) genus in any site control
 if(nrow(out_i)==0){
   
-  out_i<-traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = function(x){strsplit(x,split = " ")[[1]][1]} )  )==genus_i & 
-                                   traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),]
+  out_i<-na.omit(traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = function(x){strsplit(x,split = " ")[[1]][1]} )  )==genus_i & 
+                                   traits_dataframe$Project %in% c("SEAN","LOCAL","0","C",NA)),])
   
 }
 
@@ -95,7 +95,7 @@ if(nrow(out_i)==0){
 
 if(nrow(out_i)==0){
   
-  out_i<-traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = function(x){strsplit(x,split = " ")[[1]][1]} )  )==genus_i),]
+  out_i<-na.omit(traits_dataframe[which( unlist(lapply(X = traits_dataframe$Taxon,FUN = function(x){strsplit(x,split = " ")[[1]][1]} )  )==genus_i),])
   
 }
 

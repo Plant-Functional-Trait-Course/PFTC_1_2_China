@@ -18,6 +18,14 @@ source("trait_distributions/r_scripts/trait_distribution_fx.R")
 source("trait_distributions/r_scripts/trait_selecting_fx.R")
 
 
+#Add N:P ratio
+
+traits$NP_ratio <- (traits$N_percent/traits$P_AVG)
+traits_leaf<-traits[c("Taxon","Site","Project","Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g","LDMC" )]
+traits_chem<-traits[c("Taxon","Site","Project","C_percent", "N_percent","CN_ratio", "dN15_percent", "dC13_percent", "P_AVG","NP_ratio" )]
+rm(traits)
+
+
 #script to make bootstrapped trait distributions for each turf at each time point
 
 
@@ -34,11 +42,25 @@ origin_site<-as.character(unique(cover_thin$originSiteID[which(cover_thin$turfID
 destination_site<-as.character(unique(cover_thin$destSiteID[which(cover_thin$turfID==turfID)]  ))  
 pct_cover<-cover_thin[which(cover_thin$turfID==turfID & cover_thin$year==year),c('speciesName','cover')]
 pct_cover$cover<-pct_cover$cover*multiplier
+pct_cover<-as.data.frame(pct_cover)
+
+
 
 
 #Select the traits for use for each species
-fixed_traits<-select_traits(species = pct_cover$speciesName,site = origin_site,traits_dataframe = traits)  
-plastic_traits<-select_traits(species = pct_cover$speciesName,site = destination_site,traits_dataframe = traits)    
+#fixed_traits<-select_traits(species = pct_cover$speciesName,site = origin_site,traits_dataframe = traits)  
+#plastic_traits<-select_traits(species = pct_cover$speciesName,site = destination_site,traits_dataframe = traits)    
+
+fixed_traits_leaf<-select_traits(species = pct_cover$speciesName,site = origin_site,traits_dataframe = traits_leaf)  
+fixed_traits_chem<-select_traits(species = pct_cover$speciesName,site = origin_site,traits_dataframe = traits_chem)
+plastic_traits_leaf<-select_traits(species = pct_cover$speciesName,site = destination_site,traits_dataframe = traits_leaf)  
+plastic_traits_chem<-select_traits(species = pct_cover$speciesName,site = destination_site,traits_dataframe = traits_chem)
+
+
+#unique(pct_cover$speciesName)
+#unique(fixed_traits$assigned_species)
+#sum(pct_cover$cover )
+
 
 #toss out data according to flags
 
@@ -46,44 +68,74 @@ plastic_traits<-select_traits(species = pct_cover$speciesName,site = destination
 #Calculate distributions
 
 # Reformat trait data to match expected input for trait_dist function
-fixed_traits<-fixed_traits[,c("assigned_species","Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g",
-                "LDMC", "C_percent", "N_percent","CN_ratio", "dN15_percent", "dC13_percent", "P_AVG" )]
+fixed_traits_leaf<-fixed_traits_leaf[,c("assigned_species","Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g", "LDMC" )]
+fixed_traits_chem<-fixed_traits_chem[,c("assigned_species", "C_percent", "N_percent","CN_ratio", "dN15_percent", "dC13_percent", "P_AVG","NP_ratio" )]
+plastic_traits_leaf<-plastic_traits_leaf[,c("assigned_species","Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g", "LDMC" )]
+plastic_traits_chem<-plastic_traits_chem[,c("assigned_species", "C_percent", "N_percent","CN_ratio", "dN15_percent", "dC13_percent", "P_AVG","NP_ratio" )]
 
-plastic_traits<-plastic_traits[,c("assigned_species","Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g",
-                              "LDMC", "C_percent", "N_percent","CN_ratio", "dN15_percent", "dC13_percent", "P_AVG" )]
 
 
-fixed_trait_distributions<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = fixed_traits)
-plastic_trait_distributions<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = plastic_traits)
+fixed_trait_distributions_leaf<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = fixed_traits_leaf)
+fixed_trait_distributions_chem<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = fixed_traits_chem)
 
-rm(fixed_traits,plastic_traits,pct_cover)
+plastic_trait_distributions_leaf<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = plastic_traits_leaf)
+plastic_trait_distributions_chem<-trait_distributions(number_replicates = n_replicates,abundance_data = pct_cover,trait_data = plastic_traits_chem)
+
+
+
+rm(fixed_traits_chem,fixed_traits_leaf,plastic_traits_chem,plastic_traits_leaf,pct_cover)
 #Save outputs
 
-#Fixed traits
-for(f in 1:length(fixed_trait_distributions)){
+#Chem traits
+for(f in 1:length(fixed_trait_distributions_chem)){
 
-trait_f<-names(fixed_trait_distributions)[[f]]    
-dist_f<-fixed_trait_distributions[[f]]  
+  
+trait_f<-names(fixed_trait_distributions_chem)[[f]]    
+dist_f<-fixed_trait_distributions_chem[[f]]  
+if(nrow(dist_f)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
+
+trait_f_plastic<-names(plastic_trait_distributions_chem)[[f]]    
+dist_f_plastic<-fixed_trait_distributions_chem[[f]]  
+if(nrow(dist_f_plastic)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
+
 #print(trait_f)
 write.csv(x = dist_f,file = paste("trait_distributions/using_native_site/",turfID,".",year,".",trait_f,".","Fixed",".csv",sep = ""),row.names = F  )
-rm(trait_f,dist_f)  
+write.csv(x = dist_f_plastic,file = paste("trait_distributions/using_recipient site/",turfID,".",year,".",trait_f_plastic,".","Plastic",".csv",sep = ""),row.names = F  )
+
+
+
+rm(trait_f,dist_f,trait_f_plastic,dist_f_plastic)  
 
 }
 
-
-#Plastic traits
-for(f in 1:length(plastic_trait_distributions)){
-  
-  trait_f<-names(fixed_trait_distributions)[[f]]    
-  dist_f<-fixed_trait_distributions[[f]]  
+#Leaf traits
+for(f in 1:length(fixed_trait_distributions_leaf)){
   
   
-  write.csv(x = dist_f,file = paste("trait_distributions/using_recipient site/",turfID,".",year,".",trait_f,".","Plastic",".csv",sep = ""),row.names = F  )
-  rm(trait_f,dist_f)
-    
+  trait_f<-names(fixed_trait_distributions_leaf)[[f]]    
+  dist_f<-fixed_trait_distributions_leaf[[f]]  
+  if(nrow(dist_f)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
+  
+  trait_f_plastic<-names(plastic_trait_distributions_leaf)[[f]]    
+  dist_f_plastic<-fixed_trait_distributions_leaf[[f]]  
+  if(nrow(dist_f_plastic)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
+  
+  #print(trait_f)
+  write.csv(x = dist_f,file = paste("trait_distributions/using_native_site/",turfID,".",year,".",trait_f,".","Fixed",".csv",sep = ""),row.names = F  )
+  write.csv(x = dist_f_plastic,file = paste("trait_distributions/using_recipient site/",turfID,".",year,".",trait_f_plastic,".","Plastic",".csv",sep = ""),row.names = F  )
+  
+  
+  
+  rm(trait_f,dist_f,trait_f_plastic,dist_f_plastic)  
+  
 }
 
-rm(year,origin_site,turfID,destination_site,fixed_trait_distributions,plastic_trait_distributions)
+
+
+
+
+
+rm(year,origin_site,turfID,destination_site,fixed_trait_distributions_chem,fixed_trait_distributions_leaf,plastic_trait_distributions_chem,plastic_trait_distributions_leaf)
 
 
 

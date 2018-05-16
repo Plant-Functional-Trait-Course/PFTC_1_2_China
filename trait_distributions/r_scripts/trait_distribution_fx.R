@@ -24,17 +24,17 @@ trait_distributions<-function(number_replicates, abundance_data, trait_data){
         
         species_i<-as.character(abundance_data[i,1])    
         abund_i<-abundance_data[i,2]
-        traits_i<-na.omit(trait_data[which(trait_data[,1]==species_i),trait_t])
+        traits_i<-trait_data[which(trait_data[,1]==species_i),]
+        trait_ti<-na.omit(traits_i[,trait_t])
         
         #Dont do anything if there's no trait data
-        if(length(traits_i)!=0){rep_n<-c(rep_n,sample(x = traits_i,size = abund_i,replace = T))}
+        if(length(trait_ti)!=0){rep_n<-c(rep_n,sample(x = trait_ti,size = abund_i,replace = T))}
         
       }# i abundance loop
       
       out_t<-rbind(out_t,rep_n)
       
     }#n replicates loop
-    
     
     output[[t-1]]<-out_t
     

@@ -58,25 +58,74 @@ unique(biomass$site)
 bad_spp<-unique(biomass$speciesName[which(!biomass$speciesName %in% traits$Taxon)])
 un_spp<-unique(biomass$speciesName[grep(pattern = "Unk",x = biomass$speciesName)])
 
+
+
+
+
+#How good is trait sampling?
+
 for(i in 1:4){
   site<-c("H","A","M","L")[i]  
   data_i<-biomass[which(biomass$site==site),]
   good_data_i<-sum(data_i$biomass[which(!data_i$speciesName%in%bad_spp)],na.rm = T  )
-  #bad_data_i<-sum(data_i$biomass[which(data_i$speciesName%in%bad_spp)],na.rm = T  )  
-  bad_data_i<-sum(data_i$biomass[which(data_i$speciesName%in%un_spp)],na.rm = T  )  
+  bad_data_i<-sum(data_i$biomass[which(data_i$speciesName%in%bad_spp)],na.rm = T  )  
+  #bad_data_i<-sum(data_i$biomass[which(data_i$speciesName%in%un_spp)],na.rm = T  )  
   
-  print(paste("site ",site, bad_data_i/(good_data_i+bad_data_i), " percent bad data"))
-  
-  
+  print(paste("site ",site, bad_data_i/(good_data_i+bad_data_i)*100, " percent bad data"))
+
 }
 #Looks like we've got a lot of biomass in "Genus_spp" format, so have to add in a genus level sampling scheme
 #use any Project that isn't OTC or 1:4
 
+# How good is trait sampling?  How many species from each site (community data) have species data?  Genus data?
+trait_coverage_table<-as.data.frame(matrix(nrow = 4,ncol = 4))
+rownames(trait_coverage_table)<-c("H","A","M","L")
+colnames(trait_coverage_table)<-c(" Species w/ data", "Genera w/ data","Biomass spp w/ data","Biomass genera w/ data")
 
+for(i in 1:4){
+  site<-c("H","A","M","L")[i]  
+  data_i<-biomass[which(biomass$site==site),]
+  all_spp <- unique(data_i$speciesName)
+  good_spp <- all_spp[which(all_spp%in%traits$Taxon)]
+  all_genera <- unlist(lapply(X = all_spp, FUN = function(x){strsplit(x,split = " ")[[1]][[1]]}))
+  trait_genera <- unlist(lapply(X = unique(traits$Taxon), FUN = function(x){strsplit(x,split = " ")[[1]][[1]]}))
+  good_genera <- all_genera[which(all_genera%in%trait_genera)]
+  
+  good_sp_data<- data_i[which(data_i$speciesName%in%good_spp),]
+  good_genera_data<-data_i[which(unlist(lapply(X = data_i$speciesName, FUN = function(x){strsplit(x,split = " ")[[1]][[1]]})) %in% good_genera),]
+  
+  
+  
+  #good_data_i<-sum(data_i$biomass[which(!data_i$speciesName%in%bad_spp)],na.rm = T  )
+  #bad_data_i<-sum(data_i$biomass[which(data_i$speciesName%in%bad_spp)],na.rm = T  )  
+  #bad_data_i<-sum(data_i$biomass[which(data_i$speciesName%in%un_spp)],na.rm = T  )  
+  #print(paste("site ",site, bad_data_i/(good_data_i+bad_data_i)*100, " percent bad data"))
+  
+  print(paste("site ",site, length(good_spp)/(length(all_spp))*100, " percent species with trait data"))
+  print(paste("site ",site, length(good_genera)/(length(all_genera))*100, " percent genera with trait data"))
+  print(paste("site ",site, sum(good_sp_data$biomass,na.rm = T)/(sum(data_i$biomass,na.rm = T))*100, " percent biomass from spp with trait data"))
+  print(paste("site ",site, sum(good_genera_data$biomass,na.rm = T)/(sum(data_i$biomass,na.rm = T))*100, " percent biomass from genera with trait data"))
+
+  trait_coverage_table[i,1]<-round(length(good_spp)/(length(all_spp))*100,digits = 2)
+  trait_coverage_table[i,2]<-round(length(good_genera)/(length(all_genera))*100,digits = 2)  
+  trait_coverage_table[i,3]<-round(sum(good_sp_data$biomass,na.rm = T)/(sum(data_i$biomass,na.rm = T))*100,digits = 2)
+  trait_coverage_table[i,4]<-round(sum(good_genera_data$biomass,na.rm = T)/(sum(data_i$biomass,na.rm = T))*100,digits = 2)
+}
+
+rm(good_genera_data,good_sp_data,all_genera,all_spp,good_genera,good_spp,trait_genera)
+
+
+
+
+#add genus name to traits table for convenience
 genus<-lapply(X = traits$Taxon,FUN = function(x){ strsplit(x,split=" ")[[1]][1]  })
 genus<-unlist(genus)
 traits<-cbind(traits,genus)
 rm(genus)
+
+#add N:P to traits table
+traits$NP_ratio<-traits$N_percent/traits$P_AVG
+
 
 #remove observations with SLA values over 500 and under 5, along with LDMC values over 1.
 traits$SLA[which(traits$SLA_cm2_g > 500 | traits$SLA_cm2_g < 5)]<-NA
@@ -463,10 +512,10 @@ for(n in 1: n_reps ){
         dc13_percent_sample<-sample(x = na.omit(species_j_data$dC13_percent),size = species_j_biomass,replace = T)
         dn15_percent_sample<-sample(x = na.omit(species_j_data$dN15_percent),size = species_j_biomass,replace = T)
         cn_ratio_sample<-sample(x = na.omit(species_j_data$CN_ratio),size = species_j_biomass,replace = T)
-        
+        np_ratio_sample<-sample(x = na.omit(species_j_data$NP_ratio),size = species_j_biomass,replace = T)
         
         species_j_sample<-cbind(wet_mass_sample,dry_mass_sample,area_sample,thickness_sample,sla_sample,ldmc_sample,
-                                c_percent_sample,n_percent_sample,p_percent_sample,cn_ratio_sample,dc13_percent_sample,dn15_percent_sample)
+                                c_percent_sample,n_percent_sample,p_percent_sample,cn_ratio_sample,dc13_percent_sample,dn15_percent_sample,np_ratio_sample)
         traits_i<-rbind(traits_i,species_j_sample)
       }else{
         #print(c(species_j," no data for species"))  
@@ -525,13 +574,17 @@ for(n in 1: n_reps ){
     cn_ratio_skew<-skewness(traits_i$cn_ratio_sample,na.rm=T)
     cn_ratio_kurt<-kurtosis(traits_i$cn_ratio_sample,na.rm=T)
     
+    np_ratio_mean<-mean(traits_i$np_ratio_sample,na.rm=T)
+    np_ratio_var<-var(traits_i$np_ratio_sample,na.rm=T)
+    np_ratio_skew<-skewness(traits_i$np_ratio_sample,na.rm=T)
+    np_ratio_kurt<-kurtosis(traits_i$np_ratio_sample,na.rm=T)
     
     
     output_i<-cbind(n,as.character(site_i$site),site_i$plot,sla_mean,sla_var,sla_skew,sla_kurt,ldmc_mean,ldmc_var,ldmc_skew,
                     ldmc_kurt,area_mean,area_var,area_skew,area_kurt,thickness_mean,thickness_var,thickness_skew,thickness_kurt,
                     c_pct_mean,c_pct_var,c_pct_skew,c_pct_kurt,n_pct_mean,n_pct_var,n_pct_skew,n_pct_kurt,p_pct_mean,p_pct_var,p_pct_skew,p_pct_kurt,
                     dc13_pct_mean,dc13_pct_var,dc13_pct_skew,dc13_pct_kurt,dn15_pct_mean,dn15_pct_var,dn15_pct_skew,dn15_pct_kurt,
-                    cn_ratio_mean,cn_ratio_var,cn_ratio_skew,cn_ratio_kurt)
+                    cn_ratio_mean,cn_ratio_var,cn_ratio_skew,cn_ratio_kurt,np_ratio_mean,np_ratio_var,np_ratio_skew,np_ratio_kurt)
     
     
     
@@ -559,7 +612,7 @@ rm(sla_kurt,sla_mean,sla_sample,sla_skew,sla_var,species_j,species_j_biomass,spp
 rm(c_pct_kurt,c_pct_mean,c_pct_skew,c_pct_var,n_pct_kurt,n_pct_mean,n_pct_skew,n_pct_var,cn_ratio_kurt,cn_ratio_mean,cn_ratio_skew,cn_ratio_var)
 rm(c_percent_sample,cn_ratio_sample,dc13_percent_sample,dn15_percent_sample,n_percent_sample,p_pct_kurt,p_pct_mean,p_pct_skew,p_pct_var)
 rm(dc13_pct_kurt,dc13_pct_mean,dc13_pct_skew,dc13_pct_var,dn15_pct_kurt,dn15_pct_mean,dn15_pct_skew,dn15_pct_var,p_percent_sample)
-
+rm(np_ratio_mean,np_ratio_skew,np_ratio_var,np_ratio_kurt)
 #Now, need to summarize the data usefully.
 
 # For each trait x moment x site
