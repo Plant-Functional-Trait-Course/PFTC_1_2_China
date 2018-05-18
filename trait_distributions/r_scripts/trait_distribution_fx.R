@@ -26,9 +26,10 @@ trait_distributions<-function(number_replicates, abundance_data, trait_data){
         abund_i<-abundance_data[i,2]
         traits_i<-trait_data[which(trait_data[,1]==species_i),]
         trait_ti<-na.omit(traits_i[,trait_t])
+        trait_ti<-as.data.frame(trait_ti)
         
         #Dont do anything if there's no trait data
-        if(length(trait_ti)!=0){rep_n<-c(rep_n,sample(x = trait_ti,size = abund_i,replace = T))}
+        if(nrow(trait_ti)!=0){rep_n<-c(rep_n,sample(x = trait_ti[,1],size = abund_i,replace = T))}
         
       }# i abundance loop
       
