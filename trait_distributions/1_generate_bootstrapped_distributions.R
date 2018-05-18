@@ -5,6 +5,10 @@
     #Do this using donor, recipient site 
 #Store the distributions at each site/time as separate CSV file
 
+#Update to make:
+  #Modify code to rarify genus-level trait data to ensure equal sampling of species within genus
+
+
 ##################################################
 
 
@@ -40,6 +44,7 @@ turfID<-unique(cbind(cover_thin$turfID,cover_thin$year))[i,][1]
 year<-unique(cbind(cover_thin$turfID,cover_thin$year))[i,][2]
 origin_site<-as.character(unique(cover_thin$originSiteID[which(cover_thin$turfID==turfID)]  ))
 destination_site<-as.character(unique(cover_thin$destSiteID[which(cover_thin$turfID==turfID)]  ))  
+
 pct_cover<-cover_thin[which(cover_thin$turfID==turfID & cover_thin$year==year),c('speciesName','cover')]
 pct_cover$cover<-pct_cover$cover*multiplier
 pct_cover<-as.data.frame(pct_cover)
