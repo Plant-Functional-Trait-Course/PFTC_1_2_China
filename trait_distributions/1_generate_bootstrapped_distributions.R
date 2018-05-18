@@ -100,7 +100,7 @@ dist_f<-fixed_trait_distributions_chem[[f]]
 if(nrow(dist_f)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
 
 trait_f_plastic<-names(plastic_trait_distributions_chem)[[f]]    
-dist_f_plastic<-fixed_trait_distributions_chem[[f]]  
+dist_f_plastic<-plastic_trait_distributions_chem[[f]]  
 if(nrow(dist_f_plastic)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
 
 #print(trait_f)
@@ -122,7 +122,7 @@ for(f in 1:length(fixed_trait_distributions_leaf)){
   if(nrow(dist_f)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
   
   trait_f_plastic<-names(plastic_trait_distributions_leaf)[[f]]    
-  dist_f_plastic<-fixed_trait_distributions_leaf[[f]]  
+  dist_f_plastic<-plastic_trait_distributions_leaf[[f]]  
   if(nrow(dist_f_plastic)!=n_replicates){stop("Number of rows in distribution does not equal number of replicates")}  
   
   #print(trait_f)
