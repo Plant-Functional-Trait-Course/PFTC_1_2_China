@@ -33,7 +33,7 @@ rm(traits)
 #script to make bootstrapped trait distributions for each turf at each time point
 
 
-n_replicates<-100 #number of replicated draws of traits per turf, per year
+n_replicates<-200 #number of replicated draws of traits per turf, per year # Use 200 so that the 95 percent ci is whole numbers (is 5 obs removed from each end)
 multiplier<-1 #number of draws from the trait pool per percent cover.  1 is normal, 10 samples 10xpercent cover, etc.
 for(i in 1: nrow(unique(cbind(cover_thin$turfID,cover_thin$year)))){
 

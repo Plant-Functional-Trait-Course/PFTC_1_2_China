@@ -612,7 +612,7 @@ rm(sla_kurt,sla_mean,sla_sample,sla_skew,sla_var,species_j,species_j_biomass,spp
 rm(c_pct_kurt,c_pct_mean,c_pct_skew,c_pct_var,n_pct_kurt,n_pct_mean,n_pct_skew,n_pct_var,cn_ratio_kurt,cn_ratio_mean,cn_ratio_skew,cn_ratio_var)
 rm(c_percent_sample,cn_ratio_sample,dc13_percent_sample,dn15_percent_sample,n_percent_sample,p_pct_kurt,p_pct_mean,p_pct_skew,p_pct_var)
 rm(dc13_pct_kurt,dc13_pct_mean,dc13_pct_skew,dc13_pct_var,dn15_pct_kurt,dn15_pct_mean,dn15_pct_skew,dn15_pct_var,p_percent_sample)
-rm(np_ratio_mean,np_ratio_skew,np_ratio_var,np_ratio_kurt)
+rm(np_ratio_mean,np_ratio_skew,np_ratio_var,np_ratio_kurt,np_ratio_sample)
 #Now, need to summarize the data usefully.
 
 # For each trait x moment x site
@@ -697,8 +697,8 @@ for(i in 1: nrow(unique(moments_output_biomass[c('site','plot')]))){
 moment_plastic_summary_plot_level<-as.data.frame(moment_plastic_summary_plot_level)
 rm(i,j,lower_95_ci,mean_val,plot,site,sort_j,to_remove,upper_95_ci,variable,output)
 
-
-
+#write.csv(x = moment_plastic_summary_plot_level,file = "C:/Users/Brian/Desktop/China_moments_plot_level_for_Jon_5_20_2018.csv")
+#write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/China_moments_site_level_for_Jon_5_20_2018.csv")
 
 ####################################################################
 #Generate plots of mean, var, skew, kurt for each variable (with error bars)

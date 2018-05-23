@@ -292,19 +292,19 @@ moments_fixed$year<-as.numeric(as.character(moments_fixed$year))
 glm_out<-glm(mean ~ year + treatment,data = moments_fixed[which(moments_fixed$trait=="C_percent"),])
 glm_out2<-glm(mean ~ year + treatment+site,data = moments_fixed[which(moments_fixed$trait=="C_percent"),])
 
-glm_out_C<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="C_percent"),])
-glm_out_N<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="N_percent"),])
-glm_out_P<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="P_AVG"),])
-glm_out_NP<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="NP_ratio"),])
-glm_out_CN<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="CN_ratio"),])
-glm_out_dC<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="dC13_percent"),])
-glm_out_dN<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="dN15_percent"),])
-glm_out_SLA<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="SLA_cm2_g"),])
-glm_out_drymass<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Dry_Mass_g"),])
-glm_out_wetmass<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Wet_Mass_g"),])
-glm_out_ldmc<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="LDMC"),])
-glm_out_leafarea<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Leaf_Area_cm2"),])
-glm_out_leafthickness<-glm(mean ~ treatment + site + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Leaf_Thickness_Ave_mm"),])
+glm_out_C<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="C_percent"),])
+glm_out_N<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="N_percent"),])
+glm_out_P<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="P_AVG"),])
+glm_out_NP<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="NP_ratio"),])
+glm_out_CN<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="CN_ratio"),])
+glm_out_dC<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="dC13_percent"),])
+glm_out_dN<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="dN15_percent"),])
+glm_out_SLA<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="SLA_cm2_g"),])
+glm_out_drymass<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Dry_Mass_g"),])
+glm_out_wetmass<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Wet_Mass_g"),])
+glm_out_ldmc<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="LDMC"),])
+glm_out_leafarea<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Leaf_Area_cm2"),])
+glm_out_leafthickness<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_fixed[which(moments_fixed$trait=="Leaf_Thickness_Ave_mm"),])
   
 library(bbmle)
 AICtab(glm_out,glm_out_C,glm_out2)#looks like we're justified in adding the interaction
@@ -325,7 +325,6 @@ summary(glm_out_ldmc)
 summary(glm_out_leafarea)
 summary(glm_out_leafthickness)
 
-sg<-stargazer(mpd_rs,nnd_rs,pd_rs,type="html",out="native_range_metrics_rescaled_output.htm")
 
 library(stargazer)
 
@@ -341,10 +340,6 @@ stargazer(glm_out_C,glm_out_N,glm_out_P,glm_out_NP,glm_out_CN,glm_out_dC,glm_out
 
 
 
-plot(sg)
-
-#+ (1|main_thing:nested_component)
-
 unique(moments_fixed$trait)
 
 moments_plastic$mean<-as.numeric(as.character(moments_plastic$mean))
@@ -354,22 +349,294 @@ moments_plastic$year<-as.numeric(as.character(moments_plastic$year))
 
 
 
-glm_out_plastic_C<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="C_percent"),])
-glm_out_plastic_N<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="N_percent"),])
-glm_out_plastic_P<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="P_AVG"),])
-glm_out_plastic_NP<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="NP_ratio"),])
-glm_out_plastic_CN<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="CN_ratio"),])
-glm_out_plastic_dC<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="dC13_percent"),])
-glm_out_plastic_dN<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="dN15_percent"),])
-glm_out_plastic_SLA<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="SLA_cm2_g"),])
-glm_out_plastic_drymass<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Dry_Mass_g"),])
-glm_out_plastic_wetmass<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Wet_Mass_g"),])
-glm_out_plastic_ldmc<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="LDMC"),])
-glm_out_plastic_leafarea<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Leaf_Area_cm2"),])
-glm_out_plastic_leafthickness<-glm(mean ~ treatment + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Leaf_Thickness_Ave_mm"),])
+glm_out_plastic_C<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="C_percent"),])
+glm_out_plastic_N<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="N_percent"),])
+glm_out_plastic_P<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="P_AVG"),])
+glm_out_plastic_NP<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="NP_ratio"),])
+glm_out_plastic_CN<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="CN_ratio"),])
+glm_out_plastic_dC<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="dC13_percent"),])
+glm_out_plastic_dN<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="dN15_percent"),])
+glm_out_plastic_SLA<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="SLA_cm2_g"),])
+glm_out_plastic_drymass<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Dry_Mass_g"),])
+glm_out_plastic_wetmass<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Wet_Mass_g"),])
+glm_out_plastic_ldmc<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="LDMC"),])
+glm_out_plastic_leafarea<-glm(mean ~ treatment + year + site + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Leaf_Area_cm2"),])
+glm_out_plastic_leafthickness<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Leaf_Thickness_Ave_mm"),])
 
 stargazer(glm_out_plastic_C,glm_out_plastic_N,glm_out_plastic_P,glm_out_plastic_NP,glm_out_plastic_CN,glm_out_plastic_dC,glm_out_plastic_dN,glm_out_plastic_SLA,glm_out_plastic_drymass,glm_out_plastic_wetmass,glm_out_plastic_ldmc,glm_out_plastic_leafarea,glm_out_plastic_leafthickness,
           column.labels = c("C","N","P","NP ratio","CN ratio","dC13","dN15","SLA","dry mass","wet mass","LDMC","area","thickness"),
           model.numbers = F,
           #type = "text",
           dep.var.caption = "",out = "C:/Users/Brian/Desktop/sg_out_china_boots_plastic.htm")
+summary(glm_out_plastic_C)
+
+#R2s
+library(rsq)
+#fixed
+rsq(glm_out_C)
+rsq(glm_out_N)
+rsq(glm_out_P)
+rsq(glm_out_NP)
+rsq(glm_out_CN)
+rsq(glm_out_dC)
+rsq(glm_out_dN)
+rsq(glm_out_SLA)
+rsq(glm_out_drymass)
+rsq(glm_out_wetmass)
+rsq(glm_out_ldmc)
+rsq(glm_out_leafarea)
+rsq(glm_out_leafthickness)
+
+#adj r2
+rsq(glm_out_C,adj = T)
+rsq(glm_out_N,adj = T)
+rsq(glm_out_P,adj = T)
+rsq(glm_out_NP,adj = T)
+rsq(glm_out_CN,adj = T)
+rsq(glm_out_dC,adj = T)
+rsq(glm_out_dN,adj = T)
+rsq(glm_out_SLA,adj = T)
+rsq(glm_out_drymass,adj = T)
+rsq(glm_out_wetmass,adj = T)
+rsq(glm_out_ldmc,adj = T)
+rsq(glm_out_leafarea,adj = T)
+rsq(glm_out_leafthickness,adj = T)
+
+#Plastic r2s
+rsq(glm_out_plastic_C)
+rsq(glm_out_plastic_N)
+rsq(glm_out_plastic_P)
+rsq(glm_out_plastic_NP)
+rsq(glm_out_plastic_CN)
+rsq(glm_out_plastic_dC)
+rsq(glm_out_plastic_dN)
+rsq(glm_out_plastic_SLA)
+rsq(glm_out_plastic_drymass)
+rsq(glm_out_plastic_wetmass)
+rsq(glm_out_plastic_ldmc)
+rsq(glm_out_plastic_leafarea)
+rsq(glm_out_plastic_leafthickness)
+
+#adj r2
+rsq(glm_out_plastic_C,adj = T)
+rsq(glm_out_plastic_N,adj = T)
+rsq(glm_out_plastic_P,adj = T)
+rsq(glm_out_plastic_NP,adj = T)
+rsq(glm_out_plastic_CN,adj = T)
+rsq(glm_out_plastic_dC,adj = T)
+rsq(glm_out_plastic_dN,adj = T)
+rsq(glm_out_plastic_SLA,adj = T)
+rsq(glm_out_plastic_drymass,adj = T)
+rsq(glm_out_plastic_wetmass,adj = T)
+rsq(glm_out_plastic_ldmc,adj = T)
+rsq(glm_out_plastic_leafarea,adj = T)
+rsq(glm_out_plastic_leafthickness,adj = T)
+
+############################################
+
+
+summary(glm_out_plastic_C)
+
+library(visreg)
+visreg(fit = glm_out_C,xvar = "year",by="site")
+visreg(fit = glm_out_C)
+
+
+
+############################################
+
+
+#What model best explains 
+
+#glmulti for model selection
+#examples in Brian's 3rd code set from GEB paper
+
+library(glmulti)
+?glmulti
+
+glmulti_out<-glmulti(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Leaf_Thickness_Ave_mm"),],crit=aicc)
+summary(glmulti_out)
+weightable(glmulti_out)
+
+glm_out_plastic_leafthickness<-glm(mean ~ treatment + site + year + year*treatment ,data = moments_plastic[which(moments_plastic$trait=="Leaf_Thickness_Ave_mm"),])
+
+library(MuMIn) #also in code set 3
+library(rsq)
+#fixed assumption
+mumin_summary<-NULL
+for(i in 1:length(unique(moments_fixed$trait))){
+trait <-  as.character(unique(moments_fixed$trait))[i]
+  
+data_i<-moments_fixed[which(moments_fixed$trait==trait),]
+
+Model_TSYI<-glm(formula = mean ~ treatment + site + year + year*treatment ,data = data_i)  
+Model_TSY<-glm(formula = mean ~ treatment + site + year ,data = data_i)    
+Model_TS<-glm(formula = mean ~ treatment + site ,data = data_i)      
+Model_T<-glm(formula = mean ~ treatment ,data = data_i)      
+Model_SY<-glm(formula = mean ~ site + year ,data = data_i)    
+Model_S<-glm(formula = mean ~ site ,data = data_i)    
+Model_Y<-glm(formula = mean ~ year ,data = data_i)    
+Model_TY<-glm(formula = mean ~ treatment + year ,data = data_i)    
+
+mumin_out<-MuMIn::model.sel(object = list(Model_TSYI,Model_TSY,Model_TS,Model_T,Model_SY,Model_S,Model_Y,Model_TY))
+
+mumin_out<-mumin_out[order(row.names(mumin_out)),]
+mumin_out$trait<-trait
+
+mumin_out$rsq<-NA
+mumin_out$rsq.adj<-NA
+mumin_out$rsq[1]<-rsq(fitObj = Model_TSYI)
+mumin_out$rsq[2]<-rsq(fitObj = Model_TSY)
+mumin_out$rsq[3]<-rsq(fitObj = Model_TS)
+mumin_out$rsq[4]<-rsq(fitObj = Model_T)
+mumin_out$rsq[5]<-rsq(fitObj = Model_SY)
+mumin_out$rsq[6]<-rsq(fitObj = Model_S)
+mumin_out$rsq[7]<-rsq(fitObj = Model_Y)
+mumin_out$rsq[8]<-rsq(fitObj = Model_TY)
+
+mumin_out$rsq.adj[1]<-rsq(fitObj = Model_TSYI,adj = T)
+mumin_out$rsq.adj[2]<-rsq(fitObj = Model_TSY,adj = T)
+mumin_out$rsq.adj[3]<-rsq(fitObj = Model_TS,adj = T)
+mumin_out$rsq.adj[4]<-rsq(fitObj = Model_T,adj = T)
+mumin_out$rsq.adj[5]<-rsq(fitObj = Model_SY,adj = T)
+mumin_out$rsq.adj[6]<-rsq(fitObj = Model_S,adj = T)
+mumin_out$rsq.adj[7]<-rsq(fitObj = Model_Y,adj = T)
+mumin_out$rsq.adj[8]<-rsq(fitObj = Model_TY,adj = T)
+
+mumin_out$model<-NA
+mumin_out$model[1]<-"TSYI"
+mumin_out$model[2]<-"TSY"
+mumin_out$model[3]<-"TS"
+mumin_out$model[4]<-"T"
+mumin_out$model[5]<-"SY"
+mumin_out$model[6]<-"S"
+mumin_out$model[7]<-"Y"
+mumin_out$model[8]<-"TY"
+
+
+mumin_out<-as.data.frame(mumin_out)
+
+mumin_summary<-rbind(mumin_summary,mumin_out)
+
+mumin_summary
+
+
+  
+}
+
+
+write.csv(file = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/stats/model_selection_mean.csv",row.names = F,x = mumin_summary)
+
+
+
+
+#make output table ranking models for each variable. -weight table
+
+#calculate r2 for each model component
+
+# re-do for graminoid and non-graminoid
+
+# 
+
+##############################
+
+#Turf skewness vs kurtosis
+
+#It would be good to see all of them together in a giant skewness vs. kurtosis plot 
+#but maybe color coded by site and then by treatment and maybe year
+
+plot(as.numeric(as.character(moments_fixed$skew))~as.numeric(as.character(moments_fixed$kurt)),xlab="Kurtosis",ylab = "Skewness")
+plot(as.numeric(as.character(moments_fixed$mean))~as.numeric(as.character(moments_plastic$mean)))
+
+pvf<-lm(as.numeric(as.character(moments_fixed$mean))~as.numeric(as.character(moments_plastic$mean)))
+summary(pvf)
+
+
+
+moments_fixed$skew<-as.numeric(as.character(moments_fixed$skew))
+moments_fixed$kurt<-as.numeric(as.character(moments_fixed$kurt))
+
+library(ggplot2)
+skew_kurt_color_by_trait <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$trait)) + geom_point() 
+skew_kurt_color_by_trait
+
+skew_kurt_color_by_site <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$site)) + geom_point() 
+skew_kurt_color_by_site
+
+skew_kurt_color_by_treatment <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$treatment)) + geom_point() 
+skew_kurt_color_by_treatment
+
+skew_kurt_color_by_year <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$year)) + geom_point() 
+skew_kurt_color_by_year
+
+###################################################
+
+#Relative mean vs time
+
+#For each trait X site X treatment
+#moments_fixed$
+tst<-unique(moments_fixed[,c(2,3,5)])
+
+for(i in 1:nrow(tst)){
+  
+trait<-as.character(tst$trait[i])  
+treatment<-as.character(tst$treatment[i])  
+site<-as.character(tst$site[i])  
+
+#Specify origin and destination plots
+
+if(treatment %in% c("C","O","OTC")){
+origin_site<-site
+destination_site<-site
+}
+
+if(treatment == 3){
+origin_site<-"H"
+destination_site<-"L"
+
+}
+
+if(treatment == 5){
+  origin_site<-"L"
+  destination_site<-"H"
+}
+
+
+if(treatment==1){
+site_numeric<-which(c("H","A","M","L")==site)  
+
+origin_site<-site
+destination_site  <- c("H","A","M","L")[site_numeric+1]
+
+}
+
+if(treatment==2){
+  site_numeric<-which(c("H","A","M","L")==site)  
+  
+  origin_site<-site
+  destination_site  <- c("H","A","M","L")[site_numeric-1]
+  
+}
+
+#####
+
+#Extract destination site mean at year 1 for trait x site
+
+initial_value<-mean(moments_fixed$mean[which(moments_fixed$trait==trait & moments_fixed$site==destination_site & moments_fixed$year=="2012" & moments_fixed$treatment%in%c("C","O"))])
+
+data_i<-moments_fixed[which(moments_fixed$treatment==treatment & moments_fixed$site==site & moments_fixed$trait==trait),]
+
+data_i$mean <- (data_i$mean - initial_value)/initial_value
+
+#plot(data_i$mean ~ data_i$year)
+plot_mean_diff <- ggplot(data = data_i, aes(x = year, y = mean,  colour = turf)) + geom_point(aes(size=abs(data_i$mean)))+geom_hline(yintercept = 0)+ggtitle(paste("Trait",trait,", Site ",site,", Treatment ",treatment)) 
+plot_mean_diff
+
+
+ggsave(filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/convergence_on_destination_site/","assume_fixed_traits_mean_",trait,"_treatment_",treatment,"_site_",site,".jpeg",sep = ""),plot = plot_mean_diff)
+
+  
+}#end i loop
+
+
+
