@@ -184,6 +184,7 @@ turf_regression_output<-rbind(turf_regression_output,output_t)
 turf_regression_output<-as.data.frame(turf_regression_output)
 
 ####
+
 #Generate histograms of mean slope for each treatment x trait
 
 library(ggplot2)
@@ -577,6 +578,9 @@ skew_kurt_color_by_year
 #moments_fixed$
 tst<-unique(moments_fixed[,c(2,3,5)])
 
+
+dev_from_mean_v_time<-NULL
+
 for(i in 1:nrow(tst)){
   
 trait<-as.character(tst$trait[i])  
@@ -635,8 +639,154 @@ plot_mean_diff
 
 ggsave(filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/convergence_on_destination_site/","assume_fixed_traits_mean_",trait,"_treatment_",treatment,"_site_",site,".jpeg",sep = ""),plot = plot_mean_diff)
 
+
+lm_data_i<-lm(data_i$mean~data_i$year)
+
+plot_mean_diff+geom_abline(slope = lm_data_i$coefficients[2],intercept = lm_data_i$coefficients[1])
+
+y_min<-min(data_i$mean)
+y_max<-max(data_i$mean)
+
+
+
+intercept<-lm_data_i$coefficients[1]
+slope<-lm_data_i$coefficients[2]
+summary_lm<-summary(lm_data_i)
+p_val_int<-summary_lm$coefficients[2,4]
+
+summary_lm
+out_i<-cbind(treatment,origin_site,destination_site,trait,slope,intercept,y_min,y_max,p_val_int)
+
+
+dev_from_mean_v_time<-rbind(dev_from_mean_v_time,out_i)
+
+
+
   
 }#end i loop
 
+dev_from_mean_v_time <- as.data.frame(dev_from_mean_v_time)
+dev_from_mean_v_time$slope <- as.numeric(as.character(dev_from_mean_v_time$slope))
+dev_from_mean_v_time$intercept <- as.numeric(as.character(dev_from_mean_v_time$intercept))
+dev_from_mean_v_time$y_min <- as.numeric(as.character(dev_from_mean_v_time$y_min))
+dev_from_mean_v_time$y_max <- as.numeric(as.character(dev_from_mean_v_time$y_max))
+dev_from_mean_v_time$p_val_int <- as.numeric(as.character(dev_from_mean_v_time$p_val_int))
+
+
+#plot multiple lines
+
+
+data_3<-dev_from_mean_v_time[which(dev_from_mean_v_time$treatment=="3" & dev_from_mean_v_time$p_val_int<= 0.05),]
+data_4<-dev_from_mean_v_time[which(dev_from_mean_v_time$treatment=="4"& dev_from_mean_v_time$p_val_int<= 0.05),]
+
+
+ggplot(data = data_3)+xlim(c(2012,2016))+ylim(c(min(data_3$y_min),max(data_3$y_max)))+geom_abline(aes(slope = data_3$slope,intercept = data_3$intercept,colour=data_3$trait))+ggtitle("Treatment 3")
+ggplot(data = data_4)+xlim(c(2012,2016))+ylim(c(min(data_4$y_min),max(data_4$y_max)))+geom_abline(aes(slope = data_4$slope,intercept = data_4$intercept,colour=data_4$trait))+ggtitle("Treatment 4")
+
+
+
+scatterplot <- qplot(x=Wind, y=Temp, data=airquality)
+scatterplot + geom_abline(aes(intercept=intercept, slope=slope,
+                              colour=quantile), data=quantile.regressions)
+
+
+#######################
+
+
+##Plot of variance vs rate of change
+
+
+#Variance = initial variance of plot
+
+#Rate of change = abs(slope of mean vs time relationship)
+
+#Color by treatment, site or else separate plots?
+
+###
+
+#Fixed traits
+
+var_v_change_data_fixed<-NULL
+for(i in 1:length(unique(moments_fixed$turf))){
+turf<-  as.character(unique(moments_fixed$turf)[i])
+data_i <- moments_fixed[which(moments_fixed$turf==turf),]  
+  
+for(t in 1:length(unique(data_i$trait))){
+  
+trait<-as.character(unique(data_i$trait)[t])
+data_t <- data_i[which(data_i$trait==trait),]
+
+
+  
+lm_t<-lm(formula = data_t$mean~data_t$year)
+slope<-abs(lm_t$coefficients[2])
+initial_var <- as.numeric(as.character(data_t$var))[which.min(data_t$year)]
+treatment<-as.character(unique(data_t$treatment))
+site<-as.character(unique(data_t$site))
+
+out_t<-cbind(trait,site,treatment,turf,slope,initial_var)
+var_v_change_data_fixed<-rbind(var_v_change_data_fixed,out_t)
+
+    
+  
+} #for t 
+  
+}#for i
+
+var_v_change_data_fixed<-as.data.frame(var_v_change_data_fixed)
+var_v_change_data_fixed$slope<-as.numeric(as.character(var_v_change_data_fixed$slope))
+var_v_change_data_fixed$initial_var<-as.numeric(as.character(var_v_change_data_fixed$initial_var))
+plot(abs(var_v_change_data_fixed$slope)~log(var_v_change_data_fixed$initial_var))
+
+
+
+plot(abs(var_v_change_data_fixed$slope[which(var_v_change_data_fixed$treatment=="1")])~log(var_v_change_data_fixed$initial_var[which(var_v_change_data_fixed$treatment=="1")]),main="treatment 1")
+
+
+tt<-unique(moments_fixed[c('trait','treatment')])
+
+output_slope_v_var<-NULL
+for(i in 1:nrow(tt)){
+  
+  
+treatment <- as.character(tt$treatment[i]  )
+trait <- as.character(tt$trait[i])  
+
+data_i<-var_v_change_data_fixed[which(var_v_change_data_fixed$trait==trait &
+                                        var_v_change_data_fixed$treatment==treatment),]
+lm_plot_slope<-lm(formula = slope~initial_var,data = data_i)
+summary_lm<-summary(lm_plot_slope)
+p_val<-round(summary_lm$coefficients[2,4],2)
+r2<-round(summary_lm$r.squared,2)
+adjr2<-round(summary_lm$adj.r.squared,2)
+
+plot_slope_v_var <- ggplot(data = data_i, aes(x = initial_var, y = slope)) + geom_point(aes(colour=site))+ geom_hline(yintercept = 0)+
+  geom_abline(data = data_i, slope = lm_plot_slope$coefficients[2] , intercept = lm_plot_slope$coefficients[1], colour = "red")+ 
+  ggtitle(paste("Trait",trait,", Treatment ",treatment, ", p-value", p_val, ", r2",r2,", adj.r2",adjr2)) +
+  xlab("Initial variance")+ ylab("Slope (mean vs time)")
+
+
+plot_slope_v_var
+
+
+ggsave(filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/rate_of_change_vs_initial_var/","assume_fixed_traits_mean_",trait,"_treatment_",treatment,".jpeg",sep = ""),plot = plot_slope_v_var)
+
+out_i<-cbind(trait,treatment,p_val,r2,adjr2)
+output_slope_v_var<-rbind(output_slope_v_var,out_i)
+  
+  
+}
+
+output_slope_v_var<-as.data.frame(output_slope_v_var)
+output_slope_v_var$p_val<-as.numeric(as.character(output_slope_v_var$p_val))
+output_slope_v_var$r2<-as.numeric(as.character(output_slope_v_var$r2))
+output_slope_v_var$adjr2<-as.numeric(as.character(output_slope_v_var$adjr2))
+hist(output_slope_v_var$p_val)
+hist(output_slope_v_var$r2)
+hist(output_slope_v_var$adjr2)
+
+ggplot(data = output_slope_v_var,aes(x=output_slope_v_var$trait,y=output_slope_v_var$p_val))+geom_boxplot(aes(fill=trait))
+#I really don't think there are major patterns here
+ggplot(data = output_slope_v_var,aes(x=output_slope_v_var$trait,y=output_slope_v_var$adjr2))+geom_boxplot(aes(fill=trait))
 
 

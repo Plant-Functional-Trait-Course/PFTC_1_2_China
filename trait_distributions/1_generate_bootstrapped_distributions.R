@@ -29,6 +29,29 @@ traits_leaf<-traits[c("Taxon","Site","Project","Wet_Mass_g", "Dry_Mass_g", "Leaf
 traits_chem<-traits[c("Taxon","Site","Project","C_percent", "N_percent","CN_ratio", "dN15_percent", "dC13_percent", "P_AVG","NP_ratio" )]
 rm(traits)
 
+#Log transform leaf size variables
+traits_leaf$Wet_Mass_g <- log(traits_leaf$Wet_Mass_g)
+traits_leaf$Dry_Mass_g <- log(traits_leaf$Dry_Mass_g)
+traits_leaf$Leaf_Area_cm2 <- log(traits_leaf$Leaf_Area_cm2)
+
+# rescale variables
+
+
+traits_leaf$Wet_Mass_g <- scale(traits_leaf$Wet_Mass_g)
+traits_leaf$Dry_Mass_g <- scale(traits_leaf$Dry_Mass_g)
+traits_leaf$Leaf_Thickness_Ave_mm <- scale(traits_leaf$Leaf_Thickness_Ave_mm)
+traits_leaf$Leaf_Area_cm2 <- scale(traits_leaf$Leaf_Area_cm2)
+traits_leaf$SLA_cm2_g <- scale(traits_leaf$SLA_cm2_g)
+traits_leaf$LDMC <- scale(traits_leaf$LDMC)
+
+traits_chem$C_percent<-scale(traits_chem$C_percent)
+traits_chem$N_percent<-scale(traits_chem$N_percent)
+traits_chem$CN_ratio<-scale(traits_chem$CN_ratio)
+traits_chem$dN15_percent<-scale(traits_chem$dN15_percent)
+traits_chem$dC13_percent<-scale(traits_chem$dC13_percent)
+traits_chem$P_AVG<-scale(traits_chem$P_AVG)
+traits_chem$NP_ratio<-scale(traits_chem$NP_ratio)
+
 
 #script to make bootstrapped trait distributions for each turf at each time point
 
