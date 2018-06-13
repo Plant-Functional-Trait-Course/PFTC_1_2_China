@@ -50,7 +50,7 @@ varpart2016join$Site[varpart2016join$Site == "A"] <- "alpine"
 
 #Rename column name "taxon" to "species"
 varpart2016join$species <- varpart2016join$Taxon
-
+write.csv(varpart2016join, "varpart2016join.csv")
 ###############################################################
 ### Clean data
 
@@ -70,7 +70,7 @@ varpart <- filter(traitsangio,Project=="LOCAL" | Project=="C" | Project=="0" | i
 #write this to file to use in R markdown so that you don't need to create cleaned file again.
 save(varpart, file= "varpart.RData")
 
-# Subset varpart into different objects based on leaf collection location: local or control.
+# Subset varpart into different objects based on leaf collection location: local or control (optional if you want to compare)
 varpartLocal <- subset(traitsangio, Project=="LOCAL") # only leaves outside fence, grazed
 varpartControl <- subset(traitsangio, Project=="C") # only leaves inside fence, ungrazed
 
@@ -86,17 +86,33 @@ varpartHigh <- subset(varpart, Site="high")
 
 #load the cleaned traits data you created above
 load("varpart.RData")
-
+#write.csv(varpart, "varpart.csv")
+# Reduce trait data to only include one of each StoichLabel (because stoich values were repeated across multiple leaves)
+varpartStoich <- varpart[!duplicated(varpart$StoichLabel), ]
+write.csv(varpartStoich, "varpartStoich.csv")
 # Without log transformation
 vchinatraitsSLAsite <- varcomp(lme(SLA_cm2_g~1, random=~1|order/family/genus/species/Site, data=varpart, na.action = na.omit), 1)
 vchinatraitsAreasite <- varcomp(lme(Leaf_Area_cm2~1, random=~1|order/family/genus/species/Site, data=varpart, na.action = na.omit), 1)
 vchinatraitsThicksite <- varcomp(lme(Leaf_Thickness_Ave_mm~1, random=~1|order/family/genus/species/Site, data=varpart, na.action = na.omit), 1)
 vchinatraitsLDMCsite <- varcomp(lme(LDMC~1, random=~1|order/family/genus/species/Site, data=varpart, na.action = na.omit), 1)
+vchinatraitsCPercentsite <- varcomp(lme(C_percent~1, random=~1|order/family/genus/species/Site, data=varpartStoich, na.action = na.omit), 1)
+vchinatraitsNPercentsite <- varcomp(lme(N_percent~1, random=~1|order/family/genus/species/Site, data=varpartStoich, na.action = na.omit), 1)
+vchinatraitsPPercentsite <- varcomp(lme(P_AVG~1, random=~1|order/family/genus/species/Site, data=varpartStoich, na.action = na.omit), 1)
+vchinatraitsCNRatiosite <- varcomp(lme(CN_ratio~1, random=~1|order/family/genus/species/Site, data=varpartStoich, na.action = na.omit), 1)
+vchinatraitsDC13site <- varcomp(lme(dC13_percent~1, random=~1|order/family/genus/species/Site, data=varpartStoich, na.action = na.omit), 1)
+vchinatraitsDN15site <- varcomp(lme(dN15_percent~1, random=~1|order/family/genus/species/Site, data=varpartStoich, na.action = na.omit), 1)
 
 vchinatraitsSLAsite
 vchinatraitsLDMCsite
 vchinatraitsThicksite
 vchinatraitsAreasite
+vchinatraitsCPercentsite
+vchinatraitsNPercentsite
+vchinatraitsPPercentsite
+vchinatraitsCNRatiosite
+vchinatraitsDC13site
+vchinatraitsDN15site
+
 
 # With log transformation
 vchinatraitsSLAlog <- varcomp(lme(log(SLA_cm2_g)~1, random=~1|order/family/genus/species/Site, data=varpart, na.action = na.omit), 1)
@@ -125,14 +141,38 @@ vchinatraitsThicklog2$trait <- "LT" # add a column called trait with leaf thickn
 vchinatraitsArealog2<- data.frame(as.list(vchinatraitsArealog)) # turns vector into data frame
 vchinatraitsArealog2$trait <- "LA" # add a column called trait with leaf area (LA)
 
+vchinatraitsCPercentsite2 <- data.frame(as.list(vchinatraitsCPercentsite)) # turns vector into data frame
+vchinatraitsCPercentsite2$trait <- "%C" # add a column called trait with percent carbon
+
+vchinatraitsNPercentsite2 <- data.frame(as.list(vchinatraitsNPercentsite)) # turns vector into data frame
+vchinatraitsNPercentsite2$trait <- "%N" # add a column called trait with percent nitrogen
+
+vchinatraitsPPercentsite2 <- data.frame(as.list(vchinatraitsPPercentsite)) # turns vector into data frame
+vchinatraitsPPercentsite2$trait <- "%P" # add a column called trait with percent phosphorus
+
+vchinatraitsCNRatiosite2 <- data.frame(as.list(vchinatraitsCNRatiosite)) # turns vector into data frame
+vchinatraitsCNRatiosite2$trait <- "C:N" # add a column called trait with C to N ratio
+
+vchinatraitsDC13site2 <- data.frame(as.list(vchinatraitsDC13site)) # turns vector into data frame
+vchinatraitsDC13site2$trait <- "dC13" # add a column called trait with dC13
+
+vchinatraitsDN15site2 <- data.frame(as.list(vchinatraitsDN15site)) # turns vector into data frame
+vchinatraitsDN15site2$trait <- "dN15" # add a column called trait with dN15
+
 # Mutate the wide data frames into long data frames.
-vchinatraitsSLAsite3<- gather(vchinatraitsSLAsite2, "Level", "Percent.variance", 1:6)
+vchinatraitsSLAsite3 <- gather(vchinatraitsSLAsite2, "Level", "Percent.variance", 1:6)
 vchinatraitsLDMClog3 <- gather(vchinatraitsLDMClog2, "Level", "Percent.variance", 1:6)
 vchinatraitsThicklog3 <-  gather(vchinatraitsThicklog2, "Level", "Percent.variance", 1:6)
 vchinatraitsArealog3 <-  gather(vchinatraitsArealog2, "Level", "Percent.variance", 1:6)
+vchinatraitsCPercentsite3 <- gather(vchinatraitsCPercentsite2, "Level", "Percent.variance", 1:6)
+vchinatraitsNPercentsite3 <- gather(vchinatraitsNPercentsite2, "Level", "Percent.variance", 1:6)
+vchinatraitsPPercentsite3 <- gather(vchinatraitsPPercentsite2, "Level", "Percent.variance", 1:6)
+vchinatraitsCNRatiosite3 <- gather(vchinatraitsCNRatiosite2, "Level", "Percent.variance", 1:6)
+vchinatraitsDC13site3 <- gather(vchinatraitsDC13site2, "Level", "Percent.variance", 1:6)
+vchinatraitsDN15site3 <- gather(vchinatraitsDN15site2, "Level", "Percent.variance", 1:6)
 
 # Bind all the data frames
-varcompanalysislog <- bind_rows(vchinatraitsSLAsite3, vchinatraitsLDMClog3, vchinatraitsThicklog3, vchinatraitsArealog3)
+varcompanalysislog <- bind_rows(vchinatraitsSLAsite3, vchinatraitsLDMClog3, vchinatraitsThicklog3, vchinatraitsArealog3, vchinatraitsCPercentsite3, vchinatraitsNPercentsite3, vchinatraitsPPercentsite3, vchinatraitsCNRatiosite3, vchinatraitsDC13site3, vchinatraitsDN15site3)
 varcompanalysislog$Percent.variance.100 <- varcompanalysislog$Percent.variance*100 # add a new column where Percent.variance is multiplied by 100 to get actual percent and not decimal.
 
 # Change "Within" to "within species"
@@ -147,7 +187,10 @@ varcompanalysislog$Level[varcompanalysislog$Level=="Site"] <- "site"
 varcompanalysislog$Level <- factor(varcompanalysislog$Level, levels= c("order", "family", "genus", "species", "site", "within species"))
 
 # Change the order of the traits
-varcompanalysislog$trait <- factor(varcompanalysislog$trait, levels= c ("SLA", "LDMC", "LT", "LA"))
+varcompanalysislog$trait <- factor(varcompanalysislog$trait, levels= c ("SLA", "LDMC", "LT", "LA", "%C", "%N", "%P", "C:N", "dC13", "dN15"))
 
 # Make the stacked bar graph
+
 ggplot(data = varcompanalysislog, aes(x = trait, y = Percent.variance.100, fill = Level)) + geom_bar(stat="identity") + labs(x= "Leaf trait" , y = "Percent variance" , fill="Level") + scale_fill_manual(values=c("#003366", "#0066CC", "#3399FF", "#99CCFF", "#000000", "#FF9900")) + theme(text = element_text(size=20)) + theme_classic() #+ggtitle("Using log transformed data")
+
+
