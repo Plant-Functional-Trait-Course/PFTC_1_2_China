@@ -7,6 +7,7 @@
 # skewness vs time, mean vs time, variance vs delta mean (change in mean from beginning to end)
 
 source("trait_distributions/r_scripts/summarize_moments.R")
+library(moments)
 
 file_directory_native<-"trait_distributions/using_native_site/"
 file_directory_recipient<-"trait_distributions/using_recipient site//"
@@ -685,10 +686,6 @@ ggplot(data = data_4)+xlim(c(2012,2016))+ylim(c(min(data_4$y_min),max(data_4$y_m
 
 
 
-scatterplot <- qplot(x=Wind, y=Temp, data=airquality)
-scatterplot + geom_abline(aes(intercept=intercept, slope=slope,
-                              colour=quantile), data=quantile.regressions)
-
 
 #######################
 
@@ -789,4 +786,120 @@ ggplot(data = output_slope_v_var,aes(x=output_slope_v_var$trait,y=output_slope_v
 #I really don't think there are major patterns here
 ggplot(data = output_slope_v_var,aes(x=output_slope_v_var$trait,y=output_slope_v_var$adjr2))+geom_boxplot(aes(fill=trait))
 
+#######################################
 
+# for each treatment x site x trait, calculate the effect size as : plot mean at time t - mean control plot mean t time t?
+
+tst<-unique(moments_fixed[,c(2,3,5)])
+
+
+effect_size_v_time<-NULL
+
+for(i in 1:nrow(tst)){
+  
+  trait<-as.character(tst$trait[i])  
+  treatment<-as.character(tst$treatment[i])  
+  site<-as.character(tst$site[i])  
+  
+  #Specify origin and destination plots
+  
+  if(treatment %in% c("C","O","OTC")){
+    origin_site<-site
+    destination_site<-site
+  }
+  
+  if(treatment == 3){
+    origin_site<-"H"
+    destination_site<-"L"
+    
+  }
+  
+  if(treatment == 5){
+    origin_site<-"L"
+    destination_site<-"H"
+  }
+  
+  
+  if(treatment==1){
+    site_numeric<-which(c("H","A","M","L")==site)  
+    
+    origin_site<-site
+    destination_site  <- c("H","A","M","L")[site_numeric+1]
+    
+  }
+  
+  if(treatment==2){
+    site_numeric<-which(c("H","A","M","L")==site)  
+    
+    origin_site<-site
+    destination_site  <- c("H","A","M","L")[site_numeric-1]
+    
+  }
+  
+  #####
+  
+  #Extract origin site meansfor trait x site x year
+  
+  origin_data_i<-moments_fixed[which(moments_fixed$trait==trait & moments_fixed$site==destination_site & moments_fixed$treatment%in%c("C","O")),]
+  origin_data_i$mean<-as.numeric(as.character(origin_data_i$mean))
+  
+  
+  data_i<-moments_fixed[which(moments_fixed$treatment==treatment & moments_fixed$site==site & moments_fixed$trait==trait),]
+  data_i$mean<-as.numeric(as.character(data_i$mean))
+  
+  
+  for(y in 1:length(unique(data_i$year))){
+  
+  year_y_mean<-  mean(origin_data_i$mean[which(origin_data_i$year==unique(data_i$year)[y])])  
+          
+  data_i$mean[which(data_i$year==unique(data_i$year)[y])] <-  data_i$mean[which(data_i$year==unique(data_i$year)[y])]-year_y_mean
+    
+    
+  }
+  
+  
+  #plot(data_i$mean ~ data_i$year)
+  plot_mean_diff <- ggplot(data = data_i, aes(x = year, y = mean,  colour = turf)) + geom_point(aes(size=abs(data_i$mean)))+geom_hline(yintercept = 0)+ggtitle(paste("Trait",trait,", Site ",site,", Treatment ",treatment)) 
+  plot_mean_diff
+  
+  
+  ggsave(filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/effect_sizes_of_mean_v_time/","assume_fixed_traits_mean_",trait,"_treatment_",treatment,"_site_",site,".jpeg",sep = ""),plot = plot_mean_diff)
+  
+  
+  lm_data_i<-lm(data_i$mean~data_i$year)
+  
+  plot_mean_diff+geom_abline(slope = lm_data_i$coefficients[2],intercept = lm_data_i$coefficients[1])
+  
+  y_min<-min(data_i$mean)
+  y_max<-max(data_i$mean)
+  
+  
+  
+  intercept<-lm_data_i$coefficients[1]
+  slope<-lm_data_i$coefficients[2]
+  summary_lm<-summary(lm_data_i)
+  p_val_int<-summary_lm$coefficients[2,4]
+  
+  summary_lm
+  out_i<-cbind(treatment,origin_site,destination_site,trait,slope,intercept,y_min,y_max,p_val_int)
+  
+  
+  effect_size_v_time<-rbind(effect_size_v_time,out_i)
+  
+  
+  
+  
+}#end i loop
+
+
+
+
+#######################################
+
+#Effect size stuff comparing, OTC vs transplants
+
+
+#Effect size =  (mean of treatment year i  - mean treatment year at start of experiment) - (mean control Year i - mean control at start of experiment).   
+#This should give a nice standardized measure and it is an effect size.
+
+######################################
