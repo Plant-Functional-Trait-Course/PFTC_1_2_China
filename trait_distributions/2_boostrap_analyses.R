@@ -8,12 +8,14 @@
 
 source("trait_distributions/r_scripts/summarize_moments.R")
 library(moments)
+library(ggpubr)
 
 file_directory_native<-"trait_distributions/using_native_site/"
 file_directory_recipient<-"trait_distributions/using_recipient site//"
 
 moments_fixed<-extract_moments(file_directory = file_directory_native)
 moments_plastic<-extract_moments(file_directory = file_directory_recipient)
+moments_fixed$mean<-as.numeric(as.character(moments_fixed$mean))
 
 ###############################
 
@@ -573,123 +575,6 @@ skew_kurt_color_by_year
 
 ###################################################
 
-#Relative mean vs time
-
-#For each trait X site X treatment
-#moments_fixed$
-tst<-unique(moments_fixed[,c(2,3,5)])
-
-
-dev_from_mean_v_time<-NULL
-
-for(i in 1:nrow(tst)){
-  
-trait<-as.character(tst$trait[i])  
-treatment<-as.character(tst$treatment[i])  
-site<-as.character(tst$site[i])  
-
-#Specify origin and destination plots
-
-if(treatment %in% c("C","O","OTC")){
-origin_site<-site
-destination_site<-site
-}
-
-if(treatment == 3){
-origin_site<-"H"
-destination_site<-"L"
-
-}
-
-if(treatment == 5){
-  origin_site<-"L"
-  destination_site<-"H"
-}
-
-
-if(treatment==1){
-site_numeric<-which(c("H","A","M","L")==site)  
-
-origin_site<-site
-destination_site  <- c("H","A","M","L")[site_numeric+1]
-
-}
-
-if(treatment==2){
-  site_numeric<-which(c("H","A","M","L")==site)  
-  
-  origin_site<-site
-  destination_site  <- c("H","A","M","L")[site_numeric-1]
-  
-}
-
-#####
-
-#Extract destination site mean at year 1 for trait x site
-
-initial_value<-mean(moments_fixed$mean[which(moments_fixed$trait==trait & moments_fixed$site==destination_site & moments_fixed$year=="2012" & moments_fixed$treatment%in%c("C","O"))])
-
-data_i<-moments_fixed[which(moments_fixed$treatment==treatment & moments_fixed$site==site & moments_fixed$trait==trait),]
-
-data_i$mean <- (data_i$mean - initial_value)/initial_value
-
-#plot(data_i$mean ~ data_i$year)
-plot_mean_diff <- ggplot(data = data_i, aes(x = year, y = mean,  colour = turf)) + geom_point(aes(size=abs(data_i$mean)))+geom_hline(yintercept = 0)+ggtitle(paste("Trait",trait,", Site ",site,", Treatment ",treatment)) 
-plot_mean_diff
-
-
-ggsave(filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/convergence_on_destination_site/","assume_fixed_traits_mean_",trait,"_treatment_",treatment,"_site_",site,".jpeg",sep = ""),plot = plot_mean_diff)
-
-
-lm_data_i<-lm(data_i$mean~data_i$year)
-
-plot_mean_diff+geom_abline(slope = lm_data_i$coefficients[2],intercept = lm_data_i$coefficients[1])
-
-y_min<-min(data_i$mean)
-y_max<-max(data_i$mean)
-
-
-
-intercept<-lm_data_i$coefficients[1]
-slope<-lm_data_i$coefficients[2]
-summary_lm<-summary(lm_data_i)
-p_val_int<-summary_lm$coefficients[2,4]
-
-summary_lm
-out_i<-cbind(treatment,origin_site,destination_site,trait,slope,intercept,y_min,y_max,p_val_int)
-
-
-dev_from_mean_v_time<-rbind(dev_from_mean_v_time,out_i)
-
-
-
-  
-}#end i loop
-
-dev_from_mean_v_time <- as.data.frame(dev_from_mean_v_time)
-dev_from_mean_v_time$slope <- as.numeric(as.character(dev_from_mean_v_time$slope))
-dev_from_mean_v_time$intercept <- as.numeric(as.character(dev_from_mean_v_time$intercept))
-dev_from_mean_v_time$y_min <- as.numeric(as.character(dev_from_mean_v_time$y_min))
-dev_from_mean_v_time$y_max <- as.numeric(as.character(dev_from_mean_v_time$y_max))
-dev_from_mean_v_time$p_val_int <- as.numeric(as.character(dev_from_mean_v_time$p_val_int))
-
-
-#plot multiple lines
-
-
-data_3<-dev_from_mean_v_time[which(dev_from_mean_v_time$treatment=="3" & dev_from_mean_v_time$p_val_int<= 0.05),]
-data_4<-dev_from_mean_v_time[which(dev_from_mean_v_time$treatment=="4"& dev_from_mean_v_time$p_val_int<= 0.05),]
-
-
-ggplot(data = data_3)+xlim(c(2012,2016))+ylim(c(min(data_3$y_min),max(data_3$y_max)))+geom_abline(aes(slope = data_3$slope,intercept = data_3$intercept,colour=data_3$trait))+ggtitle("Treatment 3")
-ggplot(data = data_4)+xlim(c(2012,2016))+ylim(c(min(data_4$y_min),max(data_4$y_max)))+geom_abline(aes(slope = data_4$slope,intercept = data_4$intercept,colour=data_4$trait))+ggtitle("Treatment 4")
-
-
-
-
-#######################
-
-
 ##Plot of variance vs rate of change
 
 
@@ -787,13 +672,17 @@ ggplot(data = output_slope_v_var,aes(x=output_slope_v_var$trait,y=output_slope_v
 ggplot(data = output_slope_v_var,aes(x=output_slope_v_var$trait,y=output_slope_v_var$adjr2))+geom_boxplot(aes(fill=trait))
 
 #######################################
+#Calculate effect size vs origin and vs destination
 
-# for each treatment x site x trait, calculate the effect size as : plot mean at time t - mean control plot mean t time t?
+library(qdap)
+library(ggplot2)
+library(moments)
+library(ggpubr)
 
 tst<-unique(moments_fixed[,c(2,3,5)])
 
-
-effect_size_v_time<-NULL
+convergence_v_time<-NULL
+divergence_v_time<-NULL
 
 for(i in 1:nrow(tst)){
   
@@ -814,7 +703,7 @@ for(i in 1:nrow(tst)){
     
   }
   
-  if(treatment == 5){
+  if(treatment == 4){
     origin_site<-"L"
     destination_site<-"H"
   }
@@ -840,61 +729,303 @@ for(i in 1:nrow(tst)){
   
   #Extract origin site meansfor trait x site x year
   
-  origin_data_i<-moments_fixed[which(moments_fixed$trait==trait & moments_fixed$site==destination_site & moments_fixed$treatment%in%c("C","O")),]
-  origin_data_i$mean<-as.numeric(as.character(origin_data_i$mean))
+  
+  initial_value_origin<-mean(moments_fixed$mean[which(moments_fixed$trait==trait & moments_fixed$site==origin_site & moments_fixed$year=="2012" & moments_fixed$treatment%in%c("C","O"))])
+  initial_value_destination<-mean(moments_fixed$mean[which(moments_fixed$trait==trait & moments_fixed$site==destination_site & moments_fixed$year=="2012" & moments_fixed$treatment%in%c("C","O"))])
+  data_origin_i<-moments_fixed[which(moments_fixed$treatment==treatment & moments_fixed$site==site & moments_fixed$trait==trait),]
+  data_destination_i<-moments_fixed[which(moments_fixed$treatment==treatment & moments_fixed$site==site & moments_fixed$trait==trait),]
+  
+  #data relative to origin
+  data_origin_i$mean <- (data_origin_i$mean - initial_value_origin)
+  data_origin_i$year<-as.numeric(as.character(data_origin_i$year))
+  data_origin_i$year<-data_origin_i$year-2012
+  
+  #data relative to destination
+  data_destination_i$mean <- (data_destination_i$mean - initial_value_destination)
+  data_destination_i$year<-as.numeric(as.character(data_destination_i$year))
+  data_destination_i$year<-data_destination_i$year-2012
+  
+  #Plots for fun and to spot obvious errors
+  plot_effect_size_origin <- ggplot(data = data_origin_i, aes(x = year, y = mean,  colour = turf)) + geom_point(aes(size=abs(data_origin_i$mean)))+geom_hline(yintercept = 0)+ggtitle(paste("Trait",trait,", Site ",site,", Treatment ",treatment))+ylab("Effect (vs. origin)") 
+  #plot_effect_size_origin
+  
+  plot_effect_size_destination <- ggplot(data = data_destination_i, aes(x = year, y = mean,  colour = turf)) + geom_point(aes(size=abs(data_destination_i$mean)))+geom_hline(yintercept = 0)+ggtitle(paste("Trait",trait,", Site ",site,", Treatment ",treatment))+ylab("Effect (vs. destination)") 
+  #plot_effect_size_destination
+  
+  lm_data_origin_i<-lm(data_origin_i$mean~data_origin_i$year)
+  lm_data_destination_i<-lm(data_destination_i$mean~data_origin_i$year)
+  #summary(lm_data_i)
+  
+  plot_effect_size_origin+geom_abline(slope = lm_data_origin_i$coefficients[2],intercept = lm_data_origin_i$coefficients[1])
+  plot_effect_size_destination+geom_abline(slope = lm_data_destination_i$coefficients[2],intercept = lm_data_destination_i$coefficients[1])
+  
+  y_min_origin<-min(data_origin_i$mean)
+  y_max_origin<-max(data_origin_i$mean)
+  
+  y_min_destination<-min(data_destination_i$mean)
+  y_max_destination<-max(data_destination_i$mean)
   
   
-  data_i<-moments_fixed[which(moments_fixed$treatment==treatment & moments_fixed$site==site & moments_fixed$trait==trait),]
-  data_i$mean<-as.numeric(as.character(data_i$mean))
+  intercept_origin<-lm_data_origin_i$coefficients[1]
+  slope_origin<-lm_data_origin_i$coefficients[2]
+  summary_lm_origin<-summary(lm_data_origin_i)
+  p_val_slope_origin<-summary_lm_origin$coefficients[2,4]
+  p_val_int_origin<-summary_lm_origin$coefficients[1,4]
   
   
-  for(y in 1:length(unique(data_i$year))){
-  
-  year_y_mean<-  mean(origin_data_i$mean[which(origin_data_i$year==unique(data_i$year)[y])])  
-          
-  data_i$mean[which(data_i$year==unique(data_i$year)[y])] <-  data_i$mean[which(data_i$year==unique(data_i$year)[y])]-year_y_mean
-    
-    
-  }
+  intercept_destination<-lm_data_destination_i$coefficients[1]
+  slope_destination<-lm_data_destination_i$coefficients[2]
+  summary_lm_destination<-summary(lm_data_destination_i)
+  p_val_slope_destination<-summary_lm_destination$coefficients[2,4]
+  p_val_int_destination<-summary_lm_destination$coefficients[1,4]
   
   
-  #plot(data_i$mean ~ data_i$year)
-  plot_mean_diff <- ggplot(data = data_i, aes(x = year, y = mean,  colour = turf)) + geom_point(aes(size=abs(data_i$mean)))+geom_hline(yintercept = 0)+ggtitle(paste("Trait",trait,", Site ",site,", Treatment ",treatment)) 
-  plot_mean_diff
+  #summary_lm
+  out_i_destination<-cbind(treatment,origin_site,destination_site,trait,slope_destination,intercept_destination,y_min_destination,
+                           y_max_destination,p_val_int_destination,p_val_slope_destination)
   
+  convergence_v_time<-rbind(convergence_v_time,out_i_destination)
   
-  ggsave(filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/effect_sizes_of_mean_v_time/","assume_fixed_traits_mean_",trait,"_treatment_",treatment,"_site_",site,".jpeg",sep = ""),plot = plot_mean_diff)
+  out_i_origin<-cbind(treatment,origin_site,destination_site,trait,slope_origin,intercept_origin,y_min_origin,
+                      y_max_origin,p_val_int_origin,p_val_slope_origin)
   
+  divergence_v_time<-rbind(divergence_v_time,out_i_origin)
   
-  lm_data_i<-lm(data_i$mean~data_i$year)
-  
-  plot_mean_diff+geom_abline(slope = lm_data_i$coefficients[2],intercept = lm_data_i$coefficients[1])
-  
-  y_min<-min(data_i$mean)
-  y_max<-max(data_i$mean)
-  
-  
-  
-  intercept<-lm_data_i$coefficients[1]
-  slope<-lm_data_i$coefficients[2]
-  summary_lm<-summary(lm_data_i)
-  p_val_int<-summary_lm$coefficients[2,4]
-  
-  summary_lm
-  out_i<-cbind(treatment,origin_site,destination_site,trait,slope,intercept,y_min,y_max,p_val_int)
-  
-  
-  effect_size_v_time<-rbind(effect_size_v_time,out_i)
-  
-  
-  
-  
+  rm(out_i_destination,out_i_origin,lm_data_destination_i,lm_data_origin_i,plot_effect_size_destination,plot_effect_size_origin)
+  rm(data_origin_i,data_destination_i,summary_lm_destination,summary_lm_origin,p_val_int_destination,p_val_int_origin,p_val_slope_destination,p_val_slope_origin )
+  rm(slope_destination,slope_origin,intercept_destination,intercept_origin,y_max_destination,y_max_origin,y_min_destination,y_min_origin)
+  rm(trait,site,treatment,initial_value_destination,initial_value_origin)  
 }#end i loop
+
+convergence_v_time<-as.data.frame(convergence_v_time)
+colnames(convergence_v_time)<-gsub(x = colnames(convergence_v_time),pattern = "_destination",replacement = "")
+rownames(convergence_v_time)<-1:nrow(convergence_v_time)
+convergence_v_time$slope<-as.numeric(as.character(convergence_v_time$slope))
+convergence_v_time$intercept<-as.numeric(as.character(convergence_v_time$intercept))
+convergence_v_time$y_min<-as.numeric(as.character(convergence_v_time$y_min))
+convergence_v_time$y_max<-as.numeric(as.character(convergence_v_time$y_max))
+convergence_v_time$p_val_int<-as.numeric(as.character(convergence_v_time$p_val_int))
+convergence_v_time$p_val_slope<-as.numeric(as.character(convergence_v_time$p_val_slope))
+
+convergence_v_time$signif<-NA
+convergence_v_time$signif[which(convergence_v_time$p_val_slope <0.05)] <- "significant"
+convergence_v_time$signif[which(convergence_v_time$p_val_slope>0.05 & convergence_v_time$p_val_slope<0.1)] <- "marginal"
+convergence_v_time$signif[which(convergence_v_time$p_val_slope>0.1)] <- "nonsignificant"
+
+convergence_v_time$linetype<-NA
+convergence_v_time$linetype[which(convergence_v_time$p_val_slope<0.05)] <- 1
+convergence_v_time$linetype[which(convergence_v_time$p_val_slope>0.05 & convergence_v_time$p_val_slope<0.1)] <- 2
+convergence_v_time$linetype[which(convergence_v_time$p_val_slope>0.1)] <- 3
+convergence_v_time$linetype<-as.numeric(convergence_v_time$linetype)
+
+convergence_v_time$int_signif<-NA
+convergence_v_time$int_signif[which(convergence_v_time$p_val_int<0.05)] <- "significant"
+convergence_v_time$int_signif[which(convergence_v_time$p_val_int>0.05 & convergence_v_time$p_val_int<0.1)] <- "marginal"
+convergence_v_time$int_signif[which(convergence_v_time$p_val_int>0.1)] <- "nonsignificant"
+
+convergence_v_time$signif <- ordered(convergence_v_time$signif, levels = c("significant", "marginal", "nonsignificant"))
+convergence_v_time$int_signif <- ordered(convergence_v_time$int_signif, levels = c("significant", "marginal", "nonsignificant"))
+unique(convergence_v_time$trait)
+convergence_v_time_og<-convergence_v_time
+convergence_v_time<-convergence_v_time_og
+
+convergence_v_time$trait<-multigsub(convergence_v_time$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                         "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                    replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                    "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  )
+)
+convergence_v_time
+#
+
+divergence_v_time<-as.data.frame(divergence_v_time)
+colnames(divergence_v_time)<-gsub(x = colnames(divergence_v_time),pattern = "_origin",replacement = "")
+rownames(divergence_v_time)<-1:nrow(divergence_v_time)
+divergence_v_time$slope<-as.numeric(as.character(divergence_v_time$slope))
+divergence_v_time$intercept<-as.numeric(as.character(divergence_v_time$intercept))
+divergence_v_time$y_min<-as.numeric(as.character(divergence_v_time$y_min))
+divergence_v_time$y_max<-as.numeric(as.character(divergence_v_time$y_max))
+divergence_v_time$p_val_int<-as.numeric(as.character(divergence_v_time$p_val_int))
+divergence_v_time$p_val_slope<-as.numeric(as.character(divergence_v_time$p_val_slope))
+
+divergence_v_time$signif<-NA
+divergence_v_time$signif[which(divergence_v_time$p_val_slope <0.05)] <- "significant"
+divergence_v_time$signif[which(divergence_v_time$p_val_slope>0.05 & divergence_v_time$p_val_slope  <0.1)] <- "marginal"
+divergence_v_time$signif[which(divergence_v_time$p_val_slope>0.1)] <- "nonsignificant"
+
+divergence_v_time$linetype<-NA
+divergence_v_time$linetype[which(divergence_v_time$p_val_slope<0.05)] <- 1
+divergence_v_time$linetype[which(divergence_v_time$p_val_slope>0.05 & divergence_v_time$p_val_slope<0.1)] <- 2
+divergence_v_time$linetype[which(divergence_v_time$p_val_slope>0.1)] <- 3
+divergence_v_time$linetype<-as.numeric(divergence_v_time$linetype)
+
+divergence_v_time$int_signif<-NA
+divergence_v_time$int_signif[which(divergence_v_time$p_val_int<0.05)] <- "significant"
+divergence_v_time$int_signif[which(divergence_v_time$p_val_int>0.05 & divergence_v_time$p_val_int<0.1)] <- "marginal"
+divergence_v_time$int_signif[which(divergence_v_time$p_val_int>0.1)] <- "nonsignificant"
+
+divergence_v_time$signif <- ordered(divergence_v_time$signif, levels = c("significant", "marginal", "nonsignificant"))
+divergence_v_time$int_signif <- ordered(divergence_v_time$int_signif, levels = c("significant", "marginal", "nonsignificant"))
+unique(divergence_v_time$trait)
+divergence_v_time_og<-divergence_v_time
+divergence_v_time<-divergence_v_time_og
+
+divergence_v_time$trait<-multigsub(divergence_v_time$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                       "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                   replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                   "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  )
+)
+divergence_v_time
 
 
 
 
 #######################################
+
+#Multi-panel effect size plots
+
+# make for treatment 3 and 4
+
+#We can drop leaf mass and perhaps N and P (just looking at N:P and we can put the N and P plots in the sup doc?)
+
+# each figure (one per treatment) has 10 panels
+#each panel shows the lm (or lowess) fits of effect size v time.
+# solid lines = significant (p < 0.05), dashed lines = marginal (0.05<0.10), dotted lines = non-significant trend (p > 0.10)
+
+library(ggplot2)
+library(gridExtra)
+library(ggpubr)
+
+treatment3estd<-convergence_v_time[which(convergence_v_time$treatment==3),]
+treatment3estd<-treatment3estd[which(!treatment3estd$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+treatment4estd<-convergence_v_time[which(convergence_v_time$treatment==4),]
+treatment4estd<-treatment4estd[which(!treatment4estd$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+treatment3estd$signif<-factor(treatment3estd$signif)
+t3d<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
+  geom_abline(data = treatment3estd,mapping=aes(slope = treatment3estd$slope,intercept = treatment3estd$intercept,linetype=signif,color=int_signif),show.legend = F)+
+  ylim(c(-1.5,2) )+
+  xlim(c(0,4))+facet_wrap(~treatment3estd$trait,nrow = 2,ncol = 5)+ggtitle("+ 5.5 degrees C")+ylab("Effect size (vs. destination)")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+t3d
+
+
+t4d<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
+  geom_abline(data = treatment4estd,mapping=aes(slope = treatment4estd$slope,intercept = treatment4estd$intercept,linetype=signif,color=int_signif),show.legend = F)+
+  ylim(c(-1.5,2) )+
+  xlim(c(0,4))+facet_wrap(~treatment4estd$trait,nrow = 2,ncol = 5)+ggtitle("- 5.5 degrees C")+ylab("Effect size (vs. destination)")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+t4d
+
+
+t3d_v_t4d_effect_over_time<-grid.arrange(t3d,t4d,ncol=1)
+plot(t3d_v_t4d_effect_over_time)
+
+ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_v_t4d_convergence_over_time.pdf")
+ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_v_t4d_convergence_over_time.jpg")
+
+treatmentotcestd<-convergence_v_time[which(convergence_v_time$treatment=="OTC"),]
+treatmentotcestd<-treatmentotcestd[which(!treatmentotcestd$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+
+treatmentotcestd$signif<-factor(treatmentotcestd$signif)
+totcd<-ggplot()+geom_hline(yintercept = rep(0,40))+ 
+  geom_abline(data = treatmentotcestd,mapping=aes(slope = slope,intercept = intercept,linetype=signif,color=int_signif),show.legend = F)+
+  ylim(c(-1.5,2) )+
+  xlim(c(0,4))+facet_wrap(~treatmentotcestd$trait,nrow = 2,ncol = 5)+ggtitle("Open-top chamber")+ylab("Effect size (vs. destination)")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+totcd
+ggsave(plot = totcd, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Desktop/totcd_convergence_over_time.jpg")
+
+t3d_v_t4d__totcd_convergence_over_time<-grid.arrange(totcd,t3d,t4d,ncol=1)
+ggsave(plot = t3d_v_t4d__totcd_convergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_t4d_totcd_convergence_over_time.jpg")
+
+
+
+#diverge (vs origin)
+
+
+treatment3esto<-divergence_v_time[which(divergence_v_time$treatment==3),]
+treatment3esto<-treatment3esto[which(!treatment3esto$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+treatment4esto<-divergence_v_time[which(divergence_v_time$treatment==4),]
+treatment4esto<-treatment4esto[which(!treatment4esto$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+treatment3esto$signif<-factor(treatment3esto$signif)
+t3o<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
+  geom_abline(data = treatment3esto,mapping=aes(slope = treatment3esto$slope,intercept = treatment3esto$intercept,linetype=signif,color=int_signif),show.legend = F)+
+  ylim(c(-1.5,2) )+
+  xlim(c(0,4))+facet_wrap(~treatment3esto$trait,nrow = 2,ncol = 5)+ggtitle("+ 5.5 degrees C")+ylab("Effect size (vs. origin)")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+t3o
+
+
+t4o<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
+  geom_abline(data = treatment4esto,mapping=aes(slope = treatment4esto$slope,intercept = treatment4esto$intercept,linetype=signif,color=int_signif),show.legend = F)+
+  ylim(c(-1.5,2) )+
+  xlim(c(0,4))+facet_wrap(~treatment4esto$trait,nrow = 2,ncol = 5)+ggtitle("- 5.5 degrees C")+ylab("Effect size (vs. origin)")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+t4o
+
+
+t3o_v_t4o_effect_over_time<-grid.arrange(t3o,t4o,ncol=1)
+plot(t3o_v_t4o_effect_over_time)
+
+ggsave(plot = t3o_v_t4o_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3o_v_t4o_divergence_over_time.pdf")
+ggsave(plot = t3o_v_t4o_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3o_v_t4o_divergence_over_time.jpg")
+
+treatmentotcesto<-divergence_v_time[which(divergence_v_time$treatment=="OTC"),]
+treatmentotcesto<-treatmentotcesto[which(!treatmentotcesto$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+treatmentotcesto$signif<-factor(treatmentotcesto$signif)
+totco<-ggplot()+geom_hline(yintercept = rep(0,40))+ 
+  geom_abline(data = treatmentotcesto,mapping=aes(slope = slope,intercept = intercept,linetype=signif,color=int_signif),show.legend = F)+
+  ylim(c(-1.5,2) )+
+  xlim(c(0,4))+facet_wrap(~treatmentotcesto$trait,nrow = 2,ncol = 5)+ggtitle("Open-top chamber")+ylab("Effect size (vs. origin)")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+totco
+
+ggsave(plot = totco, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Desktop/totco_divergence_over_time.jpg")
+
+t3o_v_t4o__totco_divergence_over_time<-grid.arrange(totco,t3o,t4o,ncol=1)
+ggsave(plot = t3o_v_t4o__totco_divergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/t3o_t4o_totco_divergence_over_time.jpg")
+
+
+#combined
+
+diverge_vs_converge<-ggarrange(t4o,t4d,t3o,t3d,totcorigin, ncol=2, nrow=3, common.legend = TRUE, legend="right")
+
+ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/diverge_vs_converge.jpg")
+
+
+
+
+
+####test code below
+##########################################################################################
+##########################################################################################
+
+# (I) we will need a table summarizing the statistics for the new panel plots
+#ii) add legend
+# ii.b)  add pvals, r2s for significant lines
+#iii) a cool figure showing some examples of shifts in community trait distributions through time 
+      #and perhaps showing differences in trait distributions across the 4 sites? 
+#iV) for traits along the gradient multi-panel plot showing control CWM vs elevation, w CIs
+
+
+#####################################
 
 #Effect size stuff comparing, OTC vs transplants
 
