@@ -771,30 +771,33 @@ for(i in 1:nrow(tst)){
   summary_lm_origin<-summary(lm_data_origin_i)
   p_val_slope_origin<-summary_lm_origin$coefficients[2,4]
   p_val_int_origin<-summary_lm_origin$coefficients[1,4]
-  
+  r2_origin<-summary_lm_origin$r.squared
+  r2_adj_origin<-summary_lm_origin$adj.r.squared
   
   intercept_destination<-lm_data_destination_i$coefficients[1]
   slope_destination<-lm_data_destination_i$coefficients[2]
   summary_lm_destination<-summary(lm_data_destination_i)
   p_val_slope_destination<-summary_lm_destination$coefficients[2,4]
   p_val_int_destination<-summary_lm_destination$coefficients[1,4]
+  r2_destination<-summary_lm_destination$r.squared
+  r2_adj_destination<-summary_lm_destination$adj.r.squared
   
   
   #summary_lm
   out_i_destination<-cbind(treatment,origin_site,destination_site,trait,slope_destination,intercept_destination,y_min_destination,
-                           y_max_destination,p_val_int_destination,p_val_slope_destination)
+                           y_max_destination,p_val_int_destination,p_val_slope_destination,r2_destination,r2_adj_destination)
   
   convergence_v_time<-rbind(convergence_v_time,out_i_destination)
   
   out_i_origin<-cbind(treatment,origin_site,destination_site,trait,slope_origin,intercept_origin,y_min_origin,
-                      y_max_origin,p_val_int_origin,p_val_slope_origin)
+                      y_max_origin,p_val_int_origin,p_val_slope_origin,r2_origin,r2_adj_origin)
   
   divergence_v_time<-rbind(divergence_v_time,out_i_origin)
   
   rm(out_i_destination,out_i_origin,lm_data_destination_i,lm_data_origin_i,plot_effect_size_destination,plot_effect_size_origin)
   rm(data_origin_i,data_destination_i,summary_lm_destination,summary_lm_origin,p_val_int_destination,p_val_int_origin,p_val_slope_destination,p_val_slope_origin )
   rm(slope_destination,slope_origin,intercept_destination,intercept_origin,y_max_destination,y_max_origin,y_min_destination,y_min_origin)
-  rm(trait,site,treatment,initial_value_destination,initial_value_origin)  
+  rm(trait,site,treatment,initial_value_destination,initial_value_origin,r2_origin,r2_adj_origin,r2_destination,r2_adj_destination )  
 }#end i loop
 
 convergence_v_time<-as.data.frame(convergence_v_time)
@@ -806,6 +809,8 @@ convergence_v_time$y_min<-as.numeric(as.character(convergence_v_time$y_min))
 convergence_v_time$y_max<-as.numeric(as.character(convergence_v_time$y_max))
 convergence_v_time$p_val_int<-as.numeric(as.character(convergence_v_time$p_val_int))
 convergence_v_time$p_val_slope<-as.numeric(as.character(convergence_v_time$p_val_slope))
+convergence_v_time$r2<-as.numeric(as.character(convergence_v_time$r2))
+convergence_v_time$r2_adj<-as.numeric(as.character(convergence_v_time$r2_adj))
 
 convergence_v_time$signif<-NA
 convergence_v_time$signif[which(convergence_v_time$p_val_slope <0.05)] <- "significant"
@@ -846,6 +851,8 @@ divergence_v_time$y_min<-as.numeric(as.character(divergence_v_time$y_min))
 divergence_v_time$y_max<-as.numeric(as.character(divergence_v_time$y_max))
 divergence_v_time$p_val_int<-as.numeric(as.character(divergence_v_time$p_val_int))
 divergence_v_time$p_val_slope<-as.numeric(as.character(divergence_v_time$p_val_slope))
+divergence_v_time$r2<-as.numeric(as.character(divergence_v_time$r2))
+divergence_v_time$r2_adj<-as.numeric(as.character(divergence_v_time$r2_adj))
 
 divergence_v_time$signif<-NA
 divergence_v_time$signif[which(divergence_v_time$p_val_slope <0.05)] <- "significant"
@@ -1009,28 +1016,211 @@ diverge_vs_converge<-ggarrange(t4o,t4d,t3o,t3d,totcorigin, ncol=2, nrow=3, commo
 
 ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/diverge_vs_converge.jpg")
 
-
-
-
-
-####test code below
 ##########################################################################################
 ##########################################################################################
 
 # (I) we will need a table summarizing the statistics for the new panel plots
-#ii) add legend
+
+div_pruned<-divergence_v_time[c( "treatment","origin_site","destination_site","trait","slope","intercept","p_val_int","p_val_slope","r2","r2_adj")]
+con_pruned<-convergence_v_time[c( "treatment","origin_site","destination_site","trait","slope","intercept","p_val_int","p_val_slope","r2","r2_adj")]
+div_pruned$slope<-round(div_pruned$slope,digits = 4)
+con_pruned$slope<-round(con_pruned$slope,digits = 4)
+div_pruned$p_val_slope<-round(div_pruned$p_val_slope,digits = 4)
+con_pruned$p_val_slope<-round(con_pruned$p_val_slope,digits = 4)
+div_pruned$r2<-round(div_pruned$r2,digits = 4)
+con_pruned$r2<-round(con_pruned$r2,digits = 4)
+div_pruned$r2_adj<-round(div_pruned$r2_adj,digits = 4)
+con_pruned$r2_adj<-round(con_pruned$r2_adj,digits = 4)
+
+merged_div_con<-merge(x = div_pruned,y = con_pruned,by=c("treatment","origin_site","destination_site","trait","slope","p_val_slope","r2","r2_adj"))
+
+colnames(merged_div_con) <- multigsub(pattern = c("intercept.x","p_val_int.x","intercept.y","p_val_int.y"),
+          replacement = c("intercept(origin)","p_val_int(origin)","intercept(destination)","p_val_int(destination)"),
+          colnames(merged_div_con)
+            )
+
+write.csv(x = merged_div_con,file = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/stats/effect_size_over_time.csv",row.names = F)
+rm(div_pruned,con_pruned)
+
+merged_div_con_pruned<-merged_div_con[which(merged_div_con$treatment%in%c(3,4,"OTC")),]
+merged_div_con_pruned<-merged_div_con_pruned[which(!merged_div_con_pruned$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+write.csv(x = merged_div_con_pruned,file = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/stats/effect_size_over_time_pruned.csv",row.names = F)
+##########################################################################################
+#iV) for traits along the gradient multi-panel plot showing control CWM vs elevation, w CIs
+
+#so just a plot of cwm vs elevation at time =2016 (=4) ?
+
+mean_v_elevation<-NULL
+tty<-unique(moments_fixed[c("trait","treatment","year")])
+
+for(i in 1:nrow(tty)){
+  
+trait<-as.character(tty$trait[i])
+treatment<-as.character(tty$treatment[i])  
+year<-as.numeric(as.character(tty$year[i]))
+
+data_i<-moments_fixed[which(moments_fixed$trait==trait & moments_fixed$treatment== treatment & moments_fixed$year==year ),]
+data_i$elevation<-NA 
+data_i$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),data_i$site))
+data_i$elevation<-(data_i$elevation-3000)/1130
+
+
+
+lm_i<-lm(formula = data_i$mean~data_i$elevation)
+summary_lm_i<-summary(lm_i)
+
+slope<-lm_i$coefficients[2]
+intercept<-lm_i$coefficients[1]
+y_min<-min(data_i$mean)
+y_max<-max(data_i$mean)
+p_val_int<-summary_lm_i$coefficients[7]
+p_val_slope<-summary_lm_i$coefficients[8]
+r2<-summary_lm_i$r.squared
+r2_adj<-summary_lm_i$adj.r.squared
+
+out_i<-cbind(treatment,trait,year,slope,intercept,y_min,
+                    y_max,p_val_int,p_val_slope,r2,r2_adj)
+
+
+mean_v_elevation<-rbind(mean_v_elevation,out_i)
+rm(out_i,slope,intercept,y_min,y_max,p_val_int,p_val_slope,r2,r2_adj,lm_i,summary_lm_i,trait,treatment,year,data_i)
+}
+
+
+mean_v_elevation<-as.data.frame(mean_v_elevation)
+rownames(mean_v_elevation)<-1:nrow(mean_v_elevation)
+mean_v_elevation$slope<-as.numeric(as.character(mean_v_elevation$slope))
+mean_v_elevation$intercept<-as.numeric(as.character(mean_v_elevation$intercept))
+mean_v_elevation$y_min<-as.numeric(as.character(mean_v_elevation$y_min))
+mean_v_elevation$y_max<-as.numeric(as.character(mean_v_elevation$y_max))
+mean_v_elevation$p_val_int<-as.numeric(as.character(mean_v_elevation$p_val_int))
+mean_v_elevation$p_val_slope<-as.numeric(as.character(mean_v_elevation$p_val_slope))
+mean_v_elevation$r2<-as.numeric(as.character(mean_v_elevation$r2))
+mean_v_elevation$r2_adj<-as.numeric(as.character(mean_v_elevation$r2_adj))
+mean_v_elevation$trait<-multigsub(mean_v_elevation$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                         "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                    replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                    "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  ))
+
+mean_v_elevation$int_signif<-NA
+mean_v_elevation$int_signif[which(mean_v_elevation$p_val_int<0.05)] <- "significant"
+mean_v_elevation$int_signif[which(mean_v_elevation$p_val_int>0.05 & mean_v_elevation$p_val_int<0.1)] <- "marginal"
+mean_v_elevation$int_signif[which(mean_v_elevation$p_val_int>0.1)] <- "nonsignificant"
+
+mean_v_elevation$slope_signif<-NA
+mean_v_elevation$slope_signif[which(mean_v_elevation$p_val_slope<0.05)] <- "significant"
+mean_v_elevation$slope_signif[which(mean_v_elevation$p_val_slope>0.05 & mean_v_elevation$p_val_slope<0.1)] <- "marginal"
+mean_v_elevation$slope_signif[which(mean_v_elevation$p_val_slope>0.1)] <- "nonsignificant"
+mean_v_elevation$int_signif <- ordered(mean_v_elevation$int_signif, levels = c("significant", "marginal", "nonsignificant"))
+mean_v_elevation$slope_signif <- ordered(mean_v_elevation$slope_signif, levels = c("significant", "marginal", "nonsignificant"))
+
+##so just a plot of cwm vs elevation at time =2016 (=4) ?
+mean_v_elevation_2016_co<-mean_v_elevation[which(mean_v_elevation$treatment%in%c("C","O") & mean_v_elevation$year==2016),]
+mean_v_elevation_2016_co<-mean_v_elevation_2016_co[which(!mean_v_elevation_2016_co$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+
+
+mve_2016<-ggplot()+geom_hline(yintercept = rep(0,20))+
+  geom_abline(data = mean_v_elevation_2016_co,mapping=aes(slope = mean_v_elevation_2016_co$slope,
+                                                          intercept = mean_v_elevation_2016_co$intercept,
+                                                          linetype=slope_signif,color=int_signif),show.legend = T)+
+  #xlim(c(0,1) )+
+  scale_x_continuous(breaks = c(0,1),limits = c(0,1),minor_breaks = c(0.5))+
+  ylim(c(-2,2))+facet_wrap(~mean_v_elevation_2016_co$trait,nrow = 2,ncol = 5)+ggtitle("2016 Control Plots")+ylab("Trait Mean")+xlab("Relative elevation")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+mve_2016
+ggsave(plot = mve_2016, width = 7, height = 3, dpi = 300, filename = "C:/Users/Brian/Desktop/mean_v_elevation_2016.jpg")
+##########################################################################################
+#iV) for traits along the gradient multi-panel plot showing control CWM vs elevation, w CIs
+
+
+source("trait_distributions/r_scripts/extract_moments_site.R")
+native_site_moments<-extract_moments_site(file_directory = file_directory_native)
+recipient_site_moments<-extract_moments_site(file_directory = file_directory_recipient)
+
+native_site_moments_2016_c<-native_site_moments[which(native_site_moments$year==2016 & native_site_moments$treatment=="C"),]
+native_site_moments_2016_c<-native_site_moments_2016_c[which(!native_site_moments_2016_c$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+native_site_moments_2016_c$trait<-multigsub(native_site_moments_2016_c$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                     "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                  replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                  "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  ))
+native_site_moments_2016_c$elevation<-NA 
+native_site_moments_2016_c$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),native_site_moments_2016_c$site))
+#native_site_moments_2016_c$elevation<-(native_site_moments_2016_c$elevation-3000)/1130
+
+recipient_site_moments_2016_c<-recipient_site_moments[which(recipient_site_moments$year==2016 & recipient_site_moments$treatment=="C"),]
+recipient_site_moments_2016_c<-recipient_site_moments_2016_c[which(!recipient_site_moments_2016_c$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+recipient_site_moments_2016_c$trait<-multigsub(recipient_site_moments_2016_c$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                                         "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                            replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                            "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  ))
+recipient_site_moments_2016_c$elevation<-NA 
+recipient_site_moments_2016_c$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),recipient_site_moments_2016_c$site))
+
+
+
+
+ggplot()+geom_hline(yintercept = rep(0,20))+
+  geom_abline(data = mean_v_elevation_2016_co,mapping=aes(slope = mean_v_elevation_2016_co$slope,
+                                                          intercept = mean_v_elevation_2016_co$intercept,
+                                                          linetype=slope_signif,color=int_signif),show.legend = T)+
+  #xlim(c(0,1) )+
+  scale_x_continuous(breaks = c(0,1),limits = c(0,1),minor_breaks = c(0.5))+
+  ylim(c(-2,2))+
+  facet_wrap(~mean_v_elevation_2016_co$trait,nrow = 2,ncol = 5)+
+  ggtitle("2016 Control Plots")+ylab("Trait Mean")+xlab("Relative elevation")+
+  scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+
+
+ggplot(data = native_site_moments_2016_c , aes(x = elevation,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  geom_errorbar(aes(ymin=ci_min, ymax=ci_max))+
+  theme(axis.text.x = element_text(angle = -90, hjust = 0,vjust=.5))+
+  scale_x_continuous(breaks = c(3000,3500,3850,4130),name = "Elevation (m)")+
+  facet_wrap( ~ trait,nrow = 2,ncol=5)
+
+
+
+
+ggplot(data = recipient_site_moments_2016_c , aes(x = elevation,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  geom_errorbar(aes(ymin=ci_min, ymax=ci_max))+
+  theme(axis.text.x = element_text(angle = -90, hjust = 0,vjust=.5))+
+  scale_x_continuous(breaks = c(3000,3500,3850,4130),name = "Elevation (m)")+
+  facet_wrap( ~ trait,nrow = 2,ncol=5)
+
+  
+##########################################################################################
+#iii) a cool figure showing some examples of shifts in community trait distributions through time 
+    #and perhaps showing differences in trait distributions across the 4 sites? 
+
+
+
+
+##########################################################################################
+
 # ii.b)  add pvals, r2s for significant lines
 #iii) a cool figure showing some examples of shifts in community trait distributions through time 
       #and perhaps showing differences in trait distributions across the 4 sites? 
 #iV) for traits along the gradient multi-panel plot showing control CWM vs elevation, w CIs
 
 
+
+
+
+
 #####################################
+#Histogram along gradient
+  #in hist csvs, rows=replicates, columns=pct cover
 
-#Effect size stuff comparing, OTC vs transplants
+#file_directory_native
+source("trait_distributions/r_scripts/plot_histograms_treat_trait_year.R")
 
-
-#Effect size =  (mean of treatment year i  - mean treatment year at start of experiment) - (mean control Year i - mean control at start of experiment).   
-#This should give a nice standardized measure and it is an effect size.
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "SLA_cm2_g",treatment = "OTC",year = 2016,bw = 0.05)
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "SLA_cm2_g",treatment = "O",year = 2016,bw = 0.05)
 
 ######################################
