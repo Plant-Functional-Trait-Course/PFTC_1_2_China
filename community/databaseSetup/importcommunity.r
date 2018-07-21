@@ -73,6 +73,9 @@ import.data<-function(dat, mergedictionary, flags){#dat is data.frame from the c
            cover = gsub("cf", "", cover, ignore.case = TRUE) #move any CF to new column
            ) 
     
+  #oddity search
+  spp %>% filter(is.na(as.numeric(cover)))  %>% count(cover)
+  
   
 mergedictionary  <- spp %>% 
   distinct(species) %>% 
@@ -81,8 +84,7 @@ mergedictionary  <- spp %>%
   mutate(newID = oldID) %>% 
   bind_rows(mergedictionary)
 
-#oddity search
-spp %>% filter(is.na(as.numeric(cover)))  %>% count(cover)
+
 
 #merge synonyms
 spp <- spp %>% 
