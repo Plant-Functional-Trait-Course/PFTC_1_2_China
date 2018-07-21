@@ -15,7 +15,7 @@ noGraminoids <- taxa %>%
 dist_moved <- cover_thin  %>% 
   left_join(noGraminoids) %>%
   group_by(turfID, TTtreat, originSiteID) %>%
-  select(-speciesName) %>%
+  select(-speciesName, -flag) %>%
   do({
     tdata <- spread(., key = species, value = cover, fill = 0) %>%
       arrange(year)
@@ -26,13 +26,21 @@ dist_moved <- cover_thin  %>%
   filter(year > min(year))
 
 
-dist_moved %>% ggplot(aes(x = originSiteID, y = d, fill = as.factor(year))) +
+dist_moved %>% 
+  filter(!TTtreat %in% c("cool1", "cool3", "warm3")) %>% 
+  ggplot(aes(x = originSiteID, y = d, fill = as.factor(year))) +
   geom_boxplot() +
-  facet_wrap(~TTtreat)
+  facet_wrap(~TTtreat) +
+  labs(fill = "Year", y = "Bray-Curtis distance moved", x = "Original site")
+  
 
-dist_moved %>% ggplot(aes(x = year, y = d, colour = originSiteID, group = turfID)) +
+dist_moved %>% 
+  filter(!TTtreat %in% c("cool1", "cool3", "warm3")) %>% 
+  ggplot(aes(x = year, y = d, colour = originSiteID, group = turfID)) +
   geom_line() +
-  facet_wrap( ~ TTtreat)
+  facet_wrap( ~ TTtreat) +
+  labs(x = "Year", y = "Bray-Curtis distance moved", colour = "Original site")
+
 
 ## find directional distance moved towards target
 
