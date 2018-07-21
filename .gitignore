@@ -28,8 +28,10 @@ vignettes/*.pdf
 *.Rdata
 *.odb
 *.zip
+*.jpg
 *.sql
 *.xlsx
+*.docx
 !globalCorrections.csv
 !localDatacorrections_plots_China.csv
 !cover_correction.csv
