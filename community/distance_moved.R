@@ -1,4 +1,4 @@
-#load libraries
+#load packages
 library("vegan")
 library("tidyverse")
 
@@ -33,6 +33,12 @@ dist_moved %>%
   facet_wrap(~TTtreat) +
   labs(fill = "Year", y = "Bray-Curtis distance moved", x = "Original site")
   
+dist_moved %>% 
+  filter(!TTtreat %in% c("cool1", "cool3", "warm3"), year == 2016) %>% 
+  ggplot(aes(x = originSiteID, fill = TTtreat, y = d)) +
+  geom_boxplot() +
+  labs(fill = "Year", y = "Bray-Curtis distance moved", x = "Original site")
+
 
 dist_moved %>% 
   filter(!TTtreat %in% c("cool1", "cool3", "warm3")) %>% 
@@ -52,7 +58,7 @@ dist_moved %>%
 dist_to_control <- cover_thin %>%
   left_join(noGraminoids) %>%
   group_by(turfID, destBlockID, destSiteID, year, TTtreat) %>%
-  select(-speciesName) %>%
+  select(-speciesName, -flag) %>%
   spread(key = species, value = cover, fill = 0) %>%
   group_by(destBlockID, destSiteID, year) %>%
   arrange(TTtreat) %>%
@@ -74,31 +80,42 @@ dist_to_control <- cover_thin %>%
     }
     d
   }) %>%
-  group_by(destBlockID, destSiteID, TTtreat)
+  ungroup()
 
 dist_to_control2 <- left_join(
   dist_to_control %>% filter(year != min(year)), 
-  dist_to_control %>% filter(year == min(year)), 
+  dist_to_control %>% filter(year == min(year)) %>% select(-year), 
   by = c("destBlockID" = "destBlockID", "destSiteID" = "destSiteID", "TTtreat" = "TTtreat"), 
-  suffix = c("_", "_original")
+  suffix = c("", "_original")
 ) %>% 
-  select(-year_original) %>%
-  rename(year = year_, dist_to_control = dist_to_control_) %>%
   mutate(delta_dist = dist_to_control_original - dist_to_control, 
          relative_dist = delta_dist / dist_to_control_original) %>%
-  ungroup() %>%
-  mutate(TTtreat = factor(TTtreat, levels = levels(cover_thin$TTtreat)))
+  mutate(TTtreat = factor(TTtreat, levels = levels(cover_thin$TTtreat))) #%>% 
+#  left_join(cover_meta %>% select(-year) %>% distinct())
   
 
+
 ## plot
-ggplot(dist_to_control2, aes(x = as.factor(year), y = relative_dist)) + 
+dist_to_control2 %>% 
+  filter(!TTtreat %in% c("cool1", "cool3", "warm3")) %>% 
+  ggplot(aes(x = as.factor(year), y = relative_dist, fill = destSiteID)) + 
   geom_boxplot() + 
-  facet_wrap(~TTtreat)
+  facet_wrap(~TTtreat) +
+  labs(x = "Year", y  = "Relative Bray-Curtis distance")
 
-ggplot(dist_to_control2, aes(x = as.factor(year), y = delta_dist, fill = destSiteID)) + 
+dist_to_control2 %>% 
+  filter(!TTtreat %in% c("cool1", "cool3", "warm3"), 
+        year == 2016) %>% 
+  ggplot(aes(x = as.factor(year), y = delta_dist, fill = destSiteID)) + 
   geom_boxplot() + 
-  facet_wrap(~TTtreat)
+  facet_wrap(~TTtreat) +
+  labs(x = "Year", y = expression(Delta~distance), fill = "Destination Site")
 
-ggplot(filter(dist_to_control2, year == 2013), aes(x = TTtreat, y = dist_to_control_original, fill = destSiteID)) + 
+
+dist_to_control2 %>% 
+  filter(
+    year == 2013, 
+    !TTtreat %in% c("cool1", "cool3", "warm3")) %>% 
+ggplot(aes(x = TTtreat, y = dist_to_control_original, fill = destSiteID)) + 
   geom_boxplot() +
   labs(x = "Treatment", ylab = "Original distance to destination control")
