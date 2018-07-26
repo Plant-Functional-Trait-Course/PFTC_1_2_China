@@ -4,6 +4,7 @@ library("ggthemes")
 library('osmar')
 library("grid")
 library("ggsn")
+library("directlabels")
 
 ### COORDINATES FIELD SITES
 coords <- data.frame(site = c("L", "M", "A", "H"),
@@ -96,14 +97,19 @@ load(file = "gongga.RData")
 
 # scalebar
 bb2 <- data.frame(long = c(102, 102.05), lat = c(29.825, 29.92))
+# contour lines
+brk = c(2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4800)
+brk.label = c(3000, 4000)
 
-GonggaMap <- fortify(hw_lines) %>%
-  ggplot() +
-  geom_raster(data = gongga, aes(x=x, y=y, fill = elev)) +
-  geom_path(aes(x = long, y = lat, group = id), color = "white") +
+GonggaMap <- ggplot(data = gongga, aes(x=x, y=y, z = elev)) +
+  geom_contour(color = "grey50", breaks = brk) +
+  geom_contour(color = "grey30", breaks = brk.label) +
+  annotate(geom = "text", x = 102.022, y = 29.898, label = "4000", cex = 3, color = "grey30") +
+  annotate(geom = "text", x = 102.043, y = 29.84, label = "3000", cex = 3, color = "grey30") +
+  #geom_path(aes(x = long, y = lat, group = id), color = "white") +
   coord_equal() +
-  scale_fill_gradient(name = "Elevation", low = "grey0", high = "grey100") + 
-  geom_point(aes(x=long, y=lat), colour  = "red", shape = 17, data = coords, size=3) +
+  #scale_fill_gradient(name = "Elevation", low = "grey0", high = "grey100") + 
+  geom_point(aes(x=long, y=lat), colour  = "red", shape = 17, data = coords, size=3, inherit.aes = FALSE) +
   scale_x_continuous(expand = c(0,0), limits = c(102, 102.05), breaks = scales::pretty_breaks(n = 2)) +
   scale_y_continuous(expand = c(0,0), limits = c(29.825, 29.92), breaks = scales::pretty_breaks(n = 2)) +
   #annotate("text", x = 102.002, y = 29.945, label = "A)", size= 5, color = "white") +
