@@ -85,4 +85,11 @@ dailyiButton %>%
   theme_minimal()
   
   
+monthlyiButton %>% 
+  filter(depth == "air") %>%
+  group_by(depth, site, treatment) %>% 
+  summarise(mean = mean(Tmean)) %>% 
+  spread(key = treatment, value = mean) %>% 
+  mutate(diff = OTC - C)
+  
   
