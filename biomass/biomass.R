@@ -117,12 +117,27 @@ setdiff(biomass$speciesName, taxa$speciesName)
 # 61 out of 123 species not in common with community data
 
 
+
+biomass %>% 
+  summarise(MeanHeight = mean(height, na.rm = TRUE)) %>%
+  ggplot(aes(x = site, y = MeanHeight)) + 
+  geom_boxplot()
+
 ## biomass by site
 biomass %>% 
   summarise(totalBiomass = sum(biomass, na.rm = TRUE)) %>%
   ggplot(aes(x = site, y = totalBiomass)) + 
   geom_boxplot()
 
+biomass %>% 
+  group_by(site, plot) %>% 
+  summarise(sum = sum(biomass)) %>% 
+  filter(!is.na(sum)) %>% 
+  ungroup() %>% 
+  group_by(site) %>% 
+  summarise(mean = mean(sum), n = n(), se = sd(sum)/sqrt(n)) %>% 
+  select(-n)
+                                         
 biomass %>% 
   group_by(site, genus) %>% 
   summarise(sppSum = sum(biomass, na.rm = TRUE)) %>% 
