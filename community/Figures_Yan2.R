@@ -223,7 +223,7 @@ augmented_reg <-
   filter(aic == min(aic)) %>% 
   ungroup() %>% 
   rename(response = "variable") %>% 
-  filter(response %in% c("richness", "evenness", "sumCover", "propGraminoid")) %>% 
+  filter(response %in% c("richness", "evenness", "propGraminoid")) %>% 
   mutate(
     originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland")),
     response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid")),
@@ -240,7 +240,7 @@ dd <- Transplant %>%
   select(-diversity, -N1, -total_vascular) %>% 
   mutate(xvalue = ifelse(experiment == "Gradient", mean, contrast)) %>% 
   gather(key = response, value = value, richness, evenness, sumCover, propGraminoid) %>% 
-  mutate(response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
+  mutate(response = plyr::mapvalues(response, c("richness", "evenness", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(response = factor(response, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(dummycolor = ifelse(experiment == "Gradient", "Gradient", as.character(originSiteID))) %>% 
   mutate(originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
