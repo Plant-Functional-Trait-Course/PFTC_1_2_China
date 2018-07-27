@@ -81,7 +81,7 @@ fNMDS <- fortify(NMDS) %>%
 
 treat_colours <- c("grey", "grey40", "orange", "purple")
 
-g <- ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
+g <- ggplot(fNMDS, aes(x = NMDS1, y = NMDS2, shape = originSiteID, colour = TTtreat, group = originPlotID, fill = TTtreat)) +
   geom_point(aes(size = ifelse(year == min(year), "First", "Other"))) +
   geom_path() + 
   coord_equal() +
@@ -90,7 +90,7 @@ g <- ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = originSiteID, colour = TTtrea
   scale_fill_manual(values = treat_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Transplant", "OTC")) +
   scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Low")) +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
-  labs(x = " ", y = " ", colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") 
+  labs(colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") 
 
 set.seed(32)
 HA <- two_sites_nmds("H", "A")
@@ -98,26 +98,22 @@ AM <- two_sites_nmds("A", "M")
 ML <- two_sites_nmds("M", "L")
 LM <- two_sites_nmds("L", "M") 
 
-HA <- HA %>% mutate(Dim1 = Dim1 * -1)
-ML <- ML %>% mutate(Dim1 = Dim1 * -1)
-LM <- LM %>% mutate(Dim1 = Dim1 * -1)
+HA <- HA %>% mutate(NMDS1 = -NMDS1)
+ML <- ML %>% mutate(NMDS1 = -NMDS1)
+LM <- LM %>% mutate(NMDS1 = -NMDS1)
 
-gg <- ggplotGrob(g)$grobs
-legend <- gg[[which(sapply(gg, function(x) x$name) == "guide-box")]]
 
-HA2 <- g %+% HA + ggtitle("H - A") + theme(legend.position="none")
-AM2 <- g %+% AM + ggtitle("A - M") + theme(legend.position="none")
-ML2 <- g %+% ML + ggtitle("M - L") + theme(legend.position="none")
-LM2 <- g %+% LM + ggtitle(" - L") + theme(legend.position="none")
-pp <- plot_grid(HA2, AM2, ML2, LM2, nrow = 2, align = "hv")
-ppp <- plot_grid(pp, legend, rel_widths = c(1, .27))
+all_ord <- bind_rows(
+  `H - A` = HA, 
+  `A - M` = AM, 
+  `M - L` = ML, 
+  `L - ` = LM, .id = "which") %>% 
+  mutate(which = factor(which, levels = c("H - A", "A - M", "M - L", "L - ")))
 
-OrdinationPlot <- ggdraw(ppp) + 
-  draw_label("NMDS2", x = 0.02, y = 0.55, angle = 90, vjust = 1, hjust = 1, size = 14) +
-  draw_label("NMDS1", x = 0.45, y = 0.03, vjust = 1, hjust = 1, size = 14)
+OrdinationPlot <- g %+% all_ord +
+  facet_wrap(~ which)
+
 ggsave(OrdinationPlot, filename = "community/FinalFigures/OrdinationPlot.jpg", height = 7, width = 8, dpi = 300)
-
-
 
 
 ## responses
@@ -143,11 +139,59 @@ responses <- cover_thin %>%
 
 
 Gradient <- responses %>% 
-  filter(year == 2016, TTtreat %in% c("local", "control")) %>% 
-  mutate(experiment = "Gradient")
+  filter(year == 2016, TTtreat %in% c("local", "control")) 
 OTC <- responses %>% 
+  filter(year == 2016, TTtreat %in% c("local", "OTC")) 
+Transplant <- responses %>% 
+  filter(year == 2016, TTtreat %in% c("local", "warm1")) 
+
+Transplant <- bind_rows(Transplant = Transplant, Gradient = Gradient, OTC = OTC, .id = "experiment")
+
+## ---- regressions_lines
+augment_aic <- function(x){
+  augment(x) %>% 
+    mutate(aic = AIC(x))
+}
+
+gradient <- responses %>% 
+  filter(year == 2016, TTtreat %in% c("local", "control")) %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value)) %>% 
+  group_by(variable) %>% 
+  # mutate(value = scale(value)) %>% 
+  do(
+    mod0 = lm(value ~ originSiteID + mean - mean, data = .),
+    mod1 = lm(value ~ mean + originSiteID, data = .),
+    mod2 = lm(value ~ mean, data = .)
+  )
+
+gradient %>% 
+  ungroup() %>% 
+  group_by(variable) %>%
+  do(AIC(.$mod0[[1]], .$mod1[[1]], .$mod2[[1]]))
+
+
+
+transplant <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "warm1"), originSiteID != "L") %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value)) %>% 
+  group_by(variable) %>% 
+  #  mutate(value = scale(value)) %>% 
+  do(mod0 = lm(value ~ originSiteID + contrast - contrast, data = .),
+     mod1 = lm(value ~ contrast + originSiteID, data = .),
+     mod2 = lm(value ~ contrast * originSiteID, data = .)
+  )
+
+transplant %>% 
+  ungroup() %>% 
+  group_by(variable) %>%
+  do(AIC(.$mod0[[1]], .$mod1[[1]], .$mod2[[1]])) %>% 
+  spread(key = df, value = AIC)
+
+
+otc <- responses %>%
   filter(year == 2016, TTtreat %in% c("local", "OTC")) %>% 
-<<<<<<< HEAD
   gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
   filter(!is.na(value)) %>% 
   group_by(variable) %>% 
@@ -189,35 +233,33 @@ augmented_reg <-
 
 
 
-=======
-  mutate(experiment = "OTC")
-Transplant <- responses %>% 
-  filter(year == 2016, TTtreat %in% c("local", "warm1")) %>% 
-  mutate(experiment = "Transplant") %>%  
-  rbind(Gradient, OTC)
->>>>>>> 51a1a776ed04066c17f745be8f8a9be7e112894c
 
+#preprocess points for plot
 dd <- Transplant %>% 
   select(-diversity, -N1, -total_vascular) %>% 
   mutate(xvalue = ifelse(experiment == "Gradient", mean, contrast)) %>% 
-  gather(key = response, value = value, richness, evenness, sumCover, propGraminoid) %>% 
-  mutate(response = plyr::mapvalues(response, c("richness", "evenness", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
+  gather(key = response, value = value, richness, evenness, propGraminoid) %>% 
+  mutate(response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(response = factor(response, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
   mutate(dummycolor = ifelse(experiment == "Gradient", "Gradient", as.character(originSiteID))) %>% 
   mutate(originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   mutate(originSiteID = factor(originSiteID, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   mutate(TTtreat = plyr::mapvalues(TTtreat, c("warm1", "local", "control", "OTC"), c("Transplant", "Local transplant", "Control", "OTC"))) %>% 
-  mutate(TTtreat = factor(TTtreat, levels = c("Control", "Local transplant", "OTC", "Transplant")))
+  mutate(TTtreat = factor(TTtreat, levels = c("Control", "Local transplant", "OTC", "Transplant"))) %>% 
+  filter(!(experiment == "Transplant" & originSiteID == "Lowland"))
 
 p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtreat)) + 
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
-  geom_smooth(data = filter(dd, experiment != "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value, colour = dummycolor), inherit.aes = FALSE, size = 0.6) +
-  geom_smooth(data = filter(dd, experiment == "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value), inherit.aes = FALSE, size = 0.6, colour = "grey40") +
+  geom_line(data = filter(augmented_reg, experiment != "Gradient"), aes(y = .fitted, x = contrast, colour = originSiteID, linetype = model), inherit.aes = FALSE) +
+  geom_line(data = filter(augmented_reg, experiment == "Gradient") , aes(y = .fitted, x = contrast), colour = "grey40", inherit.aes = FALSE) +
+  #geom_smooth(data = filter(dd, experiment != "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value, colour = dummycolor), inherit.aes = FALSE, size = 0.6) +
+#  geom_smooth(data = filter(dd, experiment == "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value), inherit.aes = FALSE, size = 0.6, colour = "grey40") +
   facet_grid(response ~experiment, scales = "free", space = "free_x") +
   scale_x_continuous(breaks = c(0,2,8,10,12)) +
-  scale_color_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "RdBu", direction = -1) +
   scale_shape_manual(values = c(1, 16, 18, 17)) +
-  labs(x = "", y = "", colour = "Site", shape = "Treatment")
+  scale_linetype_manual(values = c("dotted", "dashed", "solid")) + 
+  labs(x = "", y = "", colour = "Site", shape = "Treatment", linetype = "Model")
 p
 
 CommunityPlot <- ggdraw(p) + 
