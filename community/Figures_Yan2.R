@@ -37,7 +37,7 @@ pred_temp <- bind_rows(
     mutate(TTtreat = "local"),#local transplant (== control)
   summer_temp %>% 
     spread(key = logger, value = mean) %>% 
-    mutate(mean = otc - gradient, TTtreat = "OTC") %>% 
+    mutate(mean = otc - gradient, TTtreat = "OTC") %>% #replaced with default later
     select(-gradient, -otc),
   summer_temp %>% 
     filter(logger == "gradient") %>% 
@@ -45,8 +45,8 @@ pred_temp <- bind_rows(
     filter(site != "L")
 )  %>% 
   select(-logger) %>%
-  mutate(mean = if_else(site == "L" & TTtreat == "OTC", 2, mean))
-warning("using estimated OTC effect for site L")
+  mutate(mean = if_else(TTtreat == "OTC", 1.5, mean))
+warning("using estimated OTC effect for all sites")
 
 
 #community
@@ -232,6 +232,66 @@ augmented_reg <-
 
 
 
+# Regression output
+tidy_model <- function(x){
+  tidy(x)
+}
+
+tidy_reg <- 
+  bind_rows(Transplant = transplant, OTC = otc, Gradient = gradient, .id = "experiment") %>% 
+  ungroup() %>% 
+  group_by(variable, experiment) %>%
+  do(
+    bind_rows(
+      null = tidy_model(.$mod0[[1]]), 
+      effect = tidy_model(.$mod1[[1]]), 
+      interaction = tidy_model(.$mod2[[1]]), 
+      .id = "model")
+  ) %>% 
+  filter(!(experiment == "Gradient" & model != "interaction")) %>% 
+  ungroup() %>% 
+  rename(response = "variable") %>% 
+  filter(response %in% c("richness", "evenness", "propGraminoid")) %>% 
+  select(-p.value) %>% 
+  mutate(estimate = round(estimate, 2), std.error = round(std.error, 2), statistic = round(statistic, 2)) %>% 
+  mutate(
+    term = plyr::mapvalues(term, c("(Intercept)", "mean", "originSiteIDA", "originSiteIDM", "originSiteIDL", "contrast", "contrast:originSiteIDA", "contrast:originSiteIDM", "contrast:originSiteIDL"), c("Intercept", "Mean", "Alpine", "Middle", "Lowland", "Contrast", "Contrast:Alpine", "Contrast:Middle", "Contrast:Lowland")),
+    response = plyr::mapvalues(response, c("richness", "evenness", "propGraminoid"), c("Richness", "Evenness", "Proportion Graminoid")),
+    response = factor(response, levels = c("Richness", "Evenness", "Proportion Graminoid")),
+    #contrast = if_else(experiment == "Gradient", mean, contrast),
+    model = factor(model, levels = c("null", "effect", "interaction"), labels = c("No effect", "Effect", "Interaction"))) 
+  #mutate(model = ifelse(experiment == "Gradient", "Effect only", model))
+#write_csv(tidy_reg, path = "community/FinalFigures/RegressionOutput.csv", col_names = TRUE)
+
+
+# AIC output
+aic_model_ouput <- function(x){
+  glance(x)
+}
+
+aic_reg_output <- 
+  bind_rows(Transplant = transplant, OTC = otc, Gradient = gradient, .id = "experiment") %>% 
+  ungroup() %>% 
+  group_by(variable, experiment) %>%
+  do(
+    bind_rows(
+      null = aic_model_ouput(.$mod0[[1]]), 
+      effect = aic_model_ouput(.$mod1[[1]]), 
+      interaction = aic_model_ouput(.$mod2[[1]]), 
+      .id = "model")
+  ) %>% 
+  select(-adj.r.squared, -sigma, -statistic, -p.value, -logLik, -BIC, -deviance) %>%
+  filter(!(experiment == "Gradient" & model != "interaction")) %>%
+  mutate(r.squared = round(r.squared, 3), AIC = round(AIC, 1)) %>% 
+  ungroup() %>% 
+  rename(response = "variable") %>% 
+  filter(response %in% c("richness", "evenness", "propGraminoid")) %>% 
+  mutate(
+    response = plyr::mapvalues(response, c("richness", "evenness", "propGraminoid"), c("Richness", "Evenness", "Proportion Graminoid")),
+    response = factor(response, levels = c("Richness", "Evenness", "Proportion Graminoid")),
+    model = if_else(experiment == "Gradient", "Effect only", model),
+    model = factor(model, levels = c("Effect only", "null", "effect", "interaction"), labels = c("Effect only", "No effect", "Effect", "Interaction"))) 
+#write_csv(aic_reg_output, path = "community/FinalFigures/AICOutput.csv", col_names = TRUE)
 
 
 #preprocess points for plot
@@ -239,8 +299,8 @@ dd <- Transplant %>%
   select(-diversity, -N1, -total_vascular) %>% 
   mutate(xvalue = ifelse(experiment == "Gradient", mean, contrast)) %>% 
   gather(key = response, value = value, richness, evenness, propGraminoid) %>% 
-  mutate(response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
-  mutate(response = factor(response, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid"))) %>% 
+  mutate(response = plyr::mapvalues(response, c("richness", "evenness", "propGraminoid"), c("Richness", "Evenness", "Proportion Graminoid"))) %>% 
+  mutate(response = factor(response, levels = c("Richness", "Evenness", "Proportion Graminoid"))) %>% 
   mutate(dummycolor = ifelse(experiment == "Gradient", "Gradient", as.character(originSiteID))) %>% 
   mutate(originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   mutate(originSiteID = factor(originSiteID, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
@@ -248,7 +308,7 @@ dd <- Transplant %>%
   mutate(TTtreat = factor(TTtreat, levels = c("Control", "Local transplant", "OTC", "Transplant"))) %>% 
   filter(!(experiment == "Transplant" & originSiteID == "Lowland"))
 
-p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtreat)) + 
+CommunityPlot <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtreat)) + 
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
   geom_line(data = filter(augmented_reg, experiment != "Gradient"), aes(y = .fitted, x = contrast, colour = originSiteID, linetype = model), inherit.aes = FALSE) +
   geom_line(data = filter(augmented_reg, experiment == "Gradient") , aes(y = .fitted, x = contrast), colour = "grey40", inherit.aes = FALSE) +
@@ -260,7 +320,8 @@ p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtrea
   scale_shape_manual(values = c(1, 16, 18, 17)) +
   scale_linetype_manual(values = c("dotted", "dashed", "solid")) + 
   labs(x = "", y = "", colour = "Site", shape = "Treatment", linetype = "Model")
-p
+CommunityPlot
+ggsave(CommunityPlot, filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
 
 CommunityPlot <- ggdraw(p) + 
   draw_label("Number", x = 0.015, y = 0.87, angle = 90,
@@ -275,7 +336,7 @@ CommunityPlot <- ggdraw(p) +
              vjust = 1, hjust = 1, size = 14) +
   draw_label("Contrasts °C", x = 0.68, y = 0.03,
              vjust = 1, hjust = 1, size = 14)
-ggsave(filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
+
 
 
 
