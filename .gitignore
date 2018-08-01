@@ -57,3 +57,7 @@ vignettes/*.pdf
 *.jpeg
 .my.cnf
 *.md
+*.jpg
+
+
+*.DS_Store
