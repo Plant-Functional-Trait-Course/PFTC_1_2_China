@@ -932,8 +932,12 @@ t4d
 t3d_v_t4d_effect_over_time<-grid.arrange(t3d,t4d,ncol=1)
 plot(t3d_v_t4d_effect_over_time)
 
-ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_v_t4d_convergence_over_time.pdf")
-ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_v_t4d_convergence_over_time.jpg")
+#ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_v_t4d_convergence_over_time.pdf")
+#ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_v_t4d_convergence_over_time.jpg")
+
+ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/t3d_v_t4d_convergence_over_time.pdf")
+ggsave(plot = t3d_v_t4d_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/t3d_v_t4d_convergence_over_time.jpg")
+
 
 treatmentotcestd<-convergence_v_time[which(convergence_v_time$treatment=="OTC"),]
 treatmentotcestd<-treatmentotcestd[which(!treatmentotcestd$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
@@ -948,10 +952,13 @@ totcd<-ggplot()+geom_hline(yintercept = rep(0,40))+
   scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
 
 totcd
-ggsave(plot = totcd, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Desktop/totcd_convergence_over_time.jpg")
+#ggsave(plot = totcd, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Desktop/totcd_convergence_over_time.jpg")
+ggsave(plot = totcd, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/totcd_convergence_over_time.jpg")
+
 
 t3d_v_t4d__totcd_convergence_over_time<-grid.arrange(totcd,t3d,t4d,ncol=1)
-ggsave(plot = t3d_v_t4d__totcd_convergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_t4d_totcd_convergence_over_time.jpg")
+#ggsave(plot = t3d_v_t4d__totcd_convergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/t3d_t4d_totcd_convergence_over_time.jpg")
+ggsave(plot = t3d_v_t4d__totcd_convergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/t3d_t4d_totcd_convergence_over_time.jpg")
 
 
 
@@ -988,8 +995,11 @@ t4o
 t3o_v_t4o_effect_over_time<-grid.arrange(t3o,t4o,ncol=1)
 plot(t3o_v_t4o_effect_over_time)
 
-ggsave(plot = t3o_v_t4o_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3o_v_t4o_divergence_over_time.pdf")
-ggsave(plot = t3o_v_t4o_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Desktop/t3o_v_t4o_divergence_over_time.jpg")
+ggsave(plot = t3o_v_t4o_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/t3o_v_t4o_divergence_over_time.pdf")
+ggsave(plot = t3o_v_t4o_effect_over_time, width = 6, height = 6, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/t3o_v_t4o_divergence_over_time.jpg")
+
+
+
 
 treatmentotcesto<-divergence_v_time[which(divergence_v_time$treatment=="OTC"),]
 treatmentotcesto<-treatmentotcesto[which(!treatmentotcesto$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
@@ -1004,17 +1014,17 @@ totco<-ggplot()+geom_hline(yintercept = rep(0,40))+
 
 totco
 
-ggsave(plot = totco, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Desktop/totco_divergence_over_time.jpg")
+ggsave(plot = totco, width = 6, height = 3, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/totco_divergence_over_time.jpg")
 
 t3o_v_t4o__totco_divergence_over_time<-grid.arrange(totco,t3o,t4o,ncol=1)
-ggsave(plot = t3o_v_t4o__totco_divergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/t3o_t4o_totco_divergence_over_time.jpg")
+ggsave(plot = t3o_v_t4o__totco_divergence_over_time, width = 6, height = 9, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/t3o_t4o_totco_divergence_over_time.jpg")
 
 
 #combined
 
-diverge_vs_converge<-ggarrange(t4o,t4d,t3o,t3d,totcorigin, ncol=2, nrow=3, common.legend = TRUE, legend="right")
+diverge_vs_converge<-ggarrange(t4o,t4d,t3o,t3d,totco, ncol=2, nrow=3, common.legend = TRUE, legend="right")
 
-ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 300, filename = "C:/Users/Brian/Desktop/diverge_vs_converge.jpg")
+ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/figures/diverge_vs_converge.jpg")
 
 ##########################################################################################
 ##########################################################################################
@@ -1198,8 +1208,18 @@ ggplot(data = recipient_site_moments_2016_c , aes(x = elevation,y = mean)) +
 #iii) a cool figure showing some examples of shifts in community trait distributions through time 
     #and perhaps showing differences in trait distributions across the 4 sites? 
 
+source("trait_distributions/r_scripts/plot_histograms_treat_trait_year.R") #to look at trait dist across the 4 sites
 
 
+#########################################################################################
+
+#summary table of trait v elevation
+library(gridExtra)
+source("trait_distributions/r_scripts/summarize_elev_gradient_pvals.R")
+O_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(file_directory = file_directory_native,treatment = "O")
+grid.table(O_trait_vs_elev_sig)
+
+grid.table(trait_x_elev_sig)
 
 ##########################################################################################
 
@@ -1219,8 +1239,94 @@ ggplot(data = recipient_site_moments_2016_c , aes(x = elevation,y = mean)) +
 
 #file_directory_native
 source("trait_distributions/r_scripts/plot_histograms_treat_trait_year.R")
+library(ggplot2)
+full_file_directory_native<-"C:/Users/Brian/Desktop/current_projects/transplant/trait_distributions/using_native_site/"
 
 plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "SLA_cm2_g",treatment = "OTC",year = 2016,bw = 0.05)
 plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "SLA_cm2_g",treatment = "O",year = 2016,bw = 0.05)
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "LDMC",treatment = "O",year = 2016,bw = 0.05,xlim = c(-.25,.25))
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "N_percent",treatment = "C",year = 2016,bw = 0.05,xlim = c(-1,1))
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "dN15_percent",treatment = "C",year = 2016,bw = 0.05,xlim = c(-1,1))
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "dN15_percent",treatment = "C",year = 2016,bw = 0.1,xlim = c(-1,1))
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "dN15_percent",treatment = "C",year = 2016,bw = 0.2,xlim = c(-1,1))
+
+plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = "NP_ratio",treatment = "C",year = 2016,bw = 0.05,xlim = c(-1,1))
+
+source("trait_distributions/r_scripts/plot_histograms_treatment_trait_site.R")
+#leaf area, N:P, d15N  relative to the control plots
+
+plot_histograms_treatment_trait_site(full_file_directory = full_file_directory_native,trait = "NP_ratio",treatment = 3,
+                                     site = "H",control = 2012,xlim = c(-1,1),bw = 0.1)
+
+plot_histograms_treatment_trait_site(full_file_directory = full_file_directory_native,trait = "dN15_percent",treatment = 3,
+                                     site = "H",control = 2012,xlim = c(-1,1),bw = 0.1)
+
+
+
+
+#Making a fuckton of plots for treatment x trait x site
+
+tts<-unique(moments_fixed[c("trait","treatment","site")])
+
+
+for(i in 1:nrow(tts)){
+
+print(paste(round(i/nrow(tts)*100,digits = 2),"% done"))  
+plot_i<-plot_histograms_treatment_trait_site(full_file_directory = full_file_directory_native,trait = tts$trait[i],treatment = tts$treatment[i],
+                                       site = tts$site[i],control = 2012,xlim = c(-1,1),bw = 0.2)
+  
+ggsave(plot = plot_i,
+       filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/distribution_plots/distributions_vs_time/",
+                        "assume_fixed_traits_",tts$trait[i],
+                        "_treatment_",tts$treatment[i],
+                        "_site",tts$site[i],
+                        ".jpeg",sep = ""),
+       device = "jpeg")  
+
+  
+  
+}
+
+
+
+
+#Making a fuckton of plots for treatment x year x trait
+
+tty<-unique(moments_fixed[c("trait","treatment","year")])
+
+
+for(i in 1:nrow(tty)){
+  
+  print(paste(round(i/nrow(tty)*100,digits = 2),"% done"))  
+  
+  plot_i<-plot_histograms_treatment_trait_year(full_file_directory = full_file_directory_native,trait = tty$trait[i],treatment = tty$treatment[i],
+                                                year=tty$year[i],xlim = c(-1,1),bw = 0.2)
+  
+  
+  ggsave(plot = plot_i,
+         filename = paste("C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/distribution_plots/distributions_vs_elevation/",
+                          "assume_fixed_traits_",tty$trait[i],
+                          "_treatment_",tty$treatment[i],
+                          "_year",tty$year[i],
+                          ".jpeg",sep = ""),
+         device = "jpeg")  
+  
+  
+  
+}
 
 ######################################
+
+#Send CWM values to Richard
+
+saveRDS(object = moments_fixed[c("turf","treatment","site","year","trait","mean" )],file = "C:/Users/Brian/Desktop/China_pftc_cwm.rds")
+
+
+
+#####################################
+
+#joyplots : different elevations along y axis, different years on x
+
+
+
+

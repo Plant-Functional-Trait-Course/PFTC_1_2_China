@@ -14,12 +14,28 @@
 
 
 library(moments)
+library(BIEN)
 
 #Load biomass data
 load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/traits.Rdata")
 load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/Community.Rdata")
 source("trait_distributions/r_scripts/trait_distribution_fx.R")
 source("trait_distributions/r_scripts/trait_selecting_fx.R")
+
+#Remove N outliers beyond BIEN max for study genera
+#Preliminary analyses showed that outliers for Lowland sites were greatly influencing lowland distributions and means.
+#Comparison with BIEN data suggested these values are likely outliers
+#Consequently, we'll prune N data beyond the maximum value for these genera recorded in BIEN
+china_spp<-unique(traits$Taxon)
+china_genera<-unlist(lapply(X = china_spp,FUN = function(X){
+  strsplit(x = X,split = " ")[[1]][1]
+}))
+
+
+BIENN<-BIEN_trait_traitbygenus(genus = china_genera,trait = "leaf nitrogen content per leaf dry mass")
+BIEN_max_N<-max(as.numeric(as.character(BIENN$trait_value,na.rm = T)))*.1
+rm(BIENN,china_genera,china_spp)
+traits$N_percent[which(traits$N_percent>BIEN_max_N)]<-NA
 
 
 #Add N:P ratio

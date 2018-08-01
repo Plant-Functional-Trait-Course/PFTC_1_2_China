@@ -37,7 +37,7 @@ plot_histograms_treatment_trait_year<-function(full_file_directory,trait,treatme
 
   output_plot<-ggplot(focal_data, aes(x = data_i, fill = site, colour = site))+
     geom_density(bw=bw,alpha = 0.1)+xlim(xlim)+ggtitle(label = paste(trait,year,treatment))
-    
+
   return(output_plot)
     
   
