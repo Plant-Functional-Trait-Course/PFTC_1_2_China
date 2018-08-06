@@ -231,14 +231,16 @@ augmented_reg <-
     originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland")),
     response = plyr::mapvalues(response, c("richness", "evenness", "propGraminoid"), c("Richness", "Evenness", "Proportion Graminoid")),
     response = factor(response, levels = c("Richness", "Evenness", "Proportion Graminoid")),
-    contrast = if_else(experiment == "Gradient", mean, contrast))
+    contrast = if_else(experiment == "Gradient", mean, contrast)) %>% 
+  mutate(
+    model = ifelse(experiment == "Gradient" & model == "null", "effect", model),
+    model = factor(model, levels = c("null.gradient", "null", "effect", "interaction"), labels = c("No effect", "No effect", "Effect", "Interaction")))
 
 
 # Regression output
 tidy_model <- function(x){
   tidy(x)
 }
-distinct(model, experiment) %>% print(n = Inf)
 
 tidy_reg <- 
   bind_rows(Transplant = transplant, OTC = otc, Gradient = gradient, .id = "experiment") %>% 
@@ -320,9 +322,7 @@ dd <- Transplant %>%
 p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtreat)) + 
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
   geom_line(data = filter(augmented_reg, experiment != "Gradient"), aes(y = .fitted, x = contrast, colour = originSiteID, linetype = model), inherit.aes = FALSE) +
-  geom_line(data = filter(augmented_reg, experiment == "Gradient") , aes(y = .fitted, x = contrast), colour = "grey40", inherit.aes = FALSE) +
-  #geom_smooth(data = filter(dd, experiment != "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value, colour = dummycolor), inherit.aes = FALSE, size = 0.6) +
-#  geom_smooth(data = filter(dd, experiment == "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value), inherit.aes = FALSE, size = 0.6, colour = "grey40") +
+  geom_line(data = filter(augmented_reg, experiment == "Gradient") , aes(y = .fitted, x = contrast, linetype = model), colour = "grey40", inherit.aes = FALSE) +
   facet_grid(response ~experiment, scales = "free", space = "free_x") +
   scale_x_continuous(breaks = c(0,1,2,8,10,12)) +
   scale_color_brewer(palette = "RdBu", direction = -1) +
@@ -330,16 +330,19 @@ p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtrea
   scale_linetype_manual(values = c("dotted", "dashed", "solid")) + 
   labs(x = "", y = "", colour = "Site", shape = "Treatment", linetype = "Model")
 
+#geom_smooth(data = filter(dd, experiment != "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value, colour = dummycolor), inherit.aes = FALSE, size = 0.6) +
+#  geom_smooth(data = filter(dd, experiment == "Gradient"), method = "lm", se = FALSE, aes(x = xvalue, y = value), inherit.aes = FALSE, size = 0.6, colour = "grey40") +
+
 CommunityPlot <- ggdraw(p) + 
-  draw_label("Number", x = 0.015, y = 0.87, angle = 90,
+  draw_label("Number of species", x = 0.015, y = 0.925, angle = 90,
            vjust = 1, hjust = 1, size = 14) +
-  draw_label("Index", x = 0.015, y = 0.62, angle = 90,
+  draw_label("Index", x = 0.015, y = 0.52, angle = 90,
              vjust = 1, hjust = 1, size = 14) +
-  draw_label("Proportion", x = 0.015, y = 0.25, angle = 90,
+  draw_label("Proportion", x = 0.015, y = 0.3, angle = 90,
              vjust = 1, hjust = 1, size = 14) +
-  draw_label("Temperature °C", x = 0.36, y = 0.03,
+  draw_label("Temperature °K", x = 0.36, y = 0.03,
              vjust = 1, hjust = 1, size = 14) +
-  draw_label("Contrasts °C", x = 0.68, y = 0.03,
+  draw_label("Contrasts °K", x = 0.68, y = 0.03,
              vjust = 1, hjust = 1, size = 14)
 CommunityPlot
 ggsave(CommunityPlot, filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
