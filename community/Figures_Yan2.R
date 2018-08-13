@@ -74,7 +74,8 @@ responses <- cover_thin %>%
             evenness = diversity/log(richness),
             sumCover = sum(cover),
             propGraminoid = sum(cover[functionalGroup %in% c("gramineae", "sedge")])/sumCover,
-            total_vascular = first(totalVascular)
+            total_vascular = first(totalVascular),
+            vegetationHeight = mean(vegetationHeight)
   ) %>% 
   group_by(originBlockID, TTtreat, originSiteID, year) %>%
   select(-turfID) %>% 
@@ -200,26 +201,125 @@ p <- ggplot(dd, aes(x = xvalue, y = value, colour = originSiteID, shape = TTtrea
   geom_line(data = filter(augmented_reg, experiment != "Gradient"), aes(y = .fitted, x = contrast, colour = originSiteID, linetype = model), inherit.aes = FALSE) +
   geom_line(data = filter(augmented_reg, experiment == "Gradient") , aes(y = .fitted, x = contrast, linetype = model), colour = "grey40", inherit.aes = FALSE) +
   facet_grid(response ~experiment, scales = "free", space = "free_x") +
-  scale_x_continuous(breaks = c(0,1,2,8,10,12)) +
+  scale_x_continuous(breaks = c(0,1,2,7,8,9,10,11,12)) +
   scale_color_brewer(palette = "RdBu", direction = -1) +
   scale_shape_manual(values = c(1, 16, 18, 17)) +
   scale_linetype_manual(values = c("dotted", "dashed", "solid")) + 
-  labs(x = "", y = "", colour = "Site", shape = "Treatment", linetype = "Model")
+  labs(x = "", y = "", colour = "Site", shape = "Treatment", linetype = "Model") +
+  theme_light() +
+  theme(panel.grid.major = element_blank(), 
+        #panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "grey", fill=NA, size=1))
 
 CommunityPlot <- ggdraw(p) + 
-  draw_label("Number of species", x = 0.015, y = 0.925, angle = 90,
+  draw_label("Number of species", x = 0.01, y = 0.925, angle = 90,
            vjust = 1, hjust = 1, size = 14) +
-  draw_label("Index", x = 0.015, y = 0.52, angle = 90,
+  draw_label("Index", x = 0.01, y = 0.52, angle = 90,
              vjust = 1, hjust = 1, size = 14) +
-  draw_label("Proportion", x = 0.015, y = 0.3, angle = 90,
+  draw_label("Proportion", x = 0.01, y = 0.3, angle = 90,
              vjust = 1, hjust = 1, size = 14) +
   draw_label("Temperature °C", x = 0.36, y = 0.03,
              vjust = 1, hjust = 1, size = 14) +
-  draw_label("Contrasts °C", x = 0.68, y = 0.03,
+  draw_label("Contrasts °C", x = 0.625, y = 0.03,
+             vjust = 1, hjust = 1, size = 14) +
+  draw_label("Contrasts °C", x = 0.795, y = 0.03,
              vjust = 1, hjust = 1, size = 14)
 CommunityPlot
 ggsave(CommunityPlot, filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
 
+
+
+### Vegetation height
+dat <- cover_thin %>% 
+  left_join(fun_gp) %>% 
+  left_join(turf_env) %>%  
+  filter(year == "2013") %>% 
+  mutate(newTT = plyr::mapvalues(TTtreat, c("warm1", "control", "local", "OTC"), c("warm1", "control", "control", "OTC"))) %>% 
+  group_by(destSiteID, TTtreat) %>% 
+  summarise(n = n(), meanH = mean(vegetationHeight), se = sd(vegetationHeight)/sqrt(n)) %>% 
+  filter(!TTtreat %in% c("warm1", "local"))
+
+dat %>% 
+  unite(col = MeanSE, c("meanH", "se"), sep = "_") %>% 
+  select(-n) %>% 
+  spread(key = TTtreat, value = MeanSE) %>% 
+  separate(col = control, into = c("MeanC", "SeC"), sep = "_", convert = TRUE) %>% 
+  separate(col = OTC, into = c("MeanOTC", "SeOTC"), sep = "_", convert = TRUE) %>% 
+  mutate(diff = MeanOTC - MeanC, diffSE = sqrt(SeOTC^2 + SeC^2))
+  
+dd <- cover_thin %>% 
+  left_join(fun_gp) %>% 
+  left_join(turf_env) %>%  
+  filter(year == "2013") %>% 
+  mutate(newTT = plyr::mapvalues(TTtreat, c("warm1", "control", "local", "OTC"), c("warm1", "control", "control", "OTC"))) %>% 
+  group_by(destPlotID, destSiteID, TTtreat) %>% 
+  summarise(n = n(), meanH = mean(vegetationHeight), se = sd(vegetationHeight)/sqrt(n)) %>% 
+  filter(!TTtreat %in% c("warm1", "local"))
+fit <- lm(meanH ~ TTtreat, dd)
+summary(fit)
+anova(fit)
+plot(fit)
+
+
+### Test model assumptions
+grad <- responses %>% 
+  filter(year == 2016, TTtreat %in% c("local", "control")) %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value))
+
+trans <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "warm1"), originSiteID != "L") %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value))
+
+otcs <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "OTC")) %>% 
+  gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
+  filter(!is.na(value))
+
+dat <- bind_rows(Transplant = trans, OTC = otcs, Gradient = grad, .id = "experiment") %>% 
+  ungroup() %>% 
+  filter(variable %in% c("richness", "evenness", "propGraminoid"))
+
+plyr::d_ply(dat, plyr::.(experiment, variable), function(df){
+  y1 <- quantile(df$value[!is.na(df$value)], c(0.25, 0.75))
+  x1<- qnorm(c(0.25, 0.75))
+  slope <- diff(y1)/diff(x1)
+  int <- y1[1L] - slope * x1[1L]
+  
+  print(
+    ggplot(df, aes(sample = value)) +
+      stat_qq() +
+      geom_abline(slope = slope, intercept = int) +
+      ggtitle(paste(df$experiment[1], df$variable[1], sep = "-"))
+  )
+  cat("\n")
+})
+
+
+
+gradient <- responses %>% 
+  filter(year == 2016, TTtreat %in% c("local", "control"))
+mod1 = lm(propGraminoid ~ mean, data = gradient)
+plot(mod1)
+
+transplant <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "warm1"), originSiteID != "L")
+mod0 = lm(propGraminoid ~ originSiteID + contrast - contrast, data = transplant)
+plot(mod0)
+mod1 = lm(propGraminoid ~ contrast + originSiteID, data = transplant)
+plot(mod1)
+mod2 = lm(evenness ~ contrast * originSiteID, data = transplant)
+plot(mod2)
+
+otc <- responses %>%
+  filter(year == 2016, TTtreat %in% c("local", "OTC"))
+mod0 = lm(richness ~ originSiteID + contrast - contrast, data = otc)
+plot(mod0)
+mod1 = lm(richness ~ contrast + originSiteID, data = otc)
+plot(mod1)
+mod2 = lm(propGraminoid ~ contrast * originSiteID, data = otc)
+plot(mod2)
 
 
 
