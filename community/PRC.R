@@ -18,9 +18,9 @@ cover_fat <- cover_thin %>%
 # Community change AWAY from origin control  (OTC and warm1)
 # Transplant
 cover_fat %>% 
-  filter(newTT != "warm1") %>% 
+  filter(newTT != "OTC") %>% 
   # make year and treatment a factor, sort levels, so that control comes first
-  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "OTC", "warm1"))) %>% 
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1"))) %>% 
   group_by(originSiteID) %>% 
   do({
     # run prc
