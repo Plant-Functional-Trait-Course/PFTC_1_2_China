@@ -47,6 +47,34 @@ cover_fat %>%
 
 
 
+# Community change TOWARDS destination control
+# Transplant
+coverFat <- cover_fat %>% 
+  filter(destSiteID == "L", newTT != "OTC") %>% 
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1")))
+
+communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
+
+fit <- rda(communitydata ~ newTT:year + Condition(newTT + year), data = coverFat)
+fit
+anova(fit)
+
+
+# OTC
+coverFat <- cover_fat %>% 
+  filter(TTtreat == "OTC" & originSiteID == "H" | TTtreat == "control" & originSiteID == "A") %>% 
+  mutate(year = factor(year), TTtreat = factor(TTtreat, levels = c("control", "OTC")))
+
+communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
+
+fit <- rda(communitydata ~ TTtreat:year + Condition(TTtreat + year), data = coverFat)
+fit
+anova(fit)
+
+
+
+# **********************************************************************
+
 # Full model
 # Transplant
 dd <- cover_fat %>% 
@@ -56,24 +84,6 @@ dd <- cover_fat %>%
 communitydata <- dd %>% select(-(originSiteID:year), -newTT)
 
 rda(communitydata ~ newTT * year + Condition(year + originSiteID), data = dd)
-
-
-
-# Community change TOWARDS destination control
-
-coverFat <- cover_fat %>% 
-  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "OTC", "warm1"))) %>% 
-#Towards
-filter(destSiteID == "A", newTT != "OTC") %>% 
-  droplevels()
-#filter(TTtreat == "OTC" & originSiteID == "M" | TTtreat == "control" & originSiteID == "L")
-
-communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
-
-fit <- rda(communitydata ~ newTT:year + Condition(newTT + year), data = coverFat)
-fit
-anova(fit)
-
 
 
 
