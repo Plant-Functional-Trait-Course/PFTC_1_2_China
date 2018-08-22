@@ -70,7 +70,7 @@ ggplot(control_sites, aes(x = PC1, y = PC2, shape = TTtreat, colour = site, grou
   scale_colour_brewer(palette = "RdBu", direction = -1) +
   scale_shape_manual(values = c(16, 21)) +
   scale_x_continuous(expand = c(.15, 0)) +
-  labs(x = "NMDS 1", y = "NMDS 2", shape = "Treatment", colour = "Site", size = "Year", title = "Controls")
+  labs(x = "PC 1", y = "PC 2", shape = "Treatment", colour = "Site", size = "Year", title = "Controls")
 
 ggsave(filename = "cwm_trait_control_pca.png", width = 6, height = 5)
 
