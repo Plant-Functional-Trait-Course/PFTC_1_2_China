@@ -5,6 +5,8 @@ library("ggvegan")
 
 source("community/start_here.R")
 
+set.seed(2)
+
 ## prep data for ordination
 cover_fat <- cover_thin %>% 
   select(-speciesName, -flag) %>% 
@@ -47,26 +49,35 @@ cover_fat %>%
 
 
 
-# Full model
-# Transplant
-dd <- cover_fat %>% 
-  filter(newTT != "OTC") %>%
-  # make year and treatment a factor, sort levels, so that control comes first
-  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1")), originSiteID = factor(originSiteID))
-communitydata <- dd %>% select(-(originSiteID:year), -newTT)
+# Community change AWAY AND TOWARDS
+coverFat <- cover_thin %>% 
+  select(-speciesName, -flag) %>% 
+  arrange(year) %>%
+  filter(TTtreat %in% c("local", "control", "warm1", "OTC")) %>%
+  mutate(newTT = plyr::mapvalues(TTtreat, c("warm1", "control", "local", "OTC"), c("warm1", "control", "control", "OTC"))) %>% 
+  filter(originSiteID == "H" | originSiteID == "A" & newTT == "control") %>% 
+  # remove rare species
+  filter(cover > 20) %>% #distinct(species)
+  spread(key = species, value = cover, fill = 0) %>% 
+  mutate(newTT = as.character(newTT)) %>% 
+  mutate(newTT = ifelse(newTT == "control" & originSiteID == "A", "controlA", newTT)) %>% 
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1", "OTC", "controlA")))
 
-rda(communitydata ~ newTT * year + Condition(year + originSiteID), data = dd)
+
+communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
+
+fit <- prc(response = communitydata, treatment = coverFat$newTT, time = coverFat$year)
+plot(fit, col = c("purple", "orange", "blue"))
+
+
 
 
 
 # Community change TOWARDS destination control
-
+# Transplant
 coverFat <- cover_fat %>% 
-  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "OTC", "warm1"))) %>% 
-#Towards
-filter(destSiteID == "A", newTT != "OTC") %>% 
-  droplevels()
-#filter(TTtreat == "OTC" & originSiteID == "M" | TTtreat == "control" & originSiteID == "L")
+  filter(destSiteID == "L", newTT != "OTC") %>% 
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1")))
 
 communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
 
@@ -75,6 +86,32 @@ fit
 anova(fit)
 
 
+# OTC
+coverFat <- cover_fat %>% 
+  filter(TTtreat == "OTC" & originSiteID == "H" | TTtreat == "control" & originSiteID == "A") %>% 
+  mutate(year = factor(year), TTtreat = factor(TTtreat, levels = c("control", "OTC")))
+
+communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
+
+fit <- rda(communitydata ~ TTtreat:year + Condition(TTtreat + year), data = coverFat)
+fit
+anova(fit)
+
+
+
+# **********************************************************************
+
+# Full model
+# Transplant
+dd <- cover_fat %>% 
+  filter(newTT != "OTC") %>%
+  # make year and treatment a factor, sort levels, so that control comes first
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1")), originSiteID = factor(originSiteID))
+communitydata <- dd %>% select(-(originSiteID:year), -newTT)
+
+fit <- rda(communitydata ~ newTT * year + Condition(year + originSiteID), data = dd)
+fit
+anova(fit)
 
 
 # test stuff
