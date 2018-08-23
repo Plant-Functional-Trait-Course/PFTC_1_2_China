@@ -1,15 +1,24 @@
 # load libraries
 library("vegan")
 library("ggvegan")
+library(gridExtra)
 #example(prc)
 
 source("community/start_here.R")
+
+## functional groups
+fun_gp <- tbl(con, "taxon") %>% 
+  select(species, functionalGroup) %>% 
+  collect()
 
 set.seed(2)
 
 ## prep data for ordination
 cover_fat <- cover_thin %>% 
   select(-speciesName, -flag) %>% 
+  left_join(fun_gp) %>% 
+  filter(functionalGroup == "forb") %>% 
+  select(-functionalGroup) %>% 
   arrange(year) %>%
   filter(TTtreat %in% c("local", "control", "warm1", "OTC")) %>%
   spread(key = species, value = cover, fill = 0) %>%
@@ -33,6 +42,23 @@ cover_fat %>%
                Pvalue = anova(mod)$'Pr(>F)'[1])
   })
 
+#Species scores
+SpScoreTransplant <- cover_fat %>% 
+  filter(newTT != "OTC") %>% 
+  # make year and treatment a factor, sort levels, so that control comes first
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1"))) %>% 
+  group_by(originSiteID) %>% 
+  do({
+    # run prc
+    mod = prc(response = (.) %>% select(-(originSiteID:TTtreat), -year, -newTT), treatment = .$newTT, time = .$year)
+    
+    data_frame(species = names(summary(mod)$sp),
+               SPscore = summary(mod)$sp,
+               treatment = "Transplant")
+  })
+
+
+
 # OTC
 cover_fat %>% 
   filter(TTtreat %in% c("OTC", "control")) %>% 
@@ -48,117 +74,152 @@ cover_fat %>%
   })
 
 
+# Species scores
+SpScoreOTC <- cover_fat %>% 
+  filter(TTtreat %in% c("OTC", "control")) %>% 
+  mutate(TTtreat = factor(TTtreat), year = factor(year)) %>% 
+  group_by(originSiteID) %>% 
+  do({
+    # run prc
+    mod = prc(response = (.) %>% select(-(originSiteID:TTtreat), -year, -newTT), treatment = .$TTtreat, time = .$year)
+    
+    data_frame(species = names(summary(mod)$sp),
+               SPscore = summary(mod)$sp,
+               treatment = "OTC")
+  })
+
+
+sp_name <- tbl(con, "taxon") %>% 
+  select(species, speciesName, family) %>% 
+  collect()
+
+SpScore <- SpScoreTransplant %>% 
+  rbind(SpScoreOTC) %>% 
+  filter(SPscore > 0.5 | SPscore < -0.5) %>% 
+  mutate(SPscore = round(SPscore, 3)) %>% 
+  unite(originSiteID, treatment, col = "SiteTreat", sep = "_") %>% 
+  spread(key = SiteTreat, value = SPscore) %>% 
+  left_join(sp_name) %>% 
+  select(speciesName, family, H_OTC, H_Transplant, A_OTC, A_Transplant, M_OTC, M_Transplant, L_OTC, L_Transplant)
+
+writexl::write_xlsx(x = SpScore, path = "community/FinalFigures/SpScore.xlsx")
+
 
 # Community change AWAY AND TOWARDS
-coverFat <- cover_thin %>% 
+# H-A
+coverFatHA <- cover_thin %>% 
   select(-speciesName, -flag) %>% 
+  left_join(fun_gp) %>% 
+  filter(functionalGroup == "forb") %>% 
+  select(-functionalGroup) %>% 
   arrange(year) %>%
   filter(TTtreat %in% c("local", "control", "warm1", "OTC")) %>%
   mutate(newTT = plyr::mapvalues(TTtreat, c("warm1", "control", "local", "OTC"), c("warm1", "control", "control", "OTC"))) %>% 
   filter(originSiteID == "H" | originSiteID == "A" & newTT == "control") %>% 
   # remove rare species
-  filter(cover > 20) %>% #distinct(species)
+  group_by(species) %>%
+  filter(n() > 3) %>% #distinct(species)
   spread(key = species, value = cover, fill = 0) %>% 
   mutate(newTT = as.character(newTT)) %>% 
   mutate(newTT = ifelse(newTT == "control" & originSiteID == "A", "controlA", newTT)) %>% 
   mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1", "OTC", "controlA")))
 
+communitydataHA <- coverFatHA %>% select(-(originSiteID:year), -newTT)
+# select common species
+spselectHA <- colSums(communitydataHA) > 50
 
-communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
+fitHA <- prc(response = communitydataHA, treatment = coverFatHA$newTT, time = coverFatHA$year)
+pHA <- plot(fitHA, species = FALSE, col = c("orange", "purple", "grey30"), xlab = "")
 
-fit <- prc(response = communitydata, treatment = coverFat$newTT, time = coverFat$year)
-plot(fit, col = c("purple", "orange", "blue"))
-
-
-
-
-
-# Community change TOWARDS destination control
-# Transplant
-coverFat <- cover_fat %>% 
-  filter(destSiteID == "L", newTT != "OTC") %>% 
-  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1")))
-
-communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
-
-fit <- rda(communitydata ~ newTT:year + Condition(newTT + year), data = coverFat)
-fit
-anova(fit)
-
-
-# OTC
-coverFat <- cover_fat %>% 
-  filter(TTtreat == "OTC" & originSiteID == "H" | TTtreat == "control" & originSiteID == "A") %>% 
-  mutate(year = factor(year), TTtreat = factor(TTtreat, levels = c("control", "OTC")))
-
-communitydata <- coverFat %>% select(-(originSiteID:year), -newTT)
-
-fit <- rda(communitydata ~ TTtreat:year + Condition(TTtreat + year), data = coverFat)
-fit
-anova(fit)
+ggvegan:::autoplot.prc(fitHA, xlab = "", legend.position = "top", species = FALSE) +
+  scale_colour_manual(values = c("orange", "purple", "grey30"))
 
 
 
-# **********************************************************************
-
-# Full model
-# Transplant
-dd <- cover_fat %>% 
-  filter(newTT != "OTC") %>%
-  # make year and treatment a factor, sort levels, so that control comes first
-  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1")), originSiteID = factor(originSiteID))
-communitydata <- dd %>% select(-(originSiteID:year), -newTT)
-
-fit <- rda(communitydata ~ newTT * year + Condition(year + originSiteID), data = dd)
-fit
-anova(fit)
-
-
-# test stuff
-coverFat <- cover_fat %>% 
+# A-M
+coverFatAM <- cover_thin %>% 
+  select(-speciesName, -flag) %>% 
+  left_join(fun_gp) %>% 
+  filter(functionalGroup == "forb") %>% 
+  select(-functionalGroup) %>% 
+  arrange(year) %>%
+  filter(TTtreat %in% c("local", "control", "warm1", "OTC")) %>%
   mutate(newTT = plyr::mapvalues(TTtreat, c("warm1", "control", "local", "OTC"), c("warm1", "control", "control", "OTC"))) %>% 
-  #Away
-  #filter(newTT != "warm1") %>% 
-  #Towards
-  #filter(newTT != "OTC") %>% 
-  #filter(newTT == "OTC" & originSiteID == "M" | newTT == "control" & originSiteID == "L") %>% 
-  filter(TTtreat %in% c("control", "OTC")) %>% 
-  filter(!(originSiteID == "H" & TTtreat == "control")) %>% 
-  filter(!(originSiteID == "L" & TTtreat == "OTC")) %>% 
-  mutate(destSiteID2 = case_when(TTtreat == "OTC" & destSiteID == "H" ~ "A",
-                                 TTtreat == "OTC" & destSiteID == "A" ~ "M",
-                                 TTtreat == "OTC" & destSiteID == "M" ~ "L",
-                                 TRUE ~ as.character(destSiteID))) %>% 
-  droplevels()
+  filter(originSiteID == "A" | originSiteID == "M" & newTT == "control") %>% 
+  # remove rare species
+  group_by(species) %>%
+  filter(n() > 3) %>% #distinct(species)
+  spread(key = species, value = cover, fill = 0) %>% 
+  mutate(newTT = as.character(newTT)) %>% 
+  mutate(newTT = ifelse(newTT == "control" & originSiteID == "M", "controlM", newTT)) %>% 
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1", "OTC", "controlM")))
 
-communitydata <- coverFat %>% select(-(originSiteID:year), -newTT, -destSiteID2)
-treatment <- factor(coverFat$newTT)
-time <- factor(coverFat$year)
-site <- factor(coverFat$destSiteID2)
+communitydataAM <- coverFatAM %>% select(-(originSiteID:year), -newTT)
+# select common species
+spselectAM <- colSums(communitydataAM) > 50
 
-mod <- prc(response = (communitydata), treatment = treatment, time = time)
-mod
-plot(mod)
-anova(mod)
-tidy(anova(mod))$p.value
-summary(mod)$sp %>% sort
-mod$CCA$tot.chi/mod$tot.chi
+fitAM <- prc(response = communitydataAM, treatment = coverFatAM$newTT, time = coverFatAM$year)
+pAM <- plot(fitAM, species = FALSE, col = c("orange", "purple", "grey30"), xlab = "")
 
 
-# run all models separate (site, treatment), then extract constrained proportion from mod, and look if anove(mod) is significant. Make a table.
+# M-L
+coverFatML <- cover_thin %>% 
+  select(-speciesName, -flag) %>% 
+  left_join(fun_gp) %>% 
+  filter(functionalGroup == "forb") %>% 
+  select(-functionalGroup) %>% 
+  arrange(year) %>%
+  filter(TTtreat %in% c("local", "control", "warm1", "OTC")) %>%
+  mutate(newTT = plyr::mapvalues(TTtreat, c("warm1", "control", "local", "OTC"), c("warm1", "control", "control", "OTC"))) %>% 
+  filter(originSiteID == "M" | originSiteID == "L" & newTT == "control") %>% 
+  # remove rare species
+  group_by(species) %>%
+  filter(n() > 3) %>% #distinct(species)
+  spread(key = species, value = cover, fill = 0) %>% 
+  mutate(newTT = as.character(newTT)) %>% 
+  mutate(newTT = ifelse(newTT == "control" & originSiteID == "L", "controlL", newTT)) %>% 
+  mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1", "OTC", "controlL")))
 
-# Full model
-#rda(response ~ treatment * time + Condition(time + site))
+communitydataML <- coverFatML %>% select(-(originSiteID:year), -newTT)
+# select common species
+spselectML <- colSums(communitydataML) > 50
+
+fitML <- prc(response = communitydataML, treatment = coverFatML$newTT, time = coverFatML$year)
+plot(fitML, species = FALSE, col = c("orange", "purple", "grey30"), xlab = "")
+#, legpos = NA
 
 
-mod0 <- rda(communitydata ~ site)
-mod1 <- rda(communitydata ~ time + Condition(site))
-mod2 <- rda(communitydata ~ treatment + Condition(site + time))
-mod3 <- rda(communitydata ~ treatment * time + Condition(time + site))
+pHA <- autoplot.prcWithoutSP(fitHA, xlab = "", ylab = "Effect") +
+  scale_colour_manual(values = c("orange", "purple", "grey30")) +
+  scale_linetype_manual(values = c("solid", "solid", "dashed")) +
+  ggtitle("High alpine - Alpine") +
+  guides(colour = FALSE, linetype = FALSE) +
+  theme_light()
 
+pAM <- autoplot.prcWithoutSP(fitAM, xlab = "", ylab = "Effect") +
+  scale_colour_manual(values = c("orange", "purple", "grey30")) +
+  scale_linetype_manual(values = c("solid", "solid", "dashed")) +
+  scale_y_reverse() +
+  ggtitle("Alpine - Middle") +
+  guides(colour = FALSE, linetype = FALSE) +
+  theme_light()
 
+pML <- autoplot.prcWithoutSP(fitML, xlab = "", ylab = "Effect") +
+  scale_colour_manual(values = c("orange", "purple", "grey30"), labels = c("Transplant", "OTC", "Destination control")) +
+  scale_linetype_manual(values = c("solid", "solid", "dashed")) +
+  ggtitle("Middle - Lowland") +
+  guides(colour = FALSE, linetype = FALSE) +
+  theme_light()
 
+pp <- autoplot.prcWithoutSP(fitML, xlab = "", ylab = "Effect") +
+  scale_colour_manual(values = c("orange", "purple", "grey30"), labels = c("Transplant", "OTC", "Destination control")) +
+  scale_linetype_manual(values = c("solid", "solid", "dashed"), labels = c("Transplant", "OTC", "Destination control")) +
+  ggtitle("Middle - Lowland") +
+  theme(legend.position = "top")
 
+prcLegend <- cowplot::get_legend(pp)
 
-  
+prcPlot <- grid.arrange(prcLegend, pHA, pAM, pML, 
+             layout_matrix = rbind(c(1),c(2), c(2), c(2),c(3), c(3), c(3),c(4), c(4), c(4)))
 
+ggsave(prcPlot, filename = "community/FinalFigures/prcPlot.jpg", height = 8, width = 6, dpi = 300)
