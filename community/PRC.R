@@ -5,6 +5,7 @@ library(gridExtra)
 #example(prc)
 
 source("community/start_here.R")
+source("community/prcPlotwithoutSP.R")
 
 ## functional groups
 fun_gp <- tbl(con, "taxon") %>% 
@@ -44,7 +45,7 @@ cover_fat %>%
 
 #Species scores
 SpScoreTransplant <- cover_fat %>% 
-  filter(newTT != "OTC") %>% 
+  filter(newTT != "OTC", originSiteID != "L") %>% 
   # make year and treatment a factor, sort levels, so that control comes first
   mutate(year = factor(year), newTT = factor(newTT, levels = c("control", "warm1"))) %>% 
   group_by(originSiteID) %>% 
@@ -100,7 +101,7 @@ SpScore <- SpScoreTransplant %>%
   unite(originSiteID, treatment, col = "SiteTreat", sep = "_") %>% 
   spread(key = SiteTreat, value = SPscore) %>% 
   left_join(sp_name) %>% 
-  select(speciesName, family, H_OTC, H_Transplant, A_OTC, A_Transplant, M_OTC, M_Transplant, L_OTC, L_Transplant)
+  select(speciesName, family, H_OTC, H_Transplant, A_OTC, A_Transplant, M_OTC, M_Transplant, L_OTC)
 
 writexl::write_xlsx(x = SpScore, path = "community/FinalFigures/SpScore.xlsx")
 
