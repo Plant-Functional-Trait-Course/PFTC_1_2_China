@@ -115,6 +115,7 @@ SpScore <- SpScoreTransplant %>%
          M_OTC = (-1) * M_OTC,
          L_OTC = (-1) * L_OTC)
 
+# Table S4
 writexl::write_xlsx(x = SpScore, path = "community/FinalFigures/SpScore.xlsx")
 
 
@@ -237,5 +238,4 @@ prcLegend <- cowplot::get_legend(pp)
 prcPlot <- grid.arrange(prcLegend, pHA, pAM, pML, 
              layout_matrix = rbind(c(1),c(2), c(2), c(2),c(3), c(3), c(3),c(4), c(4), c(4)))
 
-ggsave(prcPlot, filename = "community/FinalFigures/prcPlot.jpg", height = 8, width = 6, dpi = 300)
-ggsave(prcPlot, filename = "community/FinalFigures/prcPlot.pdf", height = 8, width = 6, dpi = 300)
+ggsave(prcPlot, filename = "community/FinalFigures/Fig2_prcPlot.jpg", height = 8, width = 6, dpi = 300)
