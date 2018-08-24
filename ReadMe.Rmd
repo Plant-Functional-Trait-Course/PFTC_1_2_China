@@ -29,13 +29,13 @@ Will show cleaned climate data plots
 
 ## TRAIT DATA
 
-# 2015 data
+### 2015 data
 
 Run script for some plots
 trait/trait_2017_analysis.R
 
 
-# 2016 data
+### 2016 data
 
 Run script for some plots
 trait/TraitData2016.R
@@ -44,4 +44,55 @@ trait/TraitData2016.R
 
 
 ## COMMUNITY ANALYSIS
+### DATA
 
+The dataset contains plant community composition data from the TransPlant project vegetation plots along the gradient, OTC and turf transplant experiments. 
+The dataset contains the sub-plot frequency, cover, and some performance data on 118 taxa of vascular plants, along with some plot-level predictor variables, in 140 25 x 25 cm vegetation plots.
+The dataset covers the years from 2012 to 2016.
+
+### Data collection methods
+We recorded all species of vascular plants in each of 25  x 25 cm subplots.
+For each species in each subplot it was noted down whether it was present as dominant (covered more than 50% of the sub-plot: D) or a seedling (S). For the  entire 25 x 25 cm plot, the percentage cover of each vascular plant species was then visually estimated. 
+Other variables that were measured for each plot:
+vegetation height (mean of 5 measurements)
+moss % cover
+moss layer depth (mean of 5 measurements)
+litter % cover 
+bare ground % cover
+rock % cover
+date of analysis
+recorder / scribe (if any)
+comments
+Other variables that were measured for each sub-plot:
+moss % cover
+litter % cover 
+bare % ground cover
+rock % cover
+Nomenclature follows E-Flora of China. 
+Each species of vascular plant was classified by functional type (graminoid, forb, shrub)
+
+### Data storage
+SQLITE file in OSF repo in the Plant community component
+transplant.sqlite
+
+
+### LOAD DATA AND ANALYSIS
+loading community data: start_here.R
+
+Data analysis for:
+Yan et al. (2018?). Transplants, open top chambers (OTCs) and gradient studies ask different questions in climate change effects studies. Frontiers in Plant Science.
+
+Community change
+- Community change in the two warming treatments and along the elevation gradient (Fig. 1)
+- Test model assumptions
+- Test change in vegetation height along gradient
+CommunityChange.R
+
+Model output: Table S2 and S3
+AppendixYansPaper.R
+
+PRC (Fig. 2, Table S4)
+PRC.R
+
+Biomass change along elevation gradient
+biomass.R
