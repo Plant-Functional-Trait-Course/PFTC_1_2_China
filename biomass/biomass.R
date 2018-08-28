@@ -82,11 +82,9 @@ biomass <- biomass %>%
           
 #get family
 biomass <- biomass %>% mutate(family = tpl::tpl.get(genus)$family)
-save(biomass, file = "biomass/biomass_cleaned.Rdata")
-                    
-
-
-
+#save(biomass, file = "biomass/biomass_cleaned.Rdata")
+                 
+load(file = "biomass/biomass_cleaned.Rdata")
 
 
 # Check the data
