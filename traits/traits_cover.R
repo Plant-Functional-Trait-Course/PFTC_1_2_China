@@ -11,7 +11,7 @@ noGraminoids <- taxa %>% filter(!functionalGroup %in% c("gramineae", "sedge")) %
 # Merge traits and cover
 # Only Local, and controls from experiments
 AllLeaves <- traits %>% 
-  filter(Project %in% c("LOCAL", "0", "C")) %>%
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>%
   mutate(year = year(Date)) %>% 
   group_by(year, Taxon, Site) %>% 
   summarise(n_leaves = n()) %>% # count number of leaves
@@ -108,3 +108,40 @@ CNAnalysis %>%
 table(CNAnalysis$Taxon, year(CNAnalysis$Date), CNAnalysis$Site)
 
 write_csv(CNAnalysis, "CNAnalysis.csv", col_names = TRUE)
+
+
+# CN Analysis Forbs
+FiveOrMore <- AllLeaves %>% 
+  filter(sum.nLeaves > 5) %>% 
+  select(Taxon, Site, `2015`, `2016`) %>% 
+  gather(key = Year, value = nLeaves, -Taxon, -Site)
+  
+
+# forbs (5 or more leaves, from gradient, not from last list, preferably 2016, then 2015)
+traits %>% 
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>% 
+  anti_join(CNAnalysis) %>% 
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  mutate(Year = as.character(year(Date))) %>% 
+  inner_join(FiveOrMore, by = c("Taxon", "Site", "Year")) %>% 
+  filter(!Taxon %in% c("Potentilla leuconota", "Plantago asiatica", "Polygonum viviparum", "Veronica szechuanica", "Viola biflora var. rockiana", "Pedicularis davidii", "Hypericum wightianum", "Geranium pylzowianum", "Epilobium fangii", "Artemisia flaccida")) %>% 
+  group_by(Site, Location, Project, Individual_number, Taxon) %>% 
+  summarise(n = n())
+  
+
+
+# CN Analysis Grasses
+onlyGraminoids <- taxa %>% filter(functionalGroup %in% c("gramineae", "sedge")) %>% select(speciesName)
+
+
+CN_Graminoids <- traits %>% 
+  mutate(Year = year(Date)) %>%
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>%
+  inner_join(onlyGraminoids, by = c("Taxon" = "speciesName")) %>% 
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  #select(Site, Year, Location, Individual_number, Leaf_number, Taxon) %>% 
+  arrange(Site, Taxon, -Year, Individual_number) %>% # Project not needed all Local
+  group_by(Site, Year, Taxon, Individual_number) %>% 
+  summarise(n = n()) %>% pn
+
+writexl::write_xlsx(x = CN_Graminoids, path = "traits/CN_Graminoids.xlsx")
