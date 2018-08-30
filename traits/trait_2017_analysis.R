@@ -201,7 +201,7 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = gsub("  ", " ", Taxon),
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName),
          Taxon = trimws(Taxon)
-         ) %>%
+         )
 
   
   
