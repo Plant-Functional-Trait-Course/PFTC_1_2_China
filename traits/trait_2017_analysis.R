@@ -195,14 +195,16 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          #Clean Taxon
          Taxon = gsub("_", " ", Taxon),# replace _ with " " in Taxon
          Taxon = gsub("\xa0", " ", Taxon), #remove non-breaking space
-         Taxon = trimws(Taxon),
          Taxon = gsub(" Var.", " var. ", Taxon), 
          Taxon = gsub("var ", "var. ", Taxon), 
          Taxon = gsub("var\\.", "var\\. ", Taxon),
          Taxon = gsub("  ", " ", Taxon),
-         Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName)
-         ) 
+         Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName),
+         Taxon = trimws(Taxon)
+         ) %>%
 
+  
+  
 # CN Analysis
 # read in ID for 2016
 CN_ID2016 <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
