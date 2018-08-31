@@ -2,10 +2,8 @@ library("tidyverse")
 library("vegan")
 library("ggvegan")
 
-cwm <- readRDS("trait_distributions/data/cwm_output_china.rds") %>% 
+cwm <- readRDS("trait_distributions/data/China_pftc_cwm.rds") %>% 
   as_tibble() %>% 
-  mutate(mean = as.numeric(as.character(mean))) %>% #why is mean a factor???
-  mutate(year = as.numeric(year)) %>% 
   mutate(site = factor(site, levels = c("H", "A", "M", "L"))) %>% 
   rename(TTtreat = treatment) %>% 
   mutate(TTtreat = factor(TTtreat, levels = c("C", "O", 1:4, "OTC"), labels = c("Control", "Local", "Warm1", "Cool1", "Warm3", "Cool3", "OTC")))
@@ -52,7 +50,8 @@ control_traits <- fortify(controls_pca, display = "species")
 
 treat_colours <- c("black", "grey50", "pink", "lightgreen", "red", "green", "orange")
 
-ggplot(control_sites, aes(x = PC1, y = PC2, shape = site, colour = TTtreat, fill = TTtreat, group = turf)) +  
+
+ggplot(control_sites, aes(x = PC1, y = PC2, shape = TTtreat, colour = site, group = turf)) +  
   geom_point(aes(size = ifelse(year == min(year), "First", "Other"))) +
   geom_path() +
   #arrows
@@ -63,16 +62,17 @@ ggplot(control_sites, aes(x = PC1, y = PC2, shape = site, colour = TTtreat, fill
                inherit.aes = FALSE) +
   geom_text(data = control_traits, 
             aes(x = PC1 * 1.1,y = PC2 * 1.1, label = Label), 
-            size = 4,
+            size = 3,
             inherit.aes = FALSE) +
   coord_equal() +
   scale_size_discrete(range = c(1, 2.5), limits = c("Other", "First"), breaks = c("First", "Other")) +
-  scale_colour_manual(values = treat_colours, limits = levels(cwm_fat$TTtreat)) +
-  scale_fill_manual(values = treat_colours, limits = levels(cwm_fat$TTtreat)) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cwm_fat$site)) +
-  guides(shape = guide_legend(override.aes = list(fill = "black"))) +
-  labs(x = "NMDS 1", y = "NMDS 2", colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year")
+  
+  scale_colour_brewer(palette = "RdBu", direction = -1) +
+  scale_shape_manual(values = c(16, 21)) +
+  scale_x_continuous(expand = c(.15, 0)) +
+  labs(x = "PC 1", y = "PC 2", shape = "Treatment", colour = "Site", size = "Year", title = "Controls")
 
+ggsave(filename = "cwm_trait_control_pca.png", width = 6, height = 5)
 
 
 

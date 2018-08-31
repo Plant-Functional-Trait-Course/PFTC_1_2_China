@@ -82,13 +82,19 @@ biomass <- biomass %>%
           
 #get family
 biomass <- biomass %>% mutate(family = tpl::tpl.get(genus)$family)
-save(biomass, file = "biomass/biomass_cleaned.Rdata")
-                    
+#save(biomass, file = "biomass/biomass_cleaned.Rdata")
+                 
+load(file = "biomass/biomass_cleaned.Rdata")
 
+
+# Check the data
 ##sum unknows
 biomass %>% filter(genus == "Unkown") %>% group_by(site, plot, speciesName) %>% summarise(biomass = sum(biomass)) %>% arrange(desc(biomass)) %>% pn
 
 biomass %>% filter(genus == "Unkown") %>% select(speciesName, site, plot, biomass) %>% arrange(desc(biomass)) 
+
+
+
 
 # make plots
 ggplot(biomass, aes(x = cover, y = biomass, color = speciesName)) +
@@ -99,9 +105,27 @@ ggplot(biomass, aes(x = height, y = biomass, color = speciesName)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(~ site)
 
-biomass[which.max(biomass$biomass),]
 
+# test biomass along gradient
+# summarize biomass per plot and calculate mean per site
+sumBiomass <- biomass %>% 
+  group_by(plot, site) %>% 
+  summarise(n = n(), sumBiomass = sum(biomass, na.rm = TRUE), meanHeight = mean(height, na.rm = TRUE))
 
+fitB <- lm(sumBiomass ~ site, data = sumBiomass)
+anova(fitB)
+summary(fitB)
+plot(fitB)
+
+fitH <- lm(meanHeight ~ site, data = sumBiomass)
+anova(fitH)
+summary(fitH)
+plot(fitH)
+
+# get 
+sumBiomass %>% 
+  group_by(site) %>% 
+  summarise(n = n(), Biomass = mean(sumBiomass, na.rm = TRUE), seB = sd(sumBiomass)/sqrt(n), Height = mean(meanHeight, na.rm = TRUE), seH = sd(meanHeight)/sqrt(n))
 
 
 
