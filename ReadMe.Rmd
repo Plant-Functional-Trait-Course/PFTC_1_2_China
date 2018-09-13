@@ -50,7 +50,7 @@ trait/trait_2017_analysis.R
 
 
 
-## COMMUNITY ANALYSIS
+## COMMUNITY DATA AND ANALYSIS
 ### DATA
 
 The dataset contains plant community composition data from the TransPlant project vegetation plots along the gradient, OTC and turf transplant experiments. 
@@ -81,7 +81,7 @@ Each species of vascular plant was classified by functional type (graminoid, for
 ### Data storage
 SQLITE file in OSF repo in the Plant community component
 transplant.sqlite
-
+biomass_cleanded.Rdata
 
 ### LOAD DATA AND ANALYSIS
 loading community data: start_here.R

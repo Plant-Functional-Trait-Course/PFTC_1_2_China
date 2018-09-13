@@ -192,3 +192,14 @@ g <-ggplot(fNMDS, aes(x = Dim1, y = Dim2, shape = site)) +
   labs(x = "NMDS 1", y = "NMDS 2")
 g
 
+
+
+
+### SOC from gradient
+soc <- read_excel(path = "biomass/data/SOC_Transplant.xlsx", skip = 2)
+soc <- soc %>% 
+  fill(replicate, elevation)
+
+ggplot(soc, aes(x = elevation, y = `TOC(%)`, color = as.factor(`depth(cm)`))) +
+  geom_point(size = 2) +
+  facet_grid(~ `depth(cm)`)
