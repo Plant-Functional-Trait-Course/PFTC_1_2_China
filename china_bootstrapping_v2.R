@@ -16,18 +16,9 @@
 #-dry weight
 
 
-#Components needed:
-  #I'm thinking modular here, so something like
-
-#1) Core function
-    #Input:
-      #A) Dataframe with paired species names and abundances
-      #B) 
-
 ##################
 #Changes to make
 
-#Add a batch of code that uses percent cover (*10?)  May need to multiply since many species occur in less than one percent of plot
 
 ####################################################################
 
@@ -48,10 +39,16 @@
 
 #Bootstrapped data based on biomass dataset
 
+#FOr some reason the files downloaded this way don't work, so manually download these
+#download.file(url = "https://osf.io/u7frt/download",destfile = "C:/Users/Brian/Desktop/current_projects/transplant/community/data/transplant.sqlite")
+#download.file(url = "https://osf.io/cr4p9/download",destfile = "C:/Users/Brian/Desktop/current_projects/transplant/community/data/biomass_cleaned.Rdata")
+
+
 library(moments)
 
 #Load biomass data
-load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/biomass_cleaned.Rdata")
+#load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/biomass_cleaned.Rdata")
+load("C:/Users/Brian/Desktop/current_projects/transplant/community/data/biomass_cleaned.Rdata")
 load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/traits.Rdata")
 
 unique(biomass$site)
@@ -123,13 +120,22 @@ genus<-unlist(genus)
 traits<-cbind(traits,genus)
 rm(genus)
 
-#add N:P to traits table
-traits$NP_ratio<-traits$N_percent/traits$P_AVG
 
 
 #remove observations with SLA values over 500 and under 5, along with LDMC values over 1.
 traits$SLA[which(traits$SLA_cm2_g > 500 | traits$SLA_cm2_g < 5)]<-NA
 traits$LDMC[which(traits$LDMC>1)]<-NA
+
+#remove N outliers based on BIEN
+library(BIEN)
+BIENN<-BIEN_trait_traitbygenus(genus = unique(as.character(traits$genus)),trait = "leaf nitrogen content per leaf dry mass")
+BIEN_max_N<-max(as.numeric(as.character(BIENN$trait_value,na.rm = T)))*.1
+traits$N_percent[which(traits$N_percent>BIEN_max_N)]<-NA
+rm(BIENN,BIEN_max_N)
+
+#add N:P to traits table
+traits$NP_ratio<-traits$N_percent/traits$P_AVG
+
 
 moments_output_plastic<-data.frame()
 rm(bad_data_i,bad_spp,good_data_i,i,site,un_spp,data_i)
@@ -294,6 +300,7 @@ for(n in 1: n_reps ){
   
   
   
+  
   output_i<-cbind(n,as.character(site_i$site),site_i$plot,sla_mean,sla_var,sla_skew,sla_kurt,ldmc_mean,ldmc_var,ldmc_skew,
                   ldmc_kurt,area_mean,area_var,area_skew,area_kurt,thickness_mean,thickness_var,thickness_skew,thickness_kurt,
                   c_pct_mean,c_pct_var,c_pct_skew,c_pct_kurt,n_pct_mean,n_pct_var,n_pct_skew,n_pct_kurt,p_pct_mean,p_pct_var,p_pct_skew,p_pct_kurt,
@@ -301,8 +308,13 @@ for(n in 1: n_reps ){
                   cn_ratio_mean,cn_ratio_var,cn_ratio_skew,cn_ratio_kurt)
   
   
+  if(n==1&i==1){moments_output_plastic<-matrix(nrow = nrow(unique(biomass[c('site','plot')]))*n_reps,ncol = ncol(output_i))}
   
-  moments_output_plastic<-rbind(moments_output_plastic,output_i)
+  moments_output_plastic[(n-1)*nrow(unique(biomass[c('site','plot')]))+i,1:ncol(output_i)]<-output_i
+  
+  
+  
+  #moments_output_plastic<-rbind(moments_output_plastic,output_i)
   
 
   
@@ -316,9 +328,15 @@ for(n in 1: n_reps ){
 
 
 
-names(moments_output_plastic)[1]<-"replicate"
-names(moments_output_plastic)[2]<-"site"
-names(moments_output_plastic)[3]<-"plot"
+moments_output_plastic<-as.data.frame(moments_output_plastic)
+
+colnames(moments_output_plastic)<-c("replicate","site","plot","sla_mean","sla_var","sla_skew","sla_kurt","ldmc_mean","ldmc_var","ldmc_skew",
+      "ldmc_kurt","area_mean","area_var","area_skew","area_kurt","thickness_mean","thickness_var","thickness_skew","thickness_kurt",
+      "c_pct_mean","c_pct_var","c_pct_skew","c_pct_kurt","n_pct_mean","n_pct_var","n_pct_skew","n_pct_kurt",
+      "p_pct_mean","p_pct_var","p_pct_skew","p_pct_kurt",
+      "dc13_pct_mean","dc13_pct_var","dc13_pct_skew","dc13_pct_kurt","dn15_pct_mean","dn15_pct_var","dn15_pct_skew","dn15_pct_kurt",
+      "cn_ratio_mean","cn_ratio_var","cn_ratio_skew","cn_ratio_kurt")
+
 
 rm(output_i,site_i,species_j_data,species_j_sample,cover_i,traits_i,area_kurt,area_mean,area_sample,area_skew,area_var)
 rm(dry_mass_sample,genus_j,i,j,ldmc_kurt, ldmc_mean, ldmc_sample,ldmc_skew,ldmc_var,n,n_reps,n_samples,purge)
@@ -398,7 +416,7 @@ for(i in 1: nrow(unique(moments_output_plastic[c('site','plot')]))){
     
     output<-cbind(site,plot,variable,lower_95_ci,mean_val,upper_95_ci)
     #print("   ")
-    print(c(site,plot,variable))
+    #print(c(site,plot,variable))
     #print(output)
     
     
@@ -425,7 +443,7 @@ biomass_multiplier = 10
 n_reps=1000
 
 #Make output files
-moments_output_biomass<-data.frame()
+#moments_output_biomass<-data.frame()
 
 #Run stuff
 for(n in 1: n_reps ){
@@ -500,6 +518,23 @@ for(n in 1: n_reps ){
       
       if(nrow(species_j_data)!=0){
         
+        
+        
+        
+        wet_mass_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        dry_mass_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        area_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        thickness_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        sla_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        ldmc_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        c_percent_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        n_percent_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        p_percent_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        dc13_percent_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        dn15_percent_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        cn_ratio_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        np_ratio_sample<-sample(x = NA,size = species_j_biomass,replace = T)
+        
         wet_mass_sample<-sample(x = na.omit(species_j_data$Wet_Mass_g),size = species_j_biomass,replace = T)
         dry_mass_sample<-sample(x = na.omit(species_j_data$Dry_Mass_g),size = species_j_biomass,replace = T)
         area_sample<-sample(x = na.omit(species_j_data$Leaf_Area_cm2),size = species_j_biomass,replace = T)
@@ -507,12 +542,12 @@ for(n in 1: n_reps ){
         sla_sample<-sample(x = na.omit(species_j_data$SLA_cm2_g),size = species_j_biomass,replace = T)
         ldmc_sample<-sample(x = na.omit(species_j_data$LDMC),size = species_j_biomass,replace = T)
         c_percent_sample<-sample(x = na.omit(species_j_data$C_percent),size = species_j_biomass,replace = T)
-        n_percent_sample<-sample(x = na.omit(species_j_data$N_percent),size = species_j_biomass,replace = T)
+        try(n_percent_sample<-sample(x = na.omit(species_j_data$N_percent),size = species_j_biomass,replace = T),silent = T)
         p_percent_sample<-sample(x = na.omit(species_j_data$P_AVG),size = species_j_biomass,replace = T)
         dc13_percent_sample<-sample(x = na.omit(species_j_data$dC13_percent),size = species_j_biomass,replace = T)
         dn15_percent_sample<-sample(x = na.omit(species_j_data$dN15_percent),size = species_j_biomass,replace = T)
-        cn_ratio_sample<-sample(x = na.omit(species_j_data$CN_ratio),size = species_j_biomass,replace = T)
-        np_ratio_sample<-sample(x = na.omit(species_j_data$NP_ratio),size = species_j_biomass,replace = T)
+        try(cn_ratio_sample<-sample(x = na.omit(species_j_data$CN_ratio),size = species_j_biomass,replace = T),silent = T)
+        try(np_ratio_sample<-sample(x = na.omit(species_j_data$NP_ratio),size = species_j_biomass,replace = T),silent=T)
         
         species_j_sample<-cbind(wet_mass_sample,dry_mass_sample,area_sample,thickness_sample,sla_sample,ldmc_sample,
                                 c_percent_sample,n_percent_sample,p_percent_sample,cn_ratio_sample,dc13_percent_sample,dn15_percent_sample,np_ratio_sample)
@@ -588,8 +623,11 @@ for(n in 1: n_reps ){
     
     
     
-    moments_output_biomass<-rbind(moments_output_biomass,output_i)
+    #moments_output_biomass<-rbind(moments_output_biomass,output_i)
     
+    if(n==1&i==1){moments_output_biomass<-matrix(nrow = nrow(unique(biomass[c('site','plot')]))*n_reps,ncol = ncol(output_i))}
+    
+    moments_output_biomass[(n-1)*nrow(unique(biomass[c('site','plot')]))+i,1:ncol(output_i)]<-output_i
     
     
     
@@ -599,12 +637,16 @@ for(n in 1: n_reps ){
   
 }#nreps loop (n)
 
+moments_output_biomass<-as.data.frame(moments_output_biomass)
+colnames(moments_output_biomass)<-c("replicate","site","plot","sla_mean","sla_var","sla_skew","sla_kurt","ldmc_mean","ldmc_var","ldmc_skew",
+                                 "ldmc_kurt","area_mean","area_var","area_skew","area_kurt","thickness_mean","thickness_var","thickness_skew","thickness_kurt",
+                                 "c_pct_mean","c_pct_var","c_pct_skew","c_pct_kurt","n_pct_mean","n_pct_var","n_pct_skew","n_pct_kurt",
+                                 "p_pct_mean","p_pct_var","p_pct_skew","p_pct_kurt",
+                                 "dc13_pct_mean","dc13_pct_var","dc13_pct_skew","dc13_pct_kurt","dn15_pct_mean","dn15_pct_var","dn15_pct_skew","dn15_pct_kurt",
+                                 "cn_ratio_mean","cn_ratio_var","cn_ratio_skew","cn_ratio_kurt",
+                                 "np_ratio_mean","np_ratio_var","np_ratio_skew","np_ratio_kurt")
 
 
-
-names(moments_output_biomass)[1]<-"replicate"
-names(moments_output_biomass)[2]<-"site"
-names(moments_output_biomass)[3]<-"plot"
 
 rm(output_i,site_i,species_j_data,species_j_sample,cover_i,traits_i,area_kurt,area_mean,area_sample,area_skew,area_var)
 rm(dry_mass_sample,genus_j,i,j,ldmc_kurt, ldmc_mean, ldmc_sample,ldmc_skew,ldmc_var,n,n_reps,n_samples,purge)
@@ -619,6 +661,8 @@ rm(np_ratio_mean,np_ratio_skew,np_ratio_var,np_ratio_kurt,np_ratio_sample)
 # min;mean;max
 moment_plastic_summary_site_level<-NULL
 moment_plastic_summary_plot_level<-NULL
+
+
 
 #Site Level
 for(i in 1: length(unique(moments_output_biomass$site))){
@@ -697,24 +741,11 @@ for(i in 1: nrow(unique(moments_output_biomass[c('site','plot')]))){
 moment_plastic_summary_plot_level<-as.data.frame(moment_plastic_summary_plot_level)
 rm(i,j,lower_95_ci,mean_val,plot,site,sort_j,to_remove,upper_95_ci,variable,output)
 
-#write.csv(x = moment_plastic_summary_plot_level,file = "C:/Users/Brian/Desktop/China_moments_plot_level_for_Jon_5_20_2018.csv")
-#write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/China_moments_site_level_for_Jon_5_20_2018.csv")
+#write.csv(x = moment_plastic_summary_plot_level,file = "C:/Users/Brian/Desktop/China_moments_plot_level_for_Jon_9_13_2018.csv")
+#write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/China_moments_site_level_for_Jon_9_13_2018.csv")
 
 ####################################################################
-#Generate plots of mean, var, skew, kurt for each variable (with error bars)
 
-out_folder<-"Henn_Maitner_trait_distributions/trait_distrubution_plots_2_8_18/"
-
-
-
-for(i in 1:length(unique(moment_plastic_summary_site_level$variable))){
-  
-variable <- as.character(unique(moment_plastic_summary_site_level$variable)[i])
-  
-  
-  
-  
-}
 
 
 
