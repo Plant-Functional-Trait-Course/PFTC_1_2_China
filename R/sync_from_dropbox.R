@@ -36,7 +36,7 @@ sync_from_dropbox <- function(drop_path_file, local_path_file, force = FALSE){
     }
     
     #download
-    drop_get(path = drop_path_file, local_file = local_path_file, overwrite = TRUE)
+    drop_download(path = drop_path_file, local_file = local_path_file, overwrite = TRUE)
     
     #get deltas so can check for updates later
     dropbox_delta <- drop_delta(path_prefix = sdrop_path_file)
