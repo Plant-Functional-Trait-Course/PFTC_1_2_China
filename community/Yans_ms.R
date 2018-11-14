@@ -9,7 +9,7 @@ library("vegan")
 library("ggvegan")
 library("lubridate")
 library("gridExtra")
-library("broom")
+
 
 ## ---- load_data
 
@@ -145,95 +145,38 @@ plot_three_treatments(responses, column = "total_vascular", ylab = "Total vascul
 
 # table of effects
 ## ---- regressions
-
-augment_aic <- function(x){
-  augment(x) %>% 
-    mutate(aic = AIC(x))
-}
-
-
 gradient <- responses %>% 
   filter(year == 2016, TTtreat %in% c("local", "control")) %>% 
   gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
   filter(!is.na(value)) %>% 
   group_by(variable) %>% 
- # mutate(value = scale(value)) %>% 
-  do(
-       mod0 = lm(value ~ originSiteID + mean - mean, data = .),
-       mod1 = lm(value ~ mean + originSiteID, data = .),
-       mod2 = lm(value ~ mean, data = .)
-    )
-
-gradient %>% 
-  ungroup() %>% 
-  group_by(variable) %>%
-  do(AIC(.$mod0[[1]], .$mod1[[1]], .$mod2[[1]]))
-
-
+  mutate(value = scale(value)) %>% 
+  do({
+    mod = lme(value ~ mean, random =  ~ 1|originSiteID, data = .)
+    tidy(mod, effects = "fixed")
+  })
   
-
 transplant <- responses %>%
   filter(year == 2016, TTtreat %in% c("local", "warm1"), originSiteID != "L") %>% 
   gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
   filter(!is.na(value)) %>% 
   group_by(variable) %>% 
-#  mutate(value = scale(value)) %>% 
-  do(mod0 = lm(value ~ originSiteID + contrast - contrast, data = .),
-    mod1 = lm(value ~ contrast + originSiteID, data = .),
-     mod2 = lm(value ~ contrast * originSiteID, data = .)
-  )
-
-transplant %>% 
-  ungroup() %>% 
-  group_by(variable) %>%
-  do(AIC(.$mod0[[1]], .$mod1[[1]], .$mod2[[1]])) %>% 
-  spread(key = df, value = AIC)
-
+  mutate(value = scale(value)) %>% 
+  do({
+    mod = lme(value ~ contrast, random =  ~ 1|originSiteID, data = .)
+    tidy(mod, effects = "fixed")
+  })
 
 otc <- responses %>%
   filter(year == 2016, TTtreat %in% c("local", "OTC")) %>% 
   gather(key = variable, value = value, -(originBlockID:year), -mean, -contrast) %>% 
   filter(!is.na(value)) %>% 
   group_by(variable) %>% 
-  #mutate(value = scale(value)) %>% 
-  do(mod0 = lm(value ~ originSiteID + contrast - contrast, data = .),
-     mod1 = lm(value ~ contrast + originSiteID, data = .),
-     mod2 = lm(value ~ contrast * originSiteID, data = .)
-  )
-
-otc %>% 
-  ungroup() %>% 
-  group_by(variable) %>%
-  do(AIC(.$mod0[[1]], .$mod1[[1]], .$mod2[[1]])) %>% 
-  spread(key = df, value = AIC)
-
-augmented_reg <- 
-  bind_rows(Transplant = transplant, OTC = otc, Gradient = gradient, .id = "experiment") %>% 
-  ungroup() %>% 
-  group_by(variable, experiment) %>%
-  do(
-    bind_rows(
-      null = augment_aic(.$mod0[[1]]), 
-      effect = augment_aic(.$mod1[[1]]), 
-      interaction = augment_aic(.$mod2[[1]]), 
-      .id = "model")
-  ) %>% 
-  filter(!(experiment == "Gradient" & model != "interaction")) %>% 
-  filter(aic == min(aic)) %>% 
-  ungroup() %>% 
-  rename(response = "variable") %>% 
-  filter(response %in% c("richness", "evenness", "sumCover", "propGraminoid")) %>% 
-  mutate(
-    originSiteID = plyr::mapvalues(originSiteID, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland")),
-    response = plyr::mapvalues(response, c("richness", "evenness", "sumCover", "propGraminoid"), c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid")),
-    response = factor(response, levels = c("Richness", "Evenness", "Sum of Cover", "Proportion Graminoid")),
-    contrast = if_else(experiment == "Gradient", mean, contrast),
-    model = factor(model, levels = c("null", "effect", "interaction"), labels = c("Null", "Effect", "Interaction"))) 
-  
-
-
-
-
+  mutate(value = scale(value)) %>% 
+  do({
+    mod = lme(value ~ contrast, random =  ~ 1|originSiteID, data = .)
+    tidy(mod, effects = "fixed")
+  })
 
 effects <- bind_rows(Gradient = gradient, Transplant = transplant, OTC = otc, .id = "Experiment") %>% 
   mutate(Experiment = factor(Experiment, levels = c("Gradient", "OTC", "Transplant" ))) %>% 
