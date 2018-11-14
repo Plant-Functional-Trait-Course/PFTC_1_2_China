@@ -1,0 +1,51 @@
+---
+title: "Trait Ordinations"
+author: "Richard J. Telford"
+date: "November 14, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, echo = FALSE)
+```
+
+## All taxa
+### Short distance transplant
+
+```{r}
+readd(AH_all_taxa)   
+```
+
+```{r}
+readd(MA_all_taxa)     
+```
+
+```{r}
+readd(LM_all_taxa)
+```
+
+### Long distance transplant
+```{r}
+readd(LH_all_taxa)
+```
+ 
+## Without graminoids
+
+### Short distance transplant
+
+```{r}
+readd(AH_no_graminoids)      
+```
+
+```{r}
+readd(MA_no_graminoids)     
+```
+
+```{r}
+readd(LM_no_graminoids)
+```
+
+### Long distance transplant
+```{r}
+readd(LH_no_graminoids)
+```
