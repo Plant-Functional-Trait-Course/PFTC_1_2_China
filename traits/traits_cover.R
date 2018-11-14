@@ -11,7 +11,7 @@ noGraminoids <- taxa %>% filter(!functionalGroup %in% c("gramineae", "sedge")) %
 # Merge traits and cover
 # Only Local, and controls from experiments
 AllLeaves <- traits %>% 
-  filter(Project %in% c("LOCAL", "0", "C")) %>%
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>%
   mutate(year = year(Date)) %>% 
   group_by(year, Taxon, Site) %>% 
   summarise(n_leaves = n()) %>% # count number of leaves
@@ -108,3 +108,65 @@ CNAnalysis %>%
 table(CNAnalysis$Taxon, year(CNAnalysis$Date), CNAnalysis$Site)
 
 write_csv(CNAnalysis, "CNAnalysis.csv", col_names = TRUE)
+
+
+# CN Analysis Forbs 2018
+# forbs (5 or more leaves, from gradient, not from last list, preferably 2016, then 2015)
+onlyGraminoids <- taxa %>% filter(functionalGroup %in% c("gramineae", "sedge")) %>% select(speciesName)
+
+
+# Species with cover in each site
+SpPerSite <- cover_thin %>% 
+  filter(TTtreat %in% c("control", "local")) %>% 
+  select(originSiteID, speciesName) %>% 
+  rename(Site = originSiteID, Taxon = speciesName)
+
+AllSpCoverSite <- AllLeaves %>% 
+  filter(!is.na(mean))
+
+# First five individuals per site and taxon (first 2016 leaves)
+IndNrForbs <- traits %>% 
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>% 
+  anti_join(CNAnalysis) %>% # remove leaves done before
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  filter(!Taxon %in% c("Potentilla leuconota", "Plantago asiatica", "Polygonum viviparum", "Veronica szechuanica", "Viola biflora var. rockiana", "Pedicularis davidii", "Hypericum wightianum", "Geranium pylzowianum", "Epilobium fangii", "Artemisia flaccida")) %>% # leaves from experiment (Jons paper)
+  anti_join(onlyGraminoids, by = c("Taxon" = "speciesName")) %>% # remove graminoids
+  mutate(Year = year(Date)) %>% 
+  semi_join(AllSpCoverSite, by = c("Taxon", "Site")) %>% # only species that have cover at the same site (= occur at this site)
+  select(Site, Year, Taxon, Individual_number) %>% 
+  arrange(Site, Taxon, -Year, Individual_number) %>% # -Year prioritizing 2016 leaves
+  distinct(Site, Taxon, Year, Individual_number) %>% 
+  group_by(Site, Taxon) %>% 
+  slice(1:5)
+ 
+# making forb table
+CNForbs2018 <- traits %>% 
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>% 
+  anti_join(CNAnalysis) %>% # remove leaves done before
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  filter(!Taxon %in% c("Potentilla leuconota", "Plantago asiatica", "Polygonum viviparum", "Veronica szechuanica", "Viola biflora var. rockiana", "Pedicularis davidii", "Hypericum wightianum", "Geranium pylzowianum", "Epilobium fangii", "Artemisia flaccida")) %>% # leaves from experiment (Jons paper)
+  anti_join(onlyGraminoids, by = c("Taxon" = "speciesName")) %>% # remove graminoids
+  mutate(Year = year(Date)) %>% 
+  semi_join(AllSpCoverSite, by = c("Taxon", "Site")) %>% # only species that have cover at the same site (= occur at this site) 
+  semi_join(IndNrForbs, by = c("Site", "Year", "Taxon", "Individual_number")) %>% # only first 5 individuals, prioratizing 2016 before 2015
+  arrange(Site, Taxon, -Year, Individual_number) # -Year prioritizing 2016 leaves
+
+writexl::write_xlsx(x = CNForbs2018, path = "traits/CNForbs2018.xlsx")
+
+
+
+# CN Analysis Grasses 2018
+onlyGraminoids <- taxa %>% filter(functionalGroup %in% c("gramineae", "sedge")) %>% select(speciesName)
+
+
+CN_Graminoids <- traits %>% 
+  mutate(Year = year(Date)) %>%
+  filter(Project %in% c(NA, "LOCAL", "0", "C")) %>%
+  inner_join(onlyGraminoids, by = c("Taxon" = "speciesName")) %>% 
+  filter(!grepl("brown|yellow", allComments)) %>% 
+  #select(Site, Year, Location, Individual_number, Leaf_number, Taxon) %>% 
+  arrange(Site, Taxon, -Year, Individual_number) %>% # Project not needed all Local
+  group_by(Site, Year, Taxon, Individual_number) %>% 
+  summarise(n = n()) %>% pn
+
+writexl::write_xlsx(x = CN_Graminoids, path = "traits/CN_Graminoids.xlsx")

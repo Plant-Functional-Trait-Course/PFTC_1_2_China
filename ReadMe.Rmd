@@ -9,12 +9,30 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## START HERE
+## STUDY AND SITE INFROMATION
+The study is conducted along an elevational gradient ranging from sub-alpine to alpine meadows in the Hengduan Mountain of southwest China. The elevational gradient contains of four sites: lowland (L 3000m), middle (M 3500m), alpine (A 3850m) and high alpine (H 4100m).
 
+  site      lat     long
+1    L 29.84347 102.0343
+2    M 29.86192 102.0360
+3    A 29.88911 102.0173
+4    H 29.90742 102.0118
+
+## Experiments
+Each site is divded into 5 (H) - 7 blocks within a fence to protect the site from grazing. Each block contains up to 7 different plots: OTC (open top chamber), C (untouched control), 0 (local transplant), 1 (transplant one step down, warm1), 2 (transplant one step up, cold1), 3 (transplant all the way down, warm3), 4 (transplant all the way up, cold4).
+
+I think it is 0 in the trait data set and O in the community data set.
+
+
+## START HERE
 source(setup.R)
 
 - Checks required packages installed
 - Downloads climate, community and trait data from dropbox
+
+## DATA CLEANING STEPS
+See Data Cleaning Documentation.Rmd
+
 
 
 ## CLIMATE DATA
@@ -25,23 +43,89 @@ Will show cleaned climate data plots
 
 
 
-
-
 ## TRAIT DATA
-
-# 2015 data
-
-Run script for some plots
+Run:
 trait/trait_2017_analysis.R
 
 
-# 2016 data
-
-Run script for some plots
-trait/TraitData2016.R
 
 
+## COMMUNITY DATA AND ANALYSIS
+### DATA
 
+The dataset contains plant community composition data from the TransPlant project vegetation plots along the gradient, OTC and turf transplant experiments. 
+The dataset contains the sub-plot frequency, cover, and some performance data on 118 taxa of vascular plants, along with some plot-level predictor variables, in 140 25 x 25 cm vegetation plots.
+The dataset covers the years from 2012 to 2016.
 
-## COMMUNITY ANALYSIS
+### Data collection methods
+We recorded all species of vascular plants in each of 25  x 25 cm subplots.
+For each species in each subplot it was noted down whether it was present as dominant (covered more than 50% of the sub-plot: D) or a seedling (S). For the  entire 25 x 25 cm plot, the percentage cover of each vascular plant species was then visually estimated. 
+Other variables that were measured for each plot:
+vegetation height (mean of 5 measurements)
+moss % cover
+moss layer depth (mean of 5 measurements)
+litter % cover 
+bare ground % cover
+rock % cover
+date of analysis
+recorder / scribe (if any)
+comments
+Other variables that were measured for each sub-plot:
+moss % cover
+litter % cover 
+bare % ground cover
+rock % cover
+Nomenclature follows E-Flora of China. 
+Each species of vascular plant was classified by functional type (graminoid, forb, shrub)
 
+### Data storage
+SQLITE file in OSF repo in the Plant community component
+transplant.sqlite
+biomass_cleanded.Rdata
+
+### LOAD DATA AND ANALYSIS
+loading community data: start_here.R
+
+Check data:
+Maps showing community cover for each turf and species each year
+subturf_maps.Rmd
+
+Data analysis for:
+Yan et al. (2018?). Transplants, open top chambers (OTCs) and gradient studies ask different questions in climate change effects studies. Frontiers in Plant Science.
+
+Community change
+- Community change in the two warming treatments and along the elevation gradient (Fig. 1)
+- Test model assumptions
+- Test change in vegetation height along gradient
+CommunityChange.R
+
+Model output: Table S2 and S3
+AppendixYansPaper.R
+
+PRC (Fig. 2, Table S4)
+PRC.R
+
+Biomass change along elevation gradient
+biomass.R
+
+## TRAIT PLASTICITY DATA AND ANALYSIS
+### DATA
+This dataset contains two data files. 
+
+The first is called "trait.rdata" and it contains all trait measurements made on all leaves sampled during 2015 and 2016 from this study. These traits include wet mass, dry mass, leaf area, leaf thickness, and leaf nutrients/isotopes. The leaves come from within the experimental transplanted plots, along with leaves from each site but outside the experimental plots. 
+
+The second is called "China_moments_site_level_for_Jon_9_13_2018.csv" and contains bootstrapped mean and 95%CI moments of trait distributions for each site based on the traits measured for eahd species present at each site and their abundance based on biomass harvested from up to 20 plots at each site. 
+
+### DATA STORAGE
+The data files are located in the OFS repo associated with this project under the traits component
+
+### LOAD DATA AND ANALYSIS
+To load data and run the analysis done for the paper "Intraspecific trait variation and phenotypic plasticity mediate alpine plant species response to climate change" there are three R scripts located in the transplant github repository linked in the OSF repo. These scripts are located in the "traits" folder then in the "trait_plasticity_paper" folder. 
+
+The first R script opens the "traits.Rdata" file and cleans unrealistic trait measurements and selects only data from experimental plots to examine the plasticity related to transplantation. It also calculates trait distributions for each species at each site for use in assessing significance of plastic responses to transplantation.
+
+The second R script runs variance partitioning analysis and produces the plot for that analysis. This starts with the "traits.Rdata" file but it selects only leaves that are not within the experimental plots to examine the traits of all species present at each site without the effect on transplantation.
+
+The third R script runs plasticity analysis and produces relevant plots for that analysis. The analysis is based on comparing trait values of each species in a transplanted plot to the trait values of the community in the new location of that species and to the traits of that species in it's original home location. 
+
+These scripts will reproduce all analyses and figures reported in "Intraspecific trait variation and phenotypic plasticity mediate alpine plant species response to climate change" manuscript.

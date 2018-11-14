@@ -4,7 +4,7 @@
 
 #Output:  table of p-val of trait v elevation with dimensions year x trait
 
-summarize_elevation_gradient_pvals<-function(file_directory,treatment="C"){
+summarize_elevation_gradient_pvals<-function(full_file_directory,treatment="C"){
   
   files<-list.files(full_file_directory,full.names = T)  
   file_index<-NULL

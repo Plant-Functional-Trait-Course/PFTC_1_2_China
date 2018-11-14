@@ -22,6 +22,10 @@ load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/Community.Rdata")
 source("trait_distributions/r_scripts/trait_distribution_fx.R")
 source("trait_distributions/r_scripts/trait_selecting_fx.R")
 
+#Fix spelling error
+traits$Taxon[grep(x = traits$Taxon,pattern = "Cyanthus husincans")] <- "Cyananthus incanus"
+
+
 #Remove N outliers beyond BIEN max for study genera
 #Preliminary analyses showed that outliers for Lowland sites were greatly influencing lowland distributions and means.
 #Comparison with BIEN data suggested these values are likely outliers
