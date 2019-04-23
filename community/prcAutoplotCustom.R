@@ -38,8 +38,10 @@ autoplot.prcCustom <- function(object, select, xlab, ylab,
              mapping = aes_string(group = NULL, x = NULL,
                                   colour = NULL, linetype = NULL))
   ## add the coefficients
-  plt <- plt + geom_line() +
-    theme(legend.position = legend.position) +
+  plt <- plt + geom_line(size = 1.5) +
+    theme(legend.position = legend.position,
+          text = element_text(size=20),
+          axis.text = element_text(size = 20)) +
     scale_x_continuous(breaks = as.numeric(TimeLevs), minor_breaks = NULL)
   
   ## add labels

@@ -27,7 +27,8 @@ trait_thin <- all_taxa %>%
   select(turfID:year, destSiteID:newTT, trait, mean) %>% 
   filter(year %in% c(2012, 2014, 2016),
          !trait %in% c("Dry_Mass_g", "Wet_Mass_g")) %>% 
-  droplevels()
+  droplevels() %>% 
+  mutate(trait = recode(trait, "C_percent" = "C", "CN_ratio" = "CN ratio", "dC13_percent" = "C13", "dN15_percent" = "N15", "Leaf_Area_cm2" = "Leaf area", "Leaf_Thickness_Ave_mm" = "Thickness", "N_percent" = "N", "NP_ratio" = "NP ratio", "P_AVG" = "P", "SLA_cm2_g" = "SLA"))
 
   
 # Warming
@@ -45,22 +46,22 @@ traitData_Warming <- traitFat_Warming %>% select(-(turfID:newTT))
 fit_Warming <- prc(response = traitData_Warming, treatment = traitFat_Warming$newTT, time = traitFat_Warming$year, scale = TRUE)
 
 # Make figures
-p1 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect", legend.position="top") +
-  scale_colour_manual(values = c("orange", "pink", "red", "red")) +
+p1 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect of treatment", legend.position="top") +
+  scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Warming)$Response, n = 5), trans = "reverse")
 
-p2 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect") +
-  scale_colour_manual(values = c("orange", "pink", "red", "red")) +
+p2 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect of treatment") +
+  scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Warming)$Response, n = 5), trans = "reverse") +
-  theme(legend.position = "none")
+  theme(legend.position = c(0.1, 0.2), legend.title = element_blank())
 
 p3 <- fortify(fit_Warming) %>% 
   filter(Score == "Species") %>% 
   mutate(X = 1) %>% 
   ggplot(aes(x = X, y = (Response), label = Label)) +
-  geom_text(aes(x = X), size = 3) +
+  geom_text(aes(x = X), size = 4) +
   scale_y_continuous(breaks = pretty(fortify(fit_Warming)$Response, n = 5), trans = "reverse") +
   labs(x = "", y = "") +
   theme(panel.background = element_blank(),
@@ -71,9 +72,9 @@ p3 <- fortify(fit_Warming) %>%
 prcLegend <- cowplot::get_legend(p1)
 
 
-TraitAllTaxa_Warming <- grid.arrange(prcLegend, p2, p3, 
-             heights = 0.2:2,
-             layout_matrix = rbind(c(1),c(2,2,2,2,2,3,3)))
+TraitAllTaxa_Warming <- grid.arrange(p2, p3, 
+             #heights = 0.2:2,
+             layout_matrix = rbind(c(2,2,2,2,2,3)))
 
 
 ## Cooling
@@ -91,22 +92,22 @@ traitData_Cool <- traitFat_Cool %>% select(-(turfID:newTT))
 fit_Cool <- prc(response = traitData_Cool, treatment = traitFat_Cool$newTT, time = traitFat_Cool$year, scale = TRUE)
 
 # Make figures
-p1 <- autoplot.prcCustom(fit_Cool, xlab = "", ylab = "Effect", legend.position="top") +
-  scale_colour_manual(values = c("lightblue", "blue", "blue")) +
+p1 <- autoplot.prcCustom(fit_Cool, xlab = "", ylab = "Effect of treatment", legend.position="top") +
+  scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Cool)$Response, n = 5), trans = "reverse")
 
-p2 <- autoplot.prcCustom(fit_Cool, xlab = "", ylab = "Effect") +
-  scale_colour_manual(values = c("lightblue", "blue", "blue")) +
+p2 <- autoplot.prcCustom(fit_Cool, xlab = "", ylab = "Effect of treatment") +
+  scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Cool)$Response, n = 5), trans = "reverse") +
-  theme(legend.position = "none")
+  theme(legend.position = c(0.1, 0.2), legend.title = element_blank())
 
 p3 <- fortify(fit_Cool) %>% 
   filter(Score == "Species") %>% 
   mutate(X = 1) %>% 
   ggplot(aes(x = X, y = Response, label = Label)) +
-  geom_text(aes(x = X), size = 3) +
+  geom_text(aes(x = X), size = 4) +
   scale_y_continuous(breaks = pretty(fortify(fit_Cool)$Response, n = 5), trans = "reverse") +
   labs(x = "", y = "") +
   theme(panel.background = element_blank(),
@@ -117,9 +118,9 @@ p3 <- fortify(fit_Cool) %>%
 prcLegend <- cowplot::get_legend(p1)
 
 
-TraitAllTaxa_Cooling <- grid.arrange(prcLegend, p2, p3, 
-             heights = 0.2:2,
-             layout_matrix = rbind(c(1),c(2,2,2,2,2,3,3)))
+TraitAllTaxa_Cooling <- grid.arrange(p2, p3, 
+             #heights = 0.2:2,
+             layout_matrix = rbind(c(2,2,2,2,2,3)))
 
 
 
@@ -151,13 +152,13 @@ traitDataNG_Warming <- traitFatNG_Warming %>% select(-(turfID:newTT))
 fitNG_Warming <- prc(response = traitDataNG_Warming, treatment = traitFatNG_Warming$newTT, time = traitFatNG_Warming$year, scale = TRUE)
 
 # Make figures
-p1 <- autoplot.prc(fitNG_Warming, xlab = "", ylab = "Effect", legend.position="top") +
-  scale_colour_manual(values = c("orange", "pink", "red", "red")) +
+p1 <- autoplot.prc(fitNG_Warming, xlab = "", ylab = "Effect of treatment", legend.position="top") +
+  scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fitNG_Warming)$Response, n = 5), trans = "reverse")
 
-p2 <- autoplot.prc(fitNG_Warming, xlab = "", ylab = "Effect") +
-  scale_colour_manual(values = c("orange", "pink", "red", "red")) +
+p2 <- autoplot.prc(fitNG_Warming, xlab = "", ylab = "Effect of treatment") +
+  scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fitNG_Warming)$Response, n = 5), trans = "reverse") +
   theme(legend.position = "none")
@@ -198,13 +199,13 @@ traitDataNG_Cool <- traitFatNG_Cool %>% select(-(turfID:newTT))
 fitNG_Cool <- prc(response = traitDataNG_Cool, treatment = traitFatNG_Cool$newTT, time = traitFatNG_Cool$year, scale = TRUE)
 
 # Make figures
-p1 <- autoplot.prc(fitNG_Cool, xlab = "", ylab = "Effect", legend.position="top") +
-  scale_colour_manual(values = c("lightblue", "blue", "blue")) +
+p1 <- autoplot.prc(fitNG_Cool, xlab = "", ylab = "Effect of treatment", legend.position="top") +
+  scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fitNG_Cool)$Response, n = 5), trans = "reverse")
 
-p2 <- autoplot.prc(fitNG_Cool, xlab = "", ylab = "Effect") +
-  scale_colour_manual(values = c("lightblue", "blue", "blue")) +
+p2 <- autoplot.prc(fitNG_Cool, xlab = "", ylab = "Effect of treatment") +
+  scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fitNG_Cool)$Response, n = 5), trans = "reverse") +
   theme(legend.position = "none")
@@ -266,8 +267,8 @@ communityData_Warming <- coverFatComm_Warming %>% select(-(originSiteID:newTT))
 
 fitCommunity_Warming <- prc(response = communityData_Warming, treatment = coverFatComm_Warming$newTT, time = coverFatComm_Warming$year)
 
-CommunityAllTaxa_Warming <- autoplot.prcWithoutSP(fitCommunity_Warming, xlab = "", ylab = "Effect", legend.position="top") +
-  scale_colour_manual(values = c("orange", "pink", "red", "red")) +
+CommunityAllTaxa_Warming <- autoplot.prcWithoutSP(fitCommunity_Warming, xlab = "", ylab = "Effect of treatment", legend.position = "none") +
+  scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(trans = "reverse")
 
@@ -296,17 +297,17 @@ communityData_Cooling <- coverFatComm_Cooling %>% select(-(originSiteID:newTT))
 
 fitCommunity_Cooling <- prc(response = communityData_Cooling, treatment = coverFatComm_Cooling$newTT, time = coverFatComm_Cooling$year)
 
-CommunityAllTaxa_Cooling <- autoplot.prcWithoutSP(fitCommunity_Cooling, xlab = "", ylab = "Effect", legend.position="top") +
-  scale_colour_manual(values = c("lightblue", "blue", "blue")) +
+CommunityAllTaxa_Cooling <- autoplot.prcWithoutSP(fitCommunity_Cooling, xlab = "", ylab = "Effect of treatment", legend.position = "none") +
+  scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(trans = "reverse")
 
 
 
-TDTFinalFig <- grid.arrange(CommunityAllTaxa_Warming, TraitAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Cooling,
-             nrow = 2,
-             layout_matrix = rbind(c(1,1,1,2,2,2,2), 
-                                   c(3,3,3,4,4,4,4)))
+# TDTFinalFig <- grid.arrange(CommunityAllTaxa_Warming, TraitAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Cooling,
+#              nrow = 2,
+#              layout_matrix = rbind(c(1,1,1,2,2,2,2), 
+#                                    c(3,3,3,4,4,4,4)))
 
 
 TDTFinalFig <- plot_grid(CommunityAllTaxa_Warming, TraitAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Cooling,
@@ -314,6 +315,7 @@ TDTFinalFig <- plot_grid(CommunityAllTaxa_Warming, TraitAllTaxa_Warming, Communi
           ncol = 2)
 
 save_plot("community/TDTFinalFig.jpeg", TDTFinalFig, base_height = 10, base_width = 15)
+
 
 ### ONLY FORBS
 ## prep data for ordination
@@ -339,7 +341,7 @@ communityDataNG_Warming <- coverFatCommNG_Warming %>% select(-(originSiteID:newT
 
 fitCommunityNG_Warming <- prc(response = communityDataNG_Warming, treatment = coverFatCommNG_Warming$newTT, time = coverFatCommNG_Warming$year)
 
-CommunityForbs_Warming <- autoplot.prcWithoutSP(fitCommunityNG_Warming, xlab = "", ylab = "Effect", legend.position="top") +
+CommunityForbs_Warming <- autoplot.prcWithoutSP(fitCommunityNG_Warming, xlab = "", ylab = "Effect of treatment", legend.position="top") +
   scale_colour_manual(values = c("orange", "pink", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid"))
 
@@ -368,7 +370,7 @@ communityDataNG_Cooling <- coverFatCommNG_Cooling %>% select(-(originSiteID:newT
 
 fitCommunityNG_Cooling <- prc(response = communityDataNG_Cooling, treatment = coverFatCommNG_Cooling$newTT, time = coverFatCommNG_Cooling$year)
 
-CommunityForbs_Cooling <- autoplot.prcWithoutSP(fitCommunityNG_Cooling, xlab = "", ylab = "Effect", legend.position="top") +
+CommunityForbs_Cooling <- autoplot.prcWithoutSP(fitCommunityNG_Cooling, xlab = "", ylab = "Effect of treatment", legend.position="top") +
   scale_colour_manual(values = c("lightblue", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid"))  +
   scale_y_continuous(trans = "reverse")
