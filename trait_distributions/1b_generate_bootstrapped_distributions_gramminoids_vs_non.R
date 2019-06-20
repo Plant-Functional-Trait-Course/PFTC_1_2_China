@@ -37,8 +37,30 @@ china_genera<-unlist(lapply(X = china_spp,FUN = function(X){
 
 BIENN<-BIEN_trait_traitbygenus(genus = china_genera,trait = "leaf nitrogen content per leaf dry mass")
 BIEN_max_N<-max(as.numeric(as.character(BIENN$trait_value,na.rm = T)))*.1
-rm(BIENN,china_genera,china_spp)
+rm(BIENN,china_spp)
 traits$N_percent[which(traits$N_percent>BIEN_max_N)]<-NA
+
+#We'll also remove outliers of SLA values which are beyond range reported in BIEN
+BIENsla<-BIEN_trait_traitbygenus(genus = china_genera,trait = "leaf area per leaf dry mass")
+BIENsla$trait_value<-as.numeric(as.character(BIENsla$trait_value))
+BIENsla$trait_value<-BIENsla$trait_value*10000*(1/1000) #convert to cm2/kg
+BIENsla$unit<-"cm2.kg-1"
+BIEN_max_sla<-max(BIENsla$trait_value)
+#hist(BIENsla$trait_value)
+#hist(traits$SLA_cm2_g)
+traits$SLA_cm2_g[which(traits$SLA_cm2_g>BIEN_max_sla)]<-NA
+
+
+#remove extreme ldmc
+BIENldmc<-BIEN_trait_traitbygenus(genus = china_genera,trait = "leaf dry mass per leaf fresh mass")
+BIENldmc$trait_value<-as.numeric(as.character(BIENldmc$trait_value))
+BIENldmc$trait_value<-BIENldmc$trait_value*(1/1000)#convert to g/g
+BIENldmc$unit<-"g.g-1"
+BIEN_max_ldmc<-max(BIENldmc$trait_value)
+traits$LDMC[which(traits$LDMC>BIEN_max_ldmc)]<-NA
+rm(BIENsla,BIEN_max_sla,china_genera,BIEN_max_N,BIENldmc,BIEN_max_ldmc)
+
+
 
 
 #Add N:P ratio
@@ -51,6 +73,9 @@ traits_chem<-traits[c("Taxon","Site","Project","C_percent", "N_percent","CN_rati
 traits_leaf$Wet_Mass_g <- log(traits_leaf$Wet_Mass_g)
 traits_leaf$Dry_Mass_g <- log(traits_leaf$Dry_Mass_g)
 traits_leaf$Leaf_Area_cm2 <- log(traits_leaf$Leaf_Area_cm2)
+
+
+
 
 #Figure out which spp are gramminoids
 #Add genus to data for convenience

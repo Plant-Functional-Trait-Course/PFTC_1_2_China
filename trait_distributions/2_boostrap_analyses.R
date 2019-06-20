@@ -1216,7 +1216,7 @@ source("trait_distributions/r_scripts/plot_histograms_treat_trait_year.R") #to l
 #summary table of trait v elevation
 library(gridExtra)
 source("trait_distributions/r_scripts/summarize_elev_gradient_pvals.R")
-O_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(file_directory = file_directory_native,treatment = "O")
+O_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(full_file_directory = file_directory_native,treatment = "O")
 grid.table(O_trait_vs_elev_sig)
 
 grid.table(trait_x_elev_sig)
@@ -1326,6 +1326,78 @@ saveRDS(object = moments_fixed[c("turf","treatment","site","year","trait","mean"
 #####################################
 
 #joyplots : different elevations along y axis, different years on x
+
+#####################################
+library(plyr)
+library(tidyverse)
+library(ggpmisc)
+#vs temp
+
+recipient_site_moments_2016_c<-moments_plastic[which(moments_plastic$year==2016 & moments_plastic$treatment %in% c("C","O")),]
+
+recipient_site_moments_2016_c<-recipient_site_moments_2016_c[which(!recipient_site_moments_2016_c$trait%in%c("turf","Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+recipient_site_moments_2016_c$trait<-multigsub(recipient_site_moments_2016_c$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                                               "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                               replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                               "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  ))
+recipient_site_moments_2016_c$elevation<-NA 
+recipient_site_moments_2016_c$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),recipient_site_moments_2016_c$site))
+
+
+
+china_env_data<-read.csv("trait_distributions/ScrubbedCHINAdata.csv")
+temps<-ddply(china_env_data,"PlotID",summarise,mean_air_temp=mean(AirTemp,na.rm = T),mean_soil_temp=mean(SoilTemp,na.rm = T))
+temps$PlotID<-toupper(x = temps$PlotID)
+merged_moments<-merge(x=recipient_site_moments_2016_c , y = temps,by.x = "turf",by.y = "PlotID",all.x = T)
+
+
+#
+
+merged_moments$mean<-as.numeric(as.character(merged_moments$mean))
+
+
+air<-ggplot(data = merged_moments[which(!merged_moments$trait %in% 
+                                          c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent") &
+                                          merged_moments$treatment %in% c("C","O")),] , 
+            aes(x = mean_air_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)
+
+soil<-ggplot(data = merged_moments[which(!merged_moments$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent") &merged_moments$treatment %in% c("C","O") ),] , aes(x = mean_soil_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)
+
+
+my.formula <- y ~ x
+
+soil+stat_poly_eq(formula = my.formula , 
+                  aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                  parse = TRUE)+
+  stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+                  geom = 'text', aes(label = paste("P-value = ", 
+                                                   signif(..p.value.., digits = 4), sep = "")),
+                  label.x.npc = 'right',
+                  label.y.npc = 'bottom', size = 3)
+
+
+
+air+stat_poly_eq(formula = y ~ x , 
+                 aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                 parse = TRUE)+
+  stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+                  geom = 'text', aes(label = paste("P-value = ", 
+                                                   signif(..p.value.., digits = 4), sep = "")),
+                  label.x.npc = 'right',
+                  label.y.npc = 'bottom', size = 3)
+
+
+
+
+#do on just summer temp
+
+
 
 
 
