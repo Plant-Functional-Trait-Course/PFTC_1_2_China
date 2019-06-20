@@ -107,3 +107,25 @@ PRC.R
 
 Biomass change along elevation gradient
 biomass.R
+
+## TRAIT PLASTICITY DATA AND ANALYSIS
+### DATA
+This dataset contains two data files. 
+
+The first is called "trait.rdata" and it contains all trait measurements made on all leaves sampled during 2015 and 2016 from this study. These traits include wet mass, dry mass, leaf area, leaf thickness, and leaf nutrients/isotopes. The leaves come from within the experimental transplanted plots, along with leaves from each site but outside the experimental plots. 
+
+The second is called "China_moments_site_level_for_Jon_9_13_2018.csv" and contains bootstrapped mean and 95%CI moments of trait distributions for each site based on the traits measured for eahd species present at each site and their abundance based on biomass harvested from up to 20 plots at each site. 
+
+### DATA STORAGE
+The data files are located in the OFS repo associated with this project under the traits component
+
+### LOAD DATA AND ANALYSIS
+To load data and run the analysis done for the paper "Intraspecific trait variation and phenotypic plasticity mediate alpine plant species response to climate change" there are three R scripts located in the transplant github repository linked in the OSF repo. These scripts are located in the "traits" folder then in the "trait_plasticity_paper" folder. 
+
+The first R script opens the "traits.Rdata" file and cleans unrealistic trait measurements and selects only data from experimental plots to examine the plasticity related to transplantation. It also calculates trait distributions for each species at each site for use in assessing significance of plastic responses to transplantation.
+
+The second R script runs variance partitioning analysis and produces the plot for that analysis. This starts with the "traits.Rdata" file but it selects only leaves that are not within the experimental plots to examine the traits of all species present at each site without the effect on transplantation.
+
+The third R script runs plasticity analysis and produces relevant plots for that analysis. The analysis is based on comparing trait values of each species in a transplanted plot to the trait values of the community in the new location of that species and to the traits of that species in it's original home location. 
+
+These scripts will reproduce all analyses and figures reported in "Intraspecific trait variation and phenotypic plasticity mediate alpine plant species response to climate change" manuscript.

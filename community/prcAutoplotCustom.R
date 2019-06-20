@@ -1,8 +1,9 @@
-autoplot.prcWithoutSP <- function(object, select, xlab, ylab,
-                           title = NULL, subtitle = NULL, caption = NULL,
-                           legend.position = "top", ...) {
+library("cowplot")
+autoplot.prcCustom <- function(object, select, xlab, ylab,
+         title = NULL, subtitle = NULL, caption = NULL,
+         legend.position = "top", ...) {
   ## fortify the model object
-  fobj <- fortify(object, ...)
+  fobj <- fortify(object)
   
   ## levels of factors - do this now before we convert things
   TimeLevs <- levels(fobj$Time)
@@ -20,20 +21,25 @@ autoplot.prcWithoutSP <- function(object, select, xlab, ylab,
   }
   
   ## samples and species "scores"
-  samp <- fobj[!ind, ] 
+  samp <- fobj[!ind, ]
   spp <- fobj[ind,][select, ]
   
   ## base plot
   plt <- ggplot(data = samp,
                 aes_string(x = 'Time', y = 'Response', group = 'Treatment',
                            colour = 'Treatment', linetype = 'Treatment'))
+  
   ## add the control
   plt <- plt + geom_hline(yintercept = 0)
-
+  ## add species rug
+  plt <- plt +
+    geom_rug(data = spp,
+             sides = "r",
+             mapping = aes_string(group = NULL, x = NULL,
+                                  colour = NULL, linetype = NULL))
   ## add the coefficients
   plt <- plt + geom_line(size = 1.5) +
-    theme(legend.position = legend.position, 
-          legend.title = element_blank(),
+    theme(legend.position = legend.position,
           text = element_text(size=20),
           axis.text = element_text(size = 20)) +
     scale_x_continuous(breaks = as.numeric(TimeLevs), minor_breaks = NULL)
@@ -46,7 +52,8 @@ autoplot.prcWithoutSP <- function(object, select, xlab, ylab,
     ylab <- 'Treatment'
   }
   plt <- plt + labs(x = xlab, y = ylab, title = title, subtitle = subtitle,
-                    caption = caption)
+                    caption = caption) #+
+    #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"))
   
   ## return
   plt
