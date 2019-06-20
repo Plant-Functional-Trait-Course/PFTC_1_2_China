@@ -561,17 +561,371 @@ moments_fixed$skew<-as.numeric(as.character(moments_fixed$skew))
 moments_fixed$kurt<-as.numeric(as.character(moments_fixed$kurt))
 
 library(ggplot2)
-skew_kurt_color_by_trait <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$trait)) + geom_point() 
+skew_kurt_color_by_trait <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt-3, colour = moments_fixed$trait)) + geom_point()+xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="Trait")
 skew_kurt_color_by_trait
 
-skew_kurt_color_by_site <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$site)) + geom_point() 
+skew_kurt_color_by_site <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt-3, colour = moments_fixed$site)) + geom_point() +xlab("Skewness")+ylab("Excess Kurtosis") +labs(colour="Site")
 skew_kurt_color_by_site
 
-skew_kurt_color_by_treatment <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$treatment)) + geom_point() 
+skew_kurt_color_by_treatment <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt-3, colour = moments_fixed$treatment)) + geom_point() +xlab("Skewness")+ylab("Excess Kurtosis") +labs(colour="Treatment")
 skew_kurt_color_by_treatment
 
-skew_kurt_color_by_year <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt, colour = moments_fixed$year)) + geom_point() 
+skew_kurt_color_by_year <- ggplot(moments_fixed, aes(x = moments_fixed$skew, y = moments_fixed$kurt-3, colour = moments_fixed$year)) + geom_point() +xlab("Skewness")+ylab("Excess Kurtosis") +labs(colour="Year")
 skew_kurt_color_by_year
+
+
+##
+
+#For the above graphs can you also calculate the trait mean value - across all plots? 
+#Therefore we would have one data point per trait (or year, or site, treatment) . 
+#Would also be good to include confidence intervals
+
+
+
+mean_skew_vs_kurt_by_trait<-NULL
+for(i in 1:length(unique(moments_fixed$trait))){
+trait_i<-  as.character(unique(moments_fixed$trait)[i])
+
+mean_skew_i<-mean(moments_fixed$skew[moments_fixed$trait==trait_i])
+error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$trait==trait_i]))
+error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$kurt[moments_fixed$trait==trait_i]))
+mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$trait==trait_i])
+mean_skew_vs_kurt_by_trait<-rbind(mean_skew_vs_kurt_by_trait,cbind(trait_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+
+}
+
+mean_skew_vs_kurt_by_trait<-as.data.frame(mean_skew_vs_kurt_by_trait)
+mean_skew_vs_kurt_by_trait$mean_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait$mean_skew_i))
+mean_skew_vs_kurt_by_trait$mean_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait$mean_kurt_i))
+mean_skew_vs_kurt_by_trait$error_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait$error_skew_i))
+mean_skew_vs_kurt_by_trait$error_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait$error_kurt_i))
+
+write.csv(mean_skew_vs_kurt_by_trait,file = "C:/Users/Brian/Desktop/mean_skewness_vs_kurtosis_by_trait.csv")
+
+
+mean_skew_kurt_color_by_trait <- ggplot(mean_skew_vs_kurt_by_trait, aes(x = mean_skew_vs_kurt_by_trait$mean_skew_i, y = mean_skew_vs_kurt_by_trait$mean_kurt_i-3, colour = mean_skew_vs_kurt_by_trait$trait_i)) + geom_point()+xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="Trait")+
+  geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_trait$mean_skew_i-mean_skew_vs_kurt_by_trait$error_skew_i
+                      ,xmax = mean_skew_vs_kurt_by_trait$mean_skew_i+mean_skew_vs_kurt_by_trait$error_skew_i)) + 
+  geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_trait$mean_kurt_i-mean_skew_vs_kurt_by_trait$error_kurt_i-3
+                     ,ymax = mean_skew_vs_kurt_by_trait$mean_kurt_i+mean_skew_vs_kurt_by_trait$error_kurt_i-3)) 
+
+
+mean_skew_kurt_color_by_trait
+
+#mean skew vs kurt by site
+
+mean_skew_vs_kurt_by_site<-NULL
+for(i in 1:length(unique(moments_fixed$site))){
+  site_i<-  as.character(unique(moments_fixed$site)[i])
+  
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$site==site_i])
+  #mean_skew_i<-mean(moments_fixed$skew[moments_fixed$site==site_i & moments_fixed$treatment%in%c("O","C")])
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$site==site_i])/sqrt(length(moments_fixed$skew[moments_fixed$site==site_i]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$site==site_i])/sqrt(length(moments_fixed$kurt[moments_fixed$site==site_i]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$site==site_i])
+  mean_skew_vs_kurt_by_site<-rbind(mean_skew_vs_kurt_by_site,cbind(site_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+mean_skew_vs_kurt_by_site<-as.data.frame(mean_skew_vs_kurt_by_site)
+mean_skew_vs_kurt_by_site$mean_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site$mean_skew_i))
+mean_skew_vs_kurt_by_site$mean_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site$mean_kurt_i))
+mean_skew_vs_kurt_by_site$error_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site$error_skew_i))
+mean_skew_vs_kurt_by_site$error_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site$error_kurt_i))
+
+
+
+
+mean_skew_kurt_color_by_site <- ggplot(mean_skew_vs_kurt_by_site, aes(x = mean_skew_vs_kurt_by_site$mean_skew_i, y = mean_skew_vs_kurt_by_site$mean_kurt_i-3, colour = mean_skew_vs_kurt_by_site$site_i)) + geom_point()+xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="site")+
+  geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_site$mean_skew_i-mean_skew_vs_kurt_by_site$error_skew_i
+                     ,xmax = mean_skew_vs_kurt_by_site$mean_skew_i+mean_skew_vs_kurt_by_site$error_skew_i)) + 
+  geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_site$mean_kurt_i-mean_skew_vs_kurt_by_site$error_kurt_i-3
+                    ,ymax = mean_skew_vs_kurt_by_site$mean_kurt_i+mean_skew_vs_kurt_by_site$error_kurt_i-3)) 
+
+
+mean_skew_kurt_color_by_site
+
+#mean skew vs kurt by treatment
+
+mean_skew_vs_kurt_by_treatment<-NULL
+for(i in 1:length(unique(moments_fixed$treatment))){
+  treatment_i<-  as.character(unique(moments_fixed$treatment)[i])
+  
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$treatment==treatment_i])
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$treatment==treatment_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$treatment==treatment_i])/sqrt(length(moments_fixed$kurt[moments_fixed$treatment==treatment_i]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$treatment==treatment_i])
+  mean_skew_vs_kurt_by_treatment<-rbind(mean_skew_vs_kurt_by_treatment,cbind(treatment_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+mean_skew_vs_kurt_by_treatment<-as.data.frame(mean_skew_vs_kurt_by_treatment)
+mean_skew_vs_kurt_by_treatment$mean_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$mean_skew_i))
+mean_skew_vs_kurt_by_treatment$mean_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$mean_kurt_i))
+mean_skew_vs_kurt_by_treatment$error_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$error_skew_i))
+mean_skew_vs_kurt_by_treatment$error_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$error_kurt_i))
+
+
+
+
+mean_skew_kurt_color_by_treatment <- ggplot(mean_skew_vs_kurt_by_treatment, aes(x = mean_skew_vs_kurt_by_treatment$mean_skew_i, y = mean_skew_vs_kurt_by_treatment$mean_kurt_i-3, colour = mean_skew_vs_kurt_by_treatment$treatment_i)) + geom_point()+xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="treatment")+
+  geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_treatment$mean_skew_i-mean_skew_vs_kurt_by_treatment$error_skew_i
+                     ,xmax = mean_skew_vs_kurt_by_treatment$mean_skew_i+mean_skew_vs_kurt_by_treatment$error_skew_i)) + 
+  geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_treatment$mean_kurt_i-mean_skew_vs_kurt_by_treatment$error_kurt_i-3
+                    ,ymax = mean_skew_vs_kurt_by_treatment$mean_kurt_i+mean_skew_vs_kurt_by_treatment$error_kurt_i-3)) 
+
+
+skew_kurt_color_by_trait_treat <- 
+  ggplot(moments_fixed, 
+         aes(x = moments_fixed$skew, y = moments_fixed$kurt-3, colour = moments_fixed$trait)) + 
+          geom_point()+
+          xlab("Skewness")+
+          ylab("Excess Kurtosis")+
+          labs(colour="Trait")+
+          facet_wrap(~moments_fixed$treatment,nrow = 2,ncol = 4)
+
+library(tidyverse)
+
+
+#skew_kurt_color_by_trait_treat <- 
+
+moments_fixed$site <- ordered(moments_fixed$site, levels = c("H","A","M","L"))
+
+
+
+  moments_fixed %>% 
+  filter(treatment %in% c('O','C')) %>%
+      ggplot( 
+         aes(x = skew, y = kurt-3, colour = trait)) + 
+          geom_point()+
+          xlab("Skewness")+
+          ylab("Excess Kurtosis")+
+          labs(colour="Trait")+
+          facet_wrap(~site,nrow = 2,ncol = 4)
+
+moments_fixed$site
+
+
+#(I) need the mean kurtosis and skewness (w confidence intervals) for control plots and turfs. 
+#(II) can you output the data values per trait? can you put the data into a summarized table?
+
+
+mean_skew_vs_kurt_by_trait_controls<-NULL
+for(i in 1:length(unique(moments_fixed$trait))){
+  trait_i<-  as.character(unique(moments_fixed$trait)[i])
+  
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$trait==trait_i & moments_fixed$treatment %in% c("C","O")])
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$trait==trait_i & moments_fixed$treatment %in% c("C","O")])/sqrt(length(moments_fixed$skew[moments_fixed$trait==trait_i & moments_fixed$treatment %in% c("C","O")]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$trait==trait_i & moments_fixed$treatment %in% c("C","O")])/sqrt(length(moments_fixed$kurt[moments_fixed$trait==trait_i & moments_fixed$treatment %in% c("C","O")]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$trait==trait_i & moments_fixed$treatment %in% c("C","O")])
+  mean_skew_vs_kurt_by_trait_controls<-rbind(mean_skew_vs_kurt_by_trait,cbind(trait_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+mean_skew_vs_kurt_by_trait_controls<-as.data.frame(mean_skew_vs_kurt_by_trait)
+mean_skew_vs_kurt_by_trait_controls$mean_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait_controls$mean_skew_i))
+mean_skew_vs_kurt_by_trait_controls$mean_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait_controls$mean_kurt_i))
+mean_skew_vs_kurt_by_trait_controls$error_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait_controls$error_skew_i))
+mean_skew_vs_kurt_by_trait_controls$error_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_trait_controls$error_kurt_i))
+
+write.csv(mean_skew_vs_kurt_by_trait_controls,file = "C:/Users/Brian/Desktop/mean_skewness_vs_kurtosis_by_trait_controls.csv")
+
+mean_skew_kurt_color_by_trait_controls <- ggplot(mean_skew_vs_kurt_by_trait_controls, aes(x = mean_skew_vs_kurt_by_trait_controls$mean_skew_i, y = mean_skew_vs_kurt_by_trait_controls$mean_kurt_i-3, colour = mean_skew_vs_kurt_by_trait_controls$trait_i)) + geom_point()+xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="Trait")+
+  geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_trait_controls$mean_skew_i - mean_skew_vs_kurt_by_trait_controls$error_skew_i
+                     ,xmax = mean_skew_vs_kurt_by_trait_controls$mean_skew_i + mean_skew_vs_kurt_by_trait_controls$error_skew_i)) + 
+  geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_trait_controls$mean_kurt_i - mean_skew_vs_kurt_by_trait_controls$error_kurt_i-3
+                    ,ymax = mean_skew_vs_kurt_by_trait_controls$mean_kurt_i + mean_skew_vs_kurt_by_trait_controls$error_kurt_i-3)) 
+
+
+mean_skew_kurt_color_by_trait_controls
+
+
+#calculate the values of the moments  for the turfs and OTCs separate. 
+
+
+
+
+mean_skew_vs_kurt_by_treatment<-NULL
+for(i in 1:length(unique(moments_fixed$treatment))){
+  treatment_i<-  as.character(unique(moments_fixed$treatment)[i])
+  
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$treatment==treatment_i])
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$treatment==treatment_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$treatment==treatment_i])/sqrt(length(moments_fixed$kurt[moments_fixed$treatment==treatment_i]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$treatment==treatment_i])
+  mean_skew_vs_kurt_by_treatment<-rbind(mean_skew_vs_kurt_by_treatment,cbind(treatment_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+mean_skew_vs_kurt_by_treatment<-as.data.frame(mean_skew_vs_kurt_by_treatment)
+mean_skew_vs_kurt_by_treatment$mean_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$mean_skew_i))
+mean_skew_vs_kurt_by_treatment$mean_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$mean_kurt_i))
+mean_skew_vs_kurt_by_treatment$error_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$error_skew_i))
+mean_skew_vs_kurt_by_treatment$error_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_treatment$error_kurt_i))
+
+
+
+
+
+
+
+# Then split out the moments per site - 
+    #within each site 
+    #then broken down to the moments  per control, per turf treatment, per OTC
+
+mean_skew_vs_kurt_by_treatment<-NULL
+for(i in 1:length(unique(moments_fixed$treatment))){
+  treatment_i<-  as.character(unique(moments_fixed$treatment)[i])
+  
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$treatment==treatment_i])
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$treatment==treatment_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$treatment==treatment_i])/sqrt(length(moments_fixed$kurt[moments_fixed$treatment==treatment_i]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$treatment==treatment_i])
+  mean_skew_vs_kurt_by_treatment<-rbind(mean_skew_vs_kurt_by_treatment,cbind(treatment_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+colnames(moments_fixed)
+
+str(moments_fixed)
+
+moments_fixed$mean<-as.numeric(as.character(moments_fixed$mean))
+moments_fixed$var<-as.numeric(as.character(moments_fixed$var))
+
+
+
+mean_skew_vs_kurt_by_treatment_site<-NULL
+for(i in 1:nrow(unique(moments_fixed[c("treatment","site","trait")]))){
+  treatment_i<-  as.character(unique(moments_fixed[c("treatment","site","trait")])[i,1])
+  site_i<-  as.character(unique(moments_fixed[c("treatment","site","trait")])[i,2])
+  trait_i<-as.character(unique(moments_fixed[c("treatment","site","trait")])[i,3])
+  mean_mean_i<-mean(moments_fixed$mean[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i] )
+  error_mean_i<-qnorm(0.975)*sd(moments_fixed$mean[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i]))
+  
+  mean_var_i<-mean(moments_fixed$var[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i] )
+  error_var_i<-qnorm(0.975)*sd(moments_fixed$var[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i]))
+    mean_skew_i<-mean(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i] )
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$kurt[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i])
+  mean_skew_vs_kurt_by_treatment_site<-rbind(mean_skew_vs_kurt_by_treatment_site,cbind(treatment_i,site_i,trait_i,mean_mean_i,error_mean_i,mean_var_i,error_var_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+write.csv(mean_skew_vs_kurt_by_treatment_site,file = "C:/Users/Brian/Desktop/moment_means_by_site_treatment_trait.csv")
+
+moments_fixed$var<-as.numeric(as.character(moments_fixed$var))
+moments_fixed$skew<-as.numeric(as.character(moments_fixed$skew))
+moments_fixed$kurt<-as.numeric(as.character(moments_fixed$kurt))
+
+
+mean_skew_vs_kurt_by_site_trait_controls<-NULL
+for(i in 1:nrow(unique(moments_fixed[c("site","trait")]))){
+  site_i<-  as.character(unique(moments_fixed[c("site","trait")])[i,1])
+  trait_i<-as.character(unique(moments_fixed[c("site","trait")])[i,2])
+  mean_mean_i<-mean(moments_fixed$mean[moments_fixed$treatment %in% c("O","C") & moments_fixed$site==site_i & moments_fixed$trait==trait_i] )
+  error_mean_i<-qnorm(0.975)*sd(moments_fixed$mean[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i]))
+  
+  mean_var_i<-mean(moments_fixed$var[moments_fixed$treatment%in% c("O","C") & moments_fixed$site==site_i & moments_fixed$trait==trait_i] )
+  error_var_i<-qnorm(0.975)*sd(moments_fixed$var[moments_fixed$treatment%in% c("O","C") & moments_fixed$site==site_i & moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i & moments_fixed$trait==trait_i]))
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$treatment%in% c("O","C") & moments_fixed$site==site_i& moments_fixed$trait==trait_i] )
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$treatment%in% c("O","C") & moments_fixed$site==site_i& moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$skew[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$treatment%in% c("O","C") & moments_fixed$site==site_i& moments_fixed$trait==trait_i])/sqrt(length(moments_fixed$kurt[moments_fixed$treatment==treatment_i & moments_fixed$site==site_i& moments_fixed$trait==trait_i]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$treatment%in% c("O","C") & moments_fixed$site==site_i& moments_fixed$trait==trait_i])
+  mean_skew_vs_kurt_by_site_trait_controls<-rbind(mean_skew_vs_kurt_by_site_trait_controls,cbind(site_i,trait_i,mean_mean_i,error_mean_i,mean_var_i,error_var_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+view(mean_skew_vs_kurt_by_site_trait_controls)
+write.csv(mean_skew_vs_kurt_by_site_trait_controls,file = "C:/Users/Brian/Desktop/moment_means_by_site_trait_controls.csv")
+
+
+
+#mean skew vs kurt by site
+
+mean_skew_vs_kurt_by_site_controls<-NULL
+for(i in 1:length(unique(moments_fixed$site))){
+  site_i<-  as.character(unique(moments_fixed$site)[i])
+  
+  mean_skew_i<-mean(moments_fixed$skew[moments_fixed$site==site_i & moments_fixed$treatment %in% c("C","O")])
+  error_skew_i<-qnorm(0.975)*sd(moments_fixed$skew[moments_fixed$site==site_i& moments_fixed$treatment %in% c("C","O")])/sqrt(length(moments_fixed$skew[moments_fixed$site==site_i& moments_fixed$treatment %in% c("C","O")]))
+  error_kurt_i<-qnorm(0.975)*sd(moments_fixed$kurt[moments_fixed$site==site_i& moments_fixed$treatment %in% c("C","O")])/sqrt(length(moments_fixed$kurt[moments_fixed$site==site_i& moments_fixed$treatment %in% c("C","O")]))
+  mean_kurt_i<-mean(moments_fixed$kurt[moments_fixed$site==site_i& moments_fixed$treatment %in% c("C","O")])
+  mean_skew_vs_kurt_by_site_controls<-rbind(mean_skew_vs_kurt_by_site_controls,cbind(site_i,mean_skew_i,error_skew_i,mean_kurt_i,error_kurt_i)  )
+  
+}
+
+mean_skew_vs_kurt_by_site_controls<-as.data.frame(mean_skew_vs_kurt_by_site_controls)
+mean_skew_vs_kurt_by_site_controls$mean_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site_controls$mean_skew_i))
+mean_skew_vs_kurt_by_site_controls$mean_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site_controls$mean_kurt_i))
+mean_skew_vs_kurt_by_site_controls$error_skew_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site_controls$error_skew_i))
+mean_skew_vs_kurt_by_site_controls$error_kurt_i<-as.numeric(as.character(mean_skew_vs_kurt_by_site_controls$error_kurt_i))
+
+#mean_skew_vs_kurt_by_site_controls$site_i <- ordered(mean_skew_vs_kurt_by_site_controls$site_i, levels = c("H","A","M","L"))
+
+
+
+mean_skew_kurt_color_by_site_controls <- ggplot(mean_skew_vs_kurt_by_site_controls, aes(x = mean_skew_i, y = mean_kurt_i-3, colour = site_i)) + 
+  geom_point()+xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="site")+
+  geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_site_controls$mean_skew_i - mean_skew_vs_kurt_by_site_controls$error_skew_i
+                     ,xmax = mean_skew_vs_kurt_by_site_controls$mean_skew_i+mean_skew_vs_kurt_by_site_controls$error_skew_i)) + 
+  geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_site_controls$mean_kurt_i- mean_skew_vs_kurt_by_site_controls$error_kurt_i-3
+                    ,ymax = mean_skew_vs_kurt_by_site_controls$mean_kurt_i+ mean_skew_vs_kurt_by_site_controls$error_kurt_i-3)) 
+
+
+mean_skew_kurt_color_by_site_controls
+write.csv(x = mean_skew_vs_kurt_by_site_controls,file = "C:/Users/Brian/Desktop/mean_skew_vs_kurt_by_site_controls.csv",row.names = F)
+
+
+
+#plot means with errors skew vs kurt
+#facet wrap on site
+#treatment symbols
+#color by trait
+
+mean_skew_vs_kurt_by_treatment_site<-as.data.frame(mean_skew_vs_kurt_by_treatment_site)
+
+mean_skew_vs_kurt_by_treatment_site$mean_mean_i
+
+mean_skew_vs_kurt_by_treatment_site[,4:11]<-apply(X = mean_skew_vs_kurt_by_treatment_site[,4:11],MARGIN = 2,FUN = function(x){
+as.numeric(as.character(x))  
+})
+
+mean_skew_vs_kurt_by_treatment_site$site_i <- ordered(mean_skew_vs_kurt_by_treatment_site$site_i, levels = c("H","A","M","L"))
+
+
+mean_skew_vs_kurt_by_treatment_site$site_i
+site_treat_trait_means_nike <- ggplot(mean_skew_vs_kurt_by_treatment_site, aes(x = mean_skew_vs_kurt_by_treatment_site$mean_skew_i, y = mean_skew_vs_kurt_by_treatment_site$mean_kurt_i-3, colour = mean_skew_vs_kurt_by_treatment_site$trait_i)) + 
+  geom_point(aes(shape=treatment_i))+
+  xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="Trait")+
+  geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_treatment_site$mean_skew_i - mean_skew_vs_kurt_by_treatment_site$error_skew_i
+                     ,xmax = mean_skew_vs_kurt_by_treatment_site$mean_skew_i + mean_skew_vs_kurt_by_treatment_site$error_skew_i)) + 
+  geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_treatment_site$mean_kurt_i - mean_skew_vs_kurt_by_treatment_site$error_kurt_i-3
+                    ,ymax = mean_skew_vs_kurt_by_treatment_site$mean_kurt_i + mean_skew_vs_kurt_by_treatment_site$error_kurt_i-3)) +
+  facet_wrap(~site_i,nrow = 2,ncol = 4)
+
+  site_treat_trait_means_nike
+
+  site_treat_trait_means_nike2 <- ggplot(mean_skew_vs_kurt_by_treatment_site, aes(x = mean_skew_vs_kurt_by_treatment_site$mean_skew_i, y = mean_skew_vs_kurt_by_treatment_site$mean_kurt_i-3, colour = mean_skew_vs_kurt_by_treatment_site$trait_i)) + 
+    geom_point(aes(shape=site_i))+
+    xlab("Skewness")+ylab("Excess Kurtosis")+labs(colour="Trait")+
+    geom_errorbarh(aes(xmin = mean_skew_vs_kurt_by_treatment_site$mean_skew_i - mean_skew_vs_kurt_by_treatment_site$error_skew_i
+                       ,xmax = mean_skew_vs_kurt_by_treatment_site$mean_skew_i + mean_skew_vs_kurt_by_treatment_site$error_skew_i)) + 
+    geom_errorbar(aes(ymin = mean_skew_vs_kurt_by_treatment_site$mean_kurt_i - mean_skew_vs_kurt_by_treatment_site$error_kurt_i-3
+                      ,ymax = mean_skew_vs_kurt_by_treatment_site$mean_kurt_i + mean_skew_vs_kurt_by_treatment_site$error_kurt_i-3)) +
+    facet_wrap(~treatment_i,nrow = 2,ncol = 4)
+  site_treat_trait_means_nike2
+  
+  
+  
+  
+  
+##############################
+
+#Modify line plots to also show different control treatments
+
+
+
 
 ###################################################
 
@@ -912,9 +1266,10 @@ treatment3estd$signif<-factor(treatment3estd$signif)
 t3d<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
   geom_abline(data = treatment3estd,mapping=aes(slope = treatment3estd$slope,intercept = treatment3estd$intercept,linetype=signif,color=int_signif),show.legend = F)+
   ylim(c(-1.5,2) )+
-  xlim(c(0,4))+facet_wrap(~treatment3estd$trait,nrow = 2,ncol = 5)+ggtitle("+ 5.5 degrees C")+ylab("Effect size (vs. destination)")+
+  xlim(c(0,4))+facet_wrap(~treatment3estd$trait,nrow = 2,ncol = 5)+ggtitle("+ 5.3 degrees C")+ylab("Effect size (vs. destination)")+
   scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
-  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))+
+  xlab("Years since transplant")
 
 t3d
 
@@ -922,7 +1277,7 @@ t3d
 t4d<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
   geom_abline(data = treatment4estd,mapping=aes(slope = treatment4estd$slope,intercept = treatment4estd$intercept,linetype=signif,color=int_signif),show.legend = F)+
   ylim(c(-1.5,2) )+
-  xlim(c(0,4))+facet_wrap(~treatment4estd$trait,nrow = 2,ncol = 5)+ggtitle("- 5.5 degrees C")+ylab("Effect size (vs. destination)")+
+  xlim(c(0,4))+facet_wrap(~treatment4estd$trait,nrow = 2,ncol = 5)+ggtitle("- 5.3 degrees C")+ylab("Effect size (vs. destination)")+
   scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
   scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
 
@@ -975,7 +1330,7 @@ treatment3esto$signif<-factor(treatment3esto$signif)
 t3o<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
   geom_abline(data = treatment3esto,mapping=aes(slope = treatment3esto$slope,intercept = treatment3esto$intercept,linetype=signif,color=int_signif),show.legend = F)+
   ylim(c(-1.5,2) )+
-  xlim(c(0,4))+facet_wrap(~treatment3esto$trait,nrow = 2,ncol = 5)+ggtitle("+ 5.5 degrees C")+ylab("Effect size (vs. origin)")+
+  xlim(c(0,4))+facet_wrap(~treatment3esto$trait,nrow = 2,ncol = 5)+ggtitle("+ 5.3 degrees C")+ylab("Effect size (vs. origin)")+
   scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
   scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
 
@@ -985,7 +1340,7 @@ t3o
 t4o<-ggplot()+geom_hline(yintercept = rep(0,10))+ 
   geom_abline(data = treatment4esto,mapping=aes(slope = treatment4esto$slope,intercept = treatment4esto$intercept,linetype=signif,color=int_signif),show.legend = F)+
   ylim(c(-1.5,2) )+
-  xlim(c(0,4))+facet_wrap(~treatment4esto$trait,nrow = 2,ncol = 5)+ggtitle("- 5.5 degrees C")+ylab("Effect size (vs. origin)")+
+  xlim(c(0,4))+facet_wrap(~treatment4esto$trait,nrow = 2,ncol = 5)+ggtitle("- 5.3 degrees C")+ylab("Effect size (vs. origin)")+
   scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
   scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
 
@@ -1010,7 +1365,8 @@ totco<-ggplot()+geom_hline(yintercept = rep(0,40))+
   ylim(c(-1.5,2) )+
   xlim(c(0,4))+facet_wrap(~treatmentotcesto$trait,nrow = 2,ncol = 5)+ggtitle("Open-top chamber")+ylab("Effect size (vs. origin)")+
   scale_colour_manual(name="Intercept",values = c("significant"="red","marginal"="green3","nonsignificant"="blue"))+
-  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))
+  scale_linetype_manual(name="Slope",values = c("significant"="solid","marginal"="dashed","nonsignificant"="dotted"))+
+  xlab("Years since transplant")
 
 totco
 
@@ -1024,7 +1380,14 @@ ggsave(plot = t3o_v_t4o__totco_divergence_over_time, width = 6, height = 9, dpi 
 
 diverge_vs_converge<-ggarrange(t4o,t4d,t3o,t3d,totco, ncol=2, nrow=3, common.legend = TRUE, legend="right")
 
-ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/non_gramminoids/figures/diverge_vs_converge.jpg")
+diverge_vs_converge
+
+
+
+ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 600, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/non_gramminoids/figures/diverge_vs_converge_600dpi.jpg")
+ggsave(plot = diverge_vs_converge, width = 12, height = 9, dpi = 300, filename = "C:/Users/Brian/Google Drive/China_PFTC12_distribution_output/non_gramminoids/figures/diverge_vs_converge_300dpi.jpg")
+
+
 
 ##########################################################################################
 ##########################################################################################
@@ -1215,11 +1578,30 @@ source("trait_distributions/r_scripts/plot_histograms_treat_trait_year.R") #to l
 
 #summary table of trait v elevation
 library(gridExtra)
+library(qdap)
 source("trait_distributions/r_scripts/summarize_elev_gradient_pvals.R")
 O_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(full_file_directory = file_directory_native,treatment = "O")
-grid.table(O_trait_vs_elev_sig)
+c_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(full_file_directory = file_directory_native,treatment = "C")
 
-grid.table(trait_x_elev_sig)
+grid.table(O_trait_vs_elev_sig)
+grid.table(c_trait_vs_elev_sig)
+
+
+##########################################################################################
+
+#summary table of trait v temperature
+source("trait_distributions/r_scripts/summarize_temp_gradient_pvals.R")
+o_trait_vs_temp_sig<-summarize_temp_gradient_pvals(full_file_directory = file_directory_native,treatment = "O")
+c_trait_vs_temp_sig<-summarize_temp_gradient_pvals(full_file_directory = file_directory_native,treatment = "C")
+
+
+grid.table(o_trait_vs_temp_sig$air_temp)
+grid.table(o_trait_vs_temp_sig$soil_temp)
+
+grid.table(c_trait_vs_temp_sig$air_temp)
+grid.table(c_trait_vs_temp_sig$soil_temp)
+
+
 
 ##########################################################################################
 
@@ -1319,10 +1701,151 @@ for(i in 1:nrow(tty)){
 
 #Send CWM values to Richard
 
-saveRDS(object = moments_fixed[c("turf","treatment","site","year","trait","mean" )],file = "C:/Users/Brian/Desktop/China_pftc_cwm_nongramminoids.rds")
+saveRDS(object = moments_fixed[c("turf","treatment","site","year","trait","mean" )],file = "C:/Users/Brian/Desktop/China_pftc_cwm_nongraminoids.rds")
 
 
 
 #####################################
+library(plyr)
+library(tidyverse)
+library(ggpmisc)
+#vs temp
 
-#joyplots : different elevations along y axis, different years on x
+recipient_site_moments_2016_c<-moments_plastic[which(moments_plastic$year==2016 & moments_plastic$treatment %in% c("C","O")),]
+
+recipient_site_moments_2016_c<-recipient_site_moments_2016_c[which(!recipient_site_moments_2016_c$trait%in%c("turf","Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),]
+recipient_site_moments_2016_c$trait<-multigsub(recipient_site_moments_2016_c$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                                                               "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+                                               replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                                                               "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  ))
+recipient_site_moments_2016_c$elevation<-NA 
+recipient_site_moments_2016_c$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),recipient_site_moments_2016_c$site))
+
+
+
+
+
+china_env_data<-read.csv("trait_distributions/ScrubbedCHINAdata.csv")
+temps<-ddply(china_env_data,"PlotID",summarise,mean_air_temp=mean(AirTemp,na.rm = T),mean_soil_temp=mean(SoilTemp,na.rm = T))
+temps$PlotID<-toupper(x = temps$PlotID)
+merged_moments<-merge(x=recipient_site_moments_2016_c , y = temps,by.x = "turf",by.y = "PlotID",all.x = T)
+
+
+merged_moments$mean_air_temp
+
+#
+
+
+merged_moments$mean<-as.numeric(as.character(merged_moments$mean))
+
+
+air<-ggplot(data = merged_moments[which(!merged_moments$trait %in% 
+                                          c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent") &
+                                          merged_moments$treatment %in% c("C","O")),] , 
+                                          aes(x = mean_air_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)
+
+soil<-ggplot(data = merged_moments[which(!merged_moments$trait%in%c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent") &merged_moments$treatment %in% c("C","O") ),] , aes(x = mean_soil_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)
+
+
+my.formula <- y ~ x
+
+soil+stat_poly_eq(formula = my.formula , 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)+
+              stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+                geom = 'text', aes(label = paste("P-value = ", 
+                                                 signif(..p.value.., digits = 4), sep = "")),
+                label.x.npc = 'right',
+                label.y.npc = 'bottom', size = 3)+
+                xlab("Mean Soil Temperature (July - August)")+
+                ylab("Mean Trait Value")
+
+
+
+air+stat_poly_eq(formula = y ~ x , 
+                  aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                  parse = TRUE)+
+          stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+          geom = 'text', aes(label = paste("P-value = ", 
+          signif(..p.value.., digits = 4), sep = "")),
+          label.x.npc = 'right',
+          label.y.npc = 'bottom', size = 3)+
+          xlab("Mean Air Temperature (July - August)")+
+          ylab("Mean Trait Value")
+
+
+##################################################
+
+moments_plastic$elevation<-NA
+moments_plastic$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),moments_plastic$site))
+china_env_data<-read.csv("trait_distributions/ScrubbedCHINAdata.csv")
+temps<-ddply(china_env_data,"PlotID",summarise,mean_air_temp=mean(AirTemp,na.rm = T),mean_soil_temp=mean(SoilTemp,na.rm = T))
+temps$PlotID<-toupper(x = temps$PlotID)
+
+merged_moments_all<-merge(x=moments_plastic , y = temps, by.x = "turf",by.y = "PlotID",all.x = T)
+merged_moments_all$mean<-as.numeric(as.character(merged_moments_all$mean))
+
+my.formula <- y ~ x
+
+
+air_all<-ggplot(data = merged_moments_all[which(!merged_moments_all$trait %in% 
+                                          c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")),] , 
+            aes(x = mean_air_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)+stat_poly_eq(formula = y ~ x , 
+                 aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                 parse = TRUE)+
+  stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+                  geom = 'text', aes(label = paste("P-value = ", 
+                                                   signif(..p.value.., digits = 4), sep = "")),
+                  label.x.npc = 'right',
+                  label.y.npc = 'bottom', size = 3)
+
+air_all_2016only <- 
+    ggplot(data = merged_moments_all[which(!merged_moments_all$trait %in% 
+                                                  c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")
+                                           & merged_moments_all$year == 2016),] , 
+                aes(x = mean_air_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)+ggtitle("2016")+
+  stat_poly_eq(formula = y ~ x , 
+                                                    aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                                                    parse = TRUE)+
+  stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+                  geom = 'text', aes(label = paste("P-value = ", 
+                                                   signif(..p.value.., digits = 4), sep = "")),
+                  label.x.npc = 'right',
+                  label.y.npc = 'bottom', size = 3)
+
+
+air_all_2016only
+
+
+air_all_2012only <- 
+  ggplot(data = merged_moments_all[which(!merged_moments_all$trait %in% 
+                                           c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")
+                                         & merged_moments_all$year == 2012),] , 
+         aes(x = mean_air_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)+ggtitle("2012")+
+  stat_poly_eq(formula = y ~ x , 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)+
+  stat_fit_glance(method = 'lm', method.args = list(formula = my.formula),
+                  geom = 'text', aes(label = paste("P-value = ", 
+                                                   signif(..p.value.., digits = 4), sep = "")),
+                  label.x.npc = 'right',
+                  label.y.npc = 'bottom', size = 3)
+
+air_all_2012only
+
+
