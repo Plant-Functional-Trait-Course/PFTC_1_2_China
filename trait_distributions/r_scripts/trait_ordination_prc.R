@@ -51,30 +51,29 @@ p1 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect of treatment", l
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Warming)$Response, n = 5), trans = "reverse")
 
-p2 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect of treatment") +
+p2 <- autoplot.prcWithoutSP(fit_Warming, xlab = "", ylab = "Treatment effect on \n  trait composition") +
   scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Warming)$Response, n = 5), trans = "reverse") +
-  theme(legend.position = c(0.1, 0.2), legend.title = element_blank())
+  theme(legend.position = c(0.7, 0.3), legend.title = element_blank())
 
 p3 <- fortify(fit_Warming) %>% 
   filter(Score == "Species") %>% 
   mutate(X = 1) %>% 
   ggplot(aes(x = X, y = (Response), label = Label)) +
   geom_text(aes(x = X), size = 4) +
+  geom_hline(yintercept = 0) +
   scale_y_continuous(breaks = pretty(fortify(fit_Warming)$Response, n = 5), trans = "reverse") +
   labs(x = "", y = "") +
   theme(panel.background = element_blank(),
-        axis.ticks = element_blank(),
-        axis.text = element_blank(),
-        axis.line = element_blank())
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
 
 prcLegend <- cowplot::get_legend(p1)
 
 
-TraitAllTaxa_Warming <- grid.arrange(p2, p3, 
-             #heights = 0.2:2,
-             layout_matrix = rbind(c(2,2,2,2,2,3)))
+TraitAllTaxa_Warming <- grid.arrange(p2, p3,
+             layout_matrix = rbind(c(2,2,2,2,2,3,3)))
 
 
 ## Cooling
@@ -92,35 +91,26 @@ traitData_Cool <- traitFat_Cool %>% select(-(turfID:newTT))
 fit_Cool <- prc(response = traitData_Cool, treatment = traitFat_Cool$newTT, time = traitFat_Cool$year, scale = TRUE)
 
 # Make figures
-p1 <- autoplot.prcCustom(fit_Cool, xlab = "", ylab = "Effect of treatment", legend.position="top") +
-  scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
-  scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
-  scale_y_continuous(breaks = pretty(fortify(fit_Cool)$Response, n = 5), trans = "reverse")
-
-p2 <- autoplot.prcCustom(fit_Cool, xlab = "", ylab = "Effect of treatment") +
+p2 <- autoplot.prcWithoutSP(fit_Cool, xlab = "", ylab = "") +
   scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(breaks = pretty(fortify(fit_Cool)$Response, n = 5), trans = "reverse") +
-  theme(legend.position = c(0.1, 0.2), legend.title = element_blank())
+  theme(legend.position = c(0.7, 0.6), legend.title = element_blank())
 
 p3 <- fortify(fit_Cool) %>% 
   filter(Score == "Species") %>% 
   mutate(X = 1) %>% 
   ggplot(aes(x = X, y = Response, label = Label)) +
   geom_text(aes(x = X), size = 4) +
+  geom_hline(yintercept = 0) +
   scale_y_continuous(breaks = pretty(fortify(fit_Cool)$Response, n = 5), trans = "reverse") +
   labs(x = "", y = "") +
   theme(panel.background = element_blank(),
-        axis.ticks = element_blank(),
-        axis.text = element_blank(),
-        axis.line = element_blank())
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
 
-prcLegend <- cowplot::get_legend(p1)
-
-
-TraitAllTaxa_Cooling <- grid.arrange(p2, p3, 
-             #heights = 0.2:2,
-             layout_matrix = rbind(c(2,2,2,2,2,3)))
+TraitAllTaxa_Cooling <- grid.arrange(p2, p3,
+             layout_matrix = rbind(c(1,1,1,1,1,2,2)))
 
 
 
@@ -267,11 +257,19 @@ communityData_Warming <- coverFatComm_Warming %>% select(-(originSiteID:newTT))
 
 fitCommunity_Warming <- prc(response = communityData_Warming, treatment = coverFatComm_Warming$newTT, time = coverFatComm_Warming$year)
 
-CommunityAllTaxa_Warming <- autoplot.prcWithoutSP(fitCommunity_Warming, xlab = "", ylab = "Effect of treatment", legend.position = "none") +
+p2 <- autoplot.prcWithoutSP(fitCommunity_Warming, xlab = "", ylab = "Treatment effect on \n species composition", legend.position = "none") +
   scale_colour_manual(values = c("orange", "pink2", "red", "red")) +
   scale_linetype_manual(values = c("solid", "dashed", "dashed", "solid")) +
   scale_y_continuous(trans = "reverse")
 
+p3 <- fortify(fit_Warming) %>% 
+  filter(Score == "Species") %>% 
+  mutate(X = 1) %>% 
+  ggplot(aes(x = X, y = (Response), label = Label)) +
+  theme_void()
+
+CommunityAllTaxa_Warming <- grid.arrange(p2, p3,
+                                     layout_matrix = rbind(c(2,2,2,2,2,3,3)))
 
 
 ## Cooling
@@ -297,24 +295,26 @@ communityData_Cooling <- coverFatComm_Cooling %>% select(-(originSiteID:newTT))
 
 fitCommunity_Cooling <- prc(response = communityData_Cooling, treatment = coverFatComm_Cooling$newTT, time = coverFatComm_Cooling$year)
 
-CommunityAllTaxa_Cooling <- autoplot.prcWithoutSP(fitCommunity_Cooling, xlab = "", ylab = "Effect of treatment", legend.position = "none") +
+p2 <- autoplot.prcWithoutSP(fitCommunity_Cooling, xlab = "", ylab = "", legend.position = "none") +
   scale_colour_manual(values = c("steelblue2", "blue", "blue")) +
   scale_linetype_manual(values = c("dashed", "dashed", "solid")) +
   scale_y_continuous(trans = "reverse")
 
+p3 <- fortify(fit_Warming) %>% 
+  filter(Score == "Species") %>% 
+  mutate(X = 1) %>% 
+  ggplot(aes(x = X, y = (Response), label = Label)) +
+  theme_void()
+
+CommunityAllTaxa_Cooling <- grid.arrange(p2, p3,
+                                         layout_matrix = rbind(c(2,2,2,2,2,3,3)))
 
 
-# TDTFinalFig <- grid.arrange(CommunityAllTaxa_Warming, TraitAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Cooling,
-#              nrow = 2,
-#              layout_matrix = rbind(c(1,1,1,2,2,2,2), 
-#                                    c(3,3,3,4,4,4,4)))
-
-
-TDTFinalFig <- plot_grid(CommunityAllTaxa_Warming, TraitAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Cooling,
+TDTFinalFig <- plot_grid(CommunityAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Warming, TraitAllTaxa_Cooling,
           labels = c("a)", "b)", "c)", "d)"),
           ncol = 2)
 
-save_plot("community/TDTFinalFig.jpeg", TDTFinalFig, base_height = 10, base_width = 15)
+save_plot("traits/TDTFinalFig.jpeg", TDTFinalFig, base_height = 10, base_width = 15)
 
 
 ### ONLY FORBS
