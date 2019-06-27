@@ -41,9 +41,9 @@ traitFat_Warming <- trait_thin %>%
   mutate(newTT = ifelse(newTT == "Control" & originSiteID == "L", "ControlL", newTT)) %>% 
   mutate(year = factor(year), newTT = factor(newTT, levels = c("Control", "OTC", "Warm1", "Warm3", "ControlL")))
 
-traitData_Warming <- traitFat_Warming %>% select(-(turfID:newTT))
 
 fit_Warming <- prc(response = traitData_Warming, treatment = traitFat_Warming$newTT, time = traitFat_Warming$year, scale = TRUE)
+
 
 # Make figures
 p1 <- autoplot.prcCustom(fit_Warming, xlab = "", ylab = "Effect of treatment", legend.position="top") +
@@ -74,6 +74,15 @@ prcLegend <- cowplot::get_legend(p1)
 
 TraitAllTaxa_Warming <- grid.arrange(p2, p3,
              layout_matrix = rbind(c(2,2,2,2,2,3,3)))
+
+# Testing
+traitFat_Warming2 <- traitFat_Warming %>% 
+  filter(newTT != "Warm3")
+traitData_Warming2 <- traitFat_Warming2 %>% 
+  select(-(turfID:newTT))
+
+anova(prc(response = traitData_Warming2, treatment = traitFat_Warming2$newTT, time = traitFat_Warming2$year, scale = TRUE))
+
 
 
 ## Cooling
@@ -112,6 +121,14 @@ p3 <- fortify(fit_Cool) %>%
 TraitAllTaxa_Cooling <- grid.arrange(p2, p3,
              layout_matrix = rbind(c(1,1,1,1,1,2,2)))
 
+
+# Testing
+traitFat_Cool2 <- traitFat_Cool %>% 
+  filter(newTT != "Cool3")
+traitData_Cool2 <- traitFat_Cool2 %>% 
+  select(-(turfID:newTT))
+
+anova(prc(response = traitData_Cool2, treatment = traitFat_Cool2$newTT, time = traitFat_Cool2$year, scale = TRUE))
 
 
 
@@ -272,6 +289,17 @@ CommunityAllTaxa_Warming <- grid.arrange(p2, p3,
                                      layout_matrix = rbind(c(2,2,2,2,2,3,3)))
 
 
+# Testing
+coverFatComm_Warming2 <- coverFatComm_Warming %>% 
+  filter(newTT != "Warm3")
+communityData_Warming2 <- coverFatComm_Warming2 %>% 
+  select(-(originSiteID:newTT))
+
+anova(prc(response = communityData_Warming2, treatment = coverFatComm_Warming2$newTT, time = coverFatComm_Warming2$year)
+)
+
+
+
 ## Cooling
 coverFatComm_Cooling <- cover_thin %>% 
   select(-speciesName, -flag) %>% 
@@ -308,6 +336,16 @@ p3 <- fortify(fit_Warming) %>%
 
 CommunityAllTaxa_Cooling <- grid.arrange(p2, p3,
                                          layout_matrix = rbind(c(2,2,2,2,2,3,3)))
+
+
+# Testing
+coverFatComm_Cooling2 <- coverFatComm_Cooling %>% 
+  filter(newTT != "Cool3")
+communityData_Cooling2 <- coverFatComm_Cooling2 %>% 
+  select(-(originSiteID:newTT))
+
+anova(prc(response = communityData_Cooling2, treatment = coverFatComm_Cooling2$newTT, time = coverFatComm_Cooling2$year)
+)
 
 
 TDTFinalFig <- plot_grid(CommunityAllTaxa_Warming, CommunityAllTaxa_Cooling, TraitAllTaxa_Warming, TraitAllTaxa_Cooling,
