@@ -1,6 +1,6 @@
 #summary table of trait v elevation
 
-#Input: file directory, temp file
+#Input: file directory, environmental data
 
 #Output:  table of p-val of trait v elevation with dimensions year x trait
 

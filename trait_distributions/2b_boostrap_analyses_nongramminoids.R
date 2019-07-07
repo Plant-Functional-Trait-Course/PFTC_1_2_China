@@ -1575,6 +1575,10 @@ source("trait_distributions/r_scripts/plot_histograms_treat_trait_year.R") #to l
 
 
 #########################################################################################
+#########################################################################################
+
+#Generate summary table of trait vs elevation/temperature correlations
+
 
 #summary table of trait v elevation
 library(gridExtra)
@@ -1627,7 +1631,7 @@ rownames(temp_cors_oc_2012) <- c("Elevation","Air Temperature","Soil Temperature
 t(temp_cors_oc_2012)
 
 
-
+##########################################################################################
 ##########################################################################################
 
 # ii.b)  add pvals, r2s for significant lines
