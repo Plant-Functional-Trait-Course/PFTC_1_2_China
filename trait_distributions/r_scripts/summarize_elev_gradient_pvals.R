@@ -24,7 +24,7 @@ summarize_elevation_gradient_pvals<-function(full_file_directory,treatment="C"){
   rm(file_i,file_name_i,turf,treatment_i,site,year_i,trait_i,assumption,i)
   
   file_index <- as.data.frame(file_index)
-  file_index <- file_index[which(file_index$treatment_i==treatment),]
+  file_index <- file_index[which(file_index$treatment_i%in%treatment),]
   file_index$elevation<-NA
   file_index$elevation<-as.numeric(multigsub(pattern = c("L","M","A","H"),replacement = c(3000,3500,3850,4130),file_index$site))
   

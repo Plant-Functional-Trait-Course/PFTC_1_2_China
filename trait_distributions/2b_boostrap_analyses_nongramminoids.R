@@ -1582,6 +1582,8 @@ library(qdap)
 source("trait_distributions/r_scripts/summarize_elev_gradient_pvals.R")
 O_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(full_file_directory = file_directory_native,treatment = "O")
 c_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(full_file_directory = file_directory_native,treatment = "C")
+OC_trait_vs_elev_sig<-summarize_elevation_gradient_pvals(full_file_directory = file_directory_native,treatment = c("O","C"))
+
 
 grid.table(O_trait_vs_elev_sig)
 grid.table(c_trait_vs_elev_sig)
@@ -1593,13 +1595,36 @@ grid.table(c_trait_vs_elev_sig)
 source("trait_distributions/r_scripts/summarize_temp_gradient_pvals.R")
 o_trait_vs_temp_sig<-summarize_temp_gradient_pvals(full_file_directory = file_directory_native,treatment = "O")
 c_trait_vs_temp_sig<-summarize_temp_gradient_pvals(full_file_directory = file_directory_native,treatment = "C")
-
+OC_trait_vs_temp_sig<-summarize_temp_gradient_pvals(full_file_directory = file_directory_native,treatment = c("C","O"))
 
 grid.table(o_trait_vs_temp_sig$air_temp)
 grid.table(o_trait_vs_temp_sig$soil_temp)
 
 grid.table(c_trait_vs_temp_sig$air_temp)
 grid.table(c_trait_vs_temp_sig$soil_temp)
+
+######################
+
+oc_2012_trait_v_elev <- as.data.frame(t(OC_trait_vs_elev_sig$`2012`))
+colnames(oc_2012_trait_v_elev)<-rownames(OC_trait_vs_elev_sig)
+
+
+oc_2012_trait_v_air_temp <- as.data.frame(t(OC_trait_vs_temp_sig$air_temp$`2012`))
+colnames(oc_2012_trait_v_air_temp)<-rownames(OC_trait_vs_temp_sig$air_temp)
+
+oc_2012_trait_v_soil_temp <- as.data.frame(t(OC_trait_vs_temp_sig$soil_temp$`2012`))
+colnames(oc_2012_trait_v_soil_temp)<-rownames(OC_trait_vs_temp_sig$soil_temp)
+
+
+oc_2012_trait_v_air_temp
+
+oc_2012_trait_v_air_temp<- oc_2012_trait_v_air_temp[c(colnames(oc_2012_trait_v_elev))]
+oc_2012_trait_v_soil_temp<- oc_2012_trait_v_soil_temp[c(colnames(oc_2012_trait_v_elev))]
+
+
+temp_cors_oc_2012 <- rbind(oc_2012_trait_v_elev,oc_2012_trait_v_air_temp,oc_2012_trait_v_soil_temp)
+rownames(temp_cors_oc_2012) <- c("Elevation","Air Temperature","Soil Temperature")
+t(temp_cors_oc_2012)
 
 
 
@@ -1828,6 +1853,16 @@ air_all_2016only <-
 
 air_all_2016only
 
+merged_moments_all_renamed<-merged_moments_all
+merged_moments_all_renamed$trait <- 
+  multigsub(merged_moments_all_renamed$trait,pattern = c("C_percent","CN_ratio","dC13_percent","dN15_percent", "Dry_Mass_g", "LDMC", "Leaf_Area_cm2",        
+                                                          "Leaf_Thickness_Ave_mm", "N_percent", "NP_ratio", "P_AVG", "SLA_cm2_g", "Wet_Mass_g"  ),
+          replacement = c("C %","C:N ratio","dC13 %","dN15 %", "Dry_Mass_g", "LDMC", "Leaf Area",        
+                          "Thickness", "N_percent", "N:P ratio", "P %", "SLA", "Wet_Mass_g"  ))
+
+
+
+
 
 air_all_2012only <- 
   ggplot(data = merged_moments_all[which(!merged_moments_all$trait %in% 
@@ -1848,4 +1883,25 @@ air_all_2012only <-
 
 air_all_2012only
 
-
+air_oc_2012only <- 
+  ggplot(data = merged_moments_all_renamed[which(!merged_moments_all_renamed$trait %in% 
+                                           c("Dry_Mass_g","Wet_Mass_g","N_percent","P_percent")
+                                         & merged_moments_all_renamed$year == 2012 & 
+                                           merged_moments_all_renamed$treatment %in% c("O","C")),] , 
+         aes(x = mean_air_temp,y = mean)) +
+  geom_point()+
+  geom_smooth(method = "lm",se = F,col="grey")+
+  facet_wrap( ~ trait,nrow = 3,ncol=5)+ggtitle("2012 Control Treatments")+
+  ylab("Mean Trait Value (scaled)")+xlab("Mean Air Temperature (July- August)")+
+  stat_poly_eq(formula = y ~ x , 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE,coef.digits = 2,rr.digits = 2)+
+  stat_fit_glance(method = "lm",
+                   aes(label = paste("p-value = ", 
+                  signif(..p.value.., digits = 3), sep = "")),
+                 label.x= 'right',
+                 label.y = 'bottom', size =4)+theme(axis.title.x = element_text(size = 15),axis.title.y = element_text(size=15))
+  
+  
+air_oc_2012only
+  
