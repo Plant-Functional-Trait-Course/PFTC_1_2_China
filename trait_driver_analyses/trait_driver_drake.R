@@ -24,8 +24,10 @@ trait_plan <- drake_plan(
   traits0 = get(load("trait_driver_analyses/data/traits.Rdata")),
   traits = traits0 %>% 
     select(-Full_Envelope_Name, -Envelope_Name_Corrected, -Date, -Elevation, -P_FILE_NAME, -matches("Flag$"), -allComments, -FileName, -Taxon_written_on_envelopes, -CN_FILE_NAME , -StoichLabel) %>% 
+    select(-matches("Leaf_Thickness_\\d_mm")) %>% 
     pivot_longer(cols = -(Site:Leaf_number), names_to = "trait", values_to = "value") %>% 
-    filter(!is.na(value)),
+    filter(!is.na(value)) %>% 
+    mutate(Site = factor(Site, levels = levels(community$originSiteID))),
   #TODO clean impossible trait values using BIEN
   #calculate derived traits
   #transform
@@ -34,22 +36,44 @@ trait_plan <- drake_plan(
   env  = get(load("trait_driver_analyses/data/climate_month.Rdata")),
   
   #impute traits for control and pre-transplant
-  imputed_traits = community %>%
-    select(Site = originSiteID, Location = originBlockID, turfID, year, TTtreat, Taxon = species, cover) %>% 
-    trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover"),
+  imputed_traits_home = community %>%
+    filter(year == min(year) | TTtreat %in% c("control", "local", "OTC")) %>% 
+    select(Site = originSiteID, Location = originBlockID, turfID, year, TTtreat, Taxon = speciesName, cover) %>% 
+    trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover", other_col = c("TTtreat", "year")),
+    
+  imputed_traits_transplant = community %>%
+    filter(year > min(year), !TTtreat %in% c("control", "local", "OTC")) %>%
+    select(Site = destSiteID, Location = destBlockID, turfID, year, TTtreat, Taxon = speciesName, cover) %>% 
+    trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover", other_col = c("year", "TTtreat")),
+  
+  imputed_traits = {
+    x <- bind_rows(imputed_traits_home, imputed_traits_transplant)
+    attributes(x) <- attributes(imputed_traits_home)
+    x},
 
   #traits moments 
-  bootstrapped_trait_moments  = trait_np_bootstrap(imputed_traits, nrep = 100)  
+  bootstrapped_trait_moments  = trait_np_bootstrap(imputed_traits, nrep = 100),  
   
   #space/time R2 relationship
   
   #means
+  mean_plot = bootstrapped_trait_moments %>% ggplot(aes(x = Site, y = mean)) +
+    geom_boxplot() +
+    facet_wrap(~trait, scales = "free_y"),
+  
+  #bootstrapped_trait_moments %>% filter(trait == "Leaf_Thickness_Ave_mm") %>% 
+  #  ggplot(aes(x = year, y = value, fill = TTtreat)) + facet_wrap(~Site)
   
   #variance
   
   #skewness
   
   #kurtois
+  
+  
+  moments_plot = bootstrapped_trait_moments %>% ggplot(aes(x = Site, y = mean)) +
+    geom_boxplot() +
+    facet_wrap(~trait, scales = "free_y")
   
 )
 
