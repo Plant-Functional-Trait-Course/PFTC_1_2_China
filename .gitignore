@@ -22,6 +22,9 @@ vignettes/*.pdf
 #markdown cache
 *_cache/
 
+#drake cache
+.drake/
+
 #data
 *.xls
 *.csv
