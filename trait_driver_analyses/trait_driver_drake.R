@@ -3,7 +3,7 @@
 library("drake")
 library("tidyverse")
 library("rjt.misc")
-library("BIEN")
+library("BIEN", quietly = TRUE)
 library("traitstrap")
 
 #drake configuration
@@ -23,8 +23,8 @@ trait_plan <- drake_plan(
   #import trait data
   traits0 = get(load("trait_driver_analyses/data/traits.Rdata")),
   traits = traits0 %>% 
-    select(-Full_Envelope_Name, -Envelope_Name_Corrected, -Date) %>% 
-    gather(key = trait, value = value, -(Elevation:Leaf_number)) %>% 
+    select(-Full_Envelope_Name, -Envelope_Name_Corrected, -Date, -Elevation, -P_FILE_NAME, -matches("Flag$"), -allComments, -FileName, -Taxon_written_on_envelopes, -CN_FILE_NAME , -StoichLabel) %>% 
+    pivot_longer(cols = -(Site:Leaf_number), names_to = "trait", values_to = "value") %>% 
     filter(!is.na(value)),
   #TODO clean impossible trait values using BIEN
   #calculate derived traits
@@ -33,8 +33,10 @@ trait_plan <- drake_plan(
   #import environmental data
   env  = get(load("trait_driver_analyses/data/climate_month.Rdata")),
   
-  #impute traits
-  imputed_traits = trait_impute(comm = community, traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", other_col = "Elevation"),
+  #impute traits for control and pre-transplant
+  imputed_traits = community %>%
+    select(Site = originSiteID, Location = originBlockID, turfID, year, TTtreat, Taxon = species, cover) %>% 
+    trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover"),
 
   #traits moments 
   bootstrapped_trait_moments  = trait_np_bootstrap(imputed_traits, nrep = 100)  
