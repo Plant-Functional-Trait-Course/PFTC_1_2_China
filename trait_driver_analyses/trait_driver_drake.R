@@ -10,7 +10,7 @@ library("traitstrap")
 pkgconfig::set_config("drake::strings_in_dots" = "literals")
 
 #set up parallel processing for drake
-options(future.fork.enable = TRUE)
+#options(future.fork.enable = TRUE)
 future::plan(future::multiprocess) 
 
 #drake plan
@@ -22,8 +22,9 @@ trait_plan <- drake_plan(
   
   #import trait data
   traits0 = get(load("trait_driver_analyses/data/traits.Rdata")),
+  
   traits = traits0 %>% 
-    select(-Full_Envelope_Name, -Envelope_Name_Corrected, -Date, -Elevation, -P_FILE_NAME, -matches("Flag$"), -allComments, -FileName, -Taxon_written_on_envelopes, -CN_FILE_NAME , -StoichLabel) %>% 
+    select(-Full_Envelope_Name, -Envelope_Name_Corrected, -Date, -Elevation, -P_FILE_NAME, -matches("Flag$"), -allComments, -FileName, -Taxon_written_on_envelopes, -CN_FILE_NAME , -StoichLabel, -P_Std_Dev, -P_Co_Var, -LeafID) %>% 
     select(-matches("Leaf_Thickness_\\d_mm")) %>% 
     pivot_longer(cols = -(Site:Leaf_number), names_to = "trait", values_to = "value") %>% 
     filter(!is.na(value)) %>% 
@@ -32,24 +33,33 @@ trait_plan <- drake_plan(
   #calculate derived traits
   #transform
   
+  #Histograms - shows need for cleaning
+  trait_histograms = traits %>% 
+    ggplot(aes(x = value, fill = Site)) + 
+    geom_histogram() + 
+    facet_wrap(~trait, scales = "free") +
+    labs(title = "Clean me"),
+  
   #import environmental data
   env  = get(load("trait_driver_analyses/data/climate_month.Rdata")),
   
   #impute traits for control and pre-transplant
-  imputed_traits_home = community %>%
-    filter(year == min(year) | TTtreat %in% c("control", "local", "OTC")) %>% 
-    select(Site = originSiteID, Location = originBlockID, turfID, year, TTtreat, Taxon = speciesName, cover) %>% 
-    trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover", other_col = c("TTtreat", "year")),
-    
-  imputed_traits_transplant = community %>%
-    filter(year > min(year), !TTtreat %in% c("control", "local", "OTC")) %>%
-    select(Site = destSiteID, Location = destBlockID, turfID, year, TTtreat, Taxon = speciesName, cover) %>% 
-    trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover", other_col = c("year", "TTtreat")),
-  
   imputed_traits = {
+    imputed_traits_home = community %>%
+      filter(year == min(year) | TTtreat %in% c("control", "local", "OTC")) %>% 
+      select(Site = originSiteID, Location = originBlockID, turfID, year, TTtreat, Taxon = speciesName, cover) %>% 
+      trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover", other_col = c("TTtreat", "year", "turfID"))
+      
+    imputed_traits_transplant = community %>%
+      filter(year > min(year), !TTtreat %in% c("control", "local", "OTC")) %>%
+      select(Site = destSiteID, Location = destBlockID, turfID, year, TTtreat, Taxon = speciesName, cover) %>% 
+      trait_impute(traits = traits, scale_hierarchy = c("Site", "Location"), taxon_col = "Taxon", value_col = "value", abundance_col = "cover", other_col = c("year", "TTtreat", "turfID"))
+    
+    
     x <- bind_rows(imputed_traits_home, imputed_traits_transplant)
     attributes(x) <- attributes(imputed_traits_home)
-    x},
+    x
+  },
 
   #traits moments 
   bootstrapped_trait_moments  = trait_np_bootstrap(imputed_traits, nrep = 100),  
