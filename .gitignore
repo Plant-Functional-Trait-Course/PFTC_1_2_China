@@ -62,5 +62,5 @@ vignettes/*.pdf
 .my.cnf
 *.md
 
-
+*.tex
 *.DS_Store
