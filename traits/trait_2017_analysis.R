@@ -331,15 +331,18 @@ traits <- traits_raw2 %>%
          AreaFlag = gsub("NA |^ ", "", AreaFlag),
          WetFlag = gsub("NA |^ ", "", WetFlag),
          ThickFlag = gsub("NA |^ ", "", ThickFlag),
-         GeneralFlag = gsub("NA |^ ", "", GeneralFlag))
+         GeneralFlag = gsub("NA |^ ", "", GeneralFlag)) %>% 
+  # Remove high N values: > 6.4 (Henn et al paper)
+  mutate(N_percent = ifelse(N_percent > 6.4, NA, N_percent)) %>% 
+# Remove high N values: > 6.4 (Henn et al paper)
+mutate(N_percent = ifelse(N_percent > 6.4, NA, N_percent))
   
 
 #Check all combinaitons of Flags, maybe one can be removed
 # Check figures and remove
 # Remove impossible values
 #traits %>% filter(grepl("#zap", AreaFlag))
-  
-save(traits, file = "traits/traits.Rdata")
+write_csv(traits, path = "traits/data_cleaned/traits_2015_2016_China.csv", col_names = TRUE)
 
 
 ### Is this needed???
