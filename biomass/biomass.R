@@ -3,8 +3,21 @@ library("readxl")
 library("tidyverse")
 library("vegan")
 library("ggvegan")
+#devtools::install_github("Between-the-Fjords/downloader")
+library("downloader")
 
 pn <- . %>% print(n = Inf)
+
+# Download OSF
+#Download files from OSF
+get_file(node = "f3knq",
+         file = "biomass2015.xls",
+         path = "biomass/data",
+         remote_path = "RawData")
+get_file(node = "f3knq",
+         file = "biomass_taxonomic_corrections.csv",
+         path = "biomass/data",
+         remote_path = "RawData")
 
 #read excel file
 Biomass <- plyr::ldply(1:4, read_excel, path = "biomass/data/biomass2015.xls")
@@ -52,7 +65,7 @@ nameAuthority <- plyr::ldply(spNames, function(x){
     authority <- paste(x[-(1:2)], collapse = " ")
   }
   if(is.na(authority)) authority <- ""
-  data_frame(speciesName, authority)
+  tibble(speciesName, authority)
 })
 
 #
@@ -82,9 +95,8 @@ biomass <- biomass %>%
           
 #get family
 biomass <- biomass %>% mutate(family = tpl::tpl.get(genus)$family)
-#save(biomass, file = "biomass/biomass_cleaned.Rdata")
+#write_csv(biomass, path = "biomass/China_2016_Biomass_cleanded.csv")
                  
-load(file = "biomass/biomass_cleaned.Rdata")
 
 
 # Check the data
