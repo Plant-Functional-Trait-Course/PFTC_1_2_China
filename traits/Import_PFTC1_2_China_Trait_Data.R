@@ -342,7 +342,7 @@ mutate(N_percent = ifelse(N_percent > 6.4, NA, N_percent))
 # Check figures and remove
 # Remove impossible values
 #traits %>% filter(grepl("#zap", AreaFlag))
-write_csv(traits, path = "traits/data_cleaned/traits_2015_2016_China.csv", col_names = TRUE)
+write_csv(traits, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv", col_names = TRUE)
 
 
 ### Is this needed???
