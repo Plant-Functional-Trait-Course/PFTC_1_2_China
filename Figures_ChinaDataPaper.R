@@ -217,7 +217,7 @@ GradientPlot <- ResponsesGradient %>%
 responsesExp <- responses %>% 
   filter(year == 2016) %>% 
   ungroup() %>% 
-  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, -1)),
+  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, 1)),
          contrast = as.numeric(as.character(contrast))) %>% 
   select(-N1, -total_vascular, -diversity, -vegetationHeight) %>% 
   gather(key = Index, value = Value, Richness, Evenness, SumofCover, ProportionGraminoid)
@@ -247,7 +247,7 @@ ContrastPlot <- responses %>%
   select(-N1, -total_vascular, -diversity, -vegetationHeight) %>% 
   gather(key = Index, value = Value, Richness, Evenness, SumofCover, ProportionGraminoid) %>% 
   mutate(Index = factor(Index, levels = c("Richness", "Evenness", "SumofCover", "ProportionGraminoid"))) %>% 
-  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, -1)),
+  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, 1)),
          contrast = as.numeric(as.character(contrast))) %>% 
   ggplot(aes(x = contrast, y = Value, colour = originSiteID, shape = TTtreat)) +
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
