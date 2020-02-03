@@ -42,6 +42,9 @@ vignettes/*.pdf
 !trait_name_changes.csv
 !biomass_taxonomic_corrections.csv
 *.xlsx#
+*.csv
+*.xls
+*.xlsx
 *.rar
 *.sqlite
 *.dat
