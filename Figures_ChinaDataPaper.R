@@ -40,7 +40,7 @@ extremes <- ggplot(extremefNMDS, aes(x = NMDS1, y = NMDS2, shape = originSiteID,
   scale_size_discrete(range = c(1, 2), limits = c("Other", "First"), breaks = c("First", "Other")) +
   scale_colour_manual(values = extreme_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Extreme warming", "Extreme cooling")) +
   scale_fill_manual(values = extreme_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Extreme warming", "Extreme cooling")) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   labs(x = "") +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
   labs(colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") +
@@ -75,7 +75,7 @@ short <- ggplot(shortfNMDS, aes(x = NMDS1, y = NMDS2, shape = originSiteID, colo
   scale_size_discrete(range = c(1, 2), limits = c("Other", "First"), breaks = c("First", "Other")) +
   scale_colour_manual(values = short_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Warming", "Cooling")) +
   scale_fill_manual(values = short_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Warming", "Cooling")) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   labs(x = "", y = "") +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
   labs(colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") +
@@ -110,7 +110,7 @@ otc <- ggplot(otcfNMDS, aes(x = NMDS1, y = NMDS2, shape = originSiteID, colour =
   scale_size_discrete(range = c(1, 2), limits = c("Other", "First"), breaks = c("First", "Other")) +
   scale_colour_manual(values = otc_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "OTC")) +
   scale_fill_manual(values = otc_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "OTC")) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   labs(y = "") +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
   labs(colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") +
@@ -144,7 +144,7 @@ legend <- ggplot(lfNMDS, aes(x = NMDS1, y = NMDS2, shape = originSiteID, colour 
   scale_size_discrete(range = c(1, 2), limits = c("Other", "First"), breaks = c("First", "Other")) +
   scale_colour_manual(values = all_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Warming", "Cooling", "Extreme warming", "Extreme cooling", "OTC")) +
   scale_fill_manual(values = all_colours, limits = levels(cover_fat$TTtreat), labels=c("Control", "Local transplant", "Warming", "Cooling", "Extreme warming", "Extreme cooling", "OTC")) +
-  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_shape_manual(values = c(24, 22, 23, 25), limits = levels(cover_fat$originSiteID), labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   guides(shape = guide_legend(override.aes = list(fill = "black"))) +
   labs(colour = "Treatment", fill = "Treatment", shape = "Site", size = "Year") +
   theme(legend.text = element_text(size = 10),
@@ -252,7 +252,7 @@ ContrastPlot <- responses %>%
   ggplot(aes(x = contrast, y = Value, colour = originSiteID, shape = TTtreat)) +
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
   geom_line(data = mean_responses, aes(y = Ave_value, x = contrast, colour = originSiteID, linetype = experiment), inherit.aes = FALSE, size = 0.8) +
-  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   scale_linetype_manual(values = c("dashed", "solid", "dotted")) +
   scale_shape_manual(values = c(1, 16, 15, 17, 18, 6, 7), labels=c("Control", "Local transplant", "Warming", "Cooling", "Extreme warming", "Extreme cooling", "OTC")) +
   labs(x = "Contrast levels", y = "", colour = "Site", linetype = "Experiment", shape = "Treatment") +
@@ -274,22 +274,25 @@ traitsWide <- traits %>%
   filter(!Project %in% c("SEAN", "6")) %>% 
   mutate(Project = ifelse(is.na(Project), "LOCAL", Project)) %>% 
   filter(Project == "LOCAL") %>%
-  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g, Dry_Mass_g, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g, LDMC, StoichLabel, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>%
+  mutate(Wet_Mass_g.log = log(Wet_Mass_g),
+         Dry_Mass_g.log = log(Dry_Mass_g),
+         Leaf_Area_cm2.log = log(Leaf_Area_cm2)) %>% 
   mutate(Site = factor(Site, levels = c("H", "A", "M", "L"))) %>% 
   mutate(LDMC = ifelse(Site == "M" & Taxon == "Trifolium repens" & Date == "2015-08-20", NA, LDMC),
          Leaf_Area_cm2 = ifelse(Site == "M" & Taxon == "Arisaema parvum" & Date == "2015-08-20" & Individual_number == 2, NA, Leaf_Area_cm2),
          Wet_Mass_g = ifelse(Site == "M" & Taxon == "Arisaema parvum" & Date == "2015-08-20" & Individual_number == 2, NA, Wet_Mass_g))
-  
+
 traitsLong <- traitsWide %>% 
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm, Leaf_Area_cm2.log, SLA_cm2_g, LDMC, StoichLabel, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
   gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number, -StoichLabel)
 
 
 controlTraitDist <- traitsLong %>% 
   filter(!is.na(Value)) %>% 
-  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g", "LDMC", "C_percent", "N_percent", "CN_ratio", "P_AVG", "dN15_percent", "dC13_percent"))) %>% 
+  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "C_percent", "N_percent", "CN_ratio", "P_AVG", "dN15_percent", "dC13_percent"))) %>% 
   ggplot(aes(x = Value, fill = Site)) +
   geom_density(alpha = 0.5) +
-  scale_fill_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_fill_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   facet_wrap( ~ Traits, scales = "free") +
   theme(legend.position="top")
 controlTraitDist
@@ -303,34 +306,35 @@ traits2 %>%
 
 
 ## ----TraitsPlots
+
 DryWet <- traitsWide %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Wet_Mass_g), colour = Site)) +
   geom_point() +
-  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
 DryArea <- traitsWide %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Leaf_Area_cm2), colour = Site)) +
   geom_point(alpha = 0.4) +
-  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
 AreaSLA <- traitsWide %>% 
   ggplot(aes(x = Leaf_Area_cm2, y = SLA_cm2_g, colour = Site)) +
   geom_point() +
-  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
 LDMCThick <- traitsWide %>% 
   ggplot(aes(x = LDMC, y = Leaf_Thickness_Ave_mm, colour = Site)) +
   geom_point() +
-  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
 Legend <- traitsWide %>% 
   ggplot(aes(x = log(Leaf_Area_cm2), y = log(SLA_cm2_g), colour = Site)) +
   geom_point() +
-  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low"))
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland"))
 
 l2 <- get_legend(Legend)
 
