@@ -337,8 +337,11 @@ traits <- traits_raw2 %>%
   #  # Remove SLA > 2000
   mutate(SLA_cm2_g = ifelse(SLA_cm2_g > 2000, NA, SLA_cm2_g)) 
  
-  
-  
+# fix names
+traits <- traits %>% 
+  rename("P_percent" = "P_AVG", "BlockID" = "Location", "Treatment" = "Project") %>% 
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, C_percent:P_Co_Var, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+
 
 #Check all combinaitons of Flags, maybe one can be removed
 # Check figures and remove
