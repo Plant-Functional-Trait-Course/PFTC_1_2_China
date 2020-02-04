@@ -159,7 +159,7 @@ OrdinationPlot <- plot_grid(p, l, ncol = 2, rel_widths = c(2, 1))
 ggsave(OrdinationPlot, filename = "OrdinationPlot.jpg", height = 10, width = 6, dpi = 300)
 
 
-
+## ----DiversityPlot
 # Richness, evenness etc.
 #turf environment
 turf_env <- tbl(con, "turfEnvironment") %>% collect()
@@ -252,22 +252,23 @@ ContrastPlot <- responses %>%
   ggplot(aes(x = contrast, y = Value, colour = originSiteID, shape = TTtreat)) +
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
   geom_line(data = mean_responses, aes(y = Ave_value, x = contrast, colour = originSiteID, linetype = experiment), inherit.aes = FALSE, size = 0.8) +
-  scale_color_brewer(palette = "RdBu", direction = -1) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
   scale_linetype_manual(values = c("dashed", "solid", "dotted")) +
   scale_shape_manual(values = c(1, 16, 15, 17, 18, 6, 7), labels=c("Control", "Local transplant", "Warming", "Cooling", "Extreme warming", "Extreme cooling", "OTC")) +
   labs(x = "Contrast levels", y = "", colour = "Site", linetype = "Experiment", shape = "Treatment") +
   scale_x_continuous(breaks = c(-3, 0, 3), labels = c("cooler", "control", "warmer")) +
-  facet_wrap(~ Index, scales = "free", ncol = 1) 
+  facet_wrap(~ Index, scales = "free", ncol = 1)
 #+ theme(axis.text.x = element_text(values = c("cooler", "control", "warmer")))
 
 
-Diversity <- plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
-ggsave(Diversity, filename = "Diversity.jpg", height = 10, width = 10, dpi = 300)
+plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
+#Diversity <- plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
+#ggsave(Diversity, filename = "Diversity.jpg", height = 10, width = 10, dpi = 300)
 
 
-
+## ----TraitDistribution
 # Trait distributions
-load(file = "traits/data_clean/traits_2015_2016_China.Rdata", verbose = TRUE)
+traits <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv", col_names = TRUE)
 
 traitsWide <- traits %>% 
   filter(!Project %in% c("SEAN", "6")) %>% 
@@ -283,60 +284,63 @@ traitsLong <- traitsWide %>%
   gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number, -StoichLabel)
 
 
-traits2 %>% 
-  filter(Site == "M" & Taxon == "Arisaema parvum" & Traits == "Leaf_Area_cm2" & Date == "2015-08-20")
-
-### Check SLA > 2000 !!!
-
 controlTraitDist <- traitsLong %>% 
-  #filter(Traits == "Wet_Mass_g") %>% 
-  filter(Value < 2000) %>% 
   filter(!is.na(Value)) %>% 
   mutate(Traits = factor(Traits, levels = c("Wet_Mass_g", "Dry_Mass_g", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2", "SLA_cm2_g", "LDMC", "C_percent", "N_percent", "CN_ratio", "P_AVG", "dN15_percent", "dC13_percent"))) %>% 
   ggplot(aes(x = Value, fill = Site)) +
-  geom_density(alpha = 0.4) +
-  facet_wrap( ~ Traits, scales = "free")
-ggsave(controlTraitDist, filename = "controlTraitDist.jpg", height = 10, width = 10, dpi = 300)
+  geom_density(alpha = 0.5) +
+  scale_fill_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
+  facet_wrap( ~ Traits, scales = "free") +
+  theme(legend.position="top")
+controlTraitDist
+#ggsave(controlTraitDist, filename = "controlTraitDist.jpg", height = 10, width = 10, dpi = 300)
 
-
+## ----Stuff
 traits2 %>% 
   filter(!is.na(Value)) %>% 
   group_by(Traits) %>% 
   summarise(min = min(Value), max = max(Value))
 
 
-
+## ----TraitsPlots
 DryWet <- traitsWide %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Wet_Mass_g), colour = Site)) +
   geom_point() +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
   theme(legend.position = "none")
 
 DryArea <- traitsWide %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Leaf_Area_cm2), colour = Site)) +
   geom_point(alpha = 0.4) +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
   theme(legend.position = "none")
 
 AreaSLA <- traitsWide %>% 
   ggplot(aes(x = Leaf_Area_cm2, y = SLA_cm2_g, colour = Site)) +
   geom_point() +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
   theme(legend.position = "none")
 
 LDMCThick <- traitsWide %>% 
   ggplot(aes(x = LDMC, y = Leaf_Thickness_Ave_mm, colour = Site)) +
   geom_point() +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low")) +
   theme(legend.position = "none")
 
 Legend <- traitsWide %>% 
   ggplot(aes(x = log(Leaf_Area_cm2), y = log(SLA_cm2_g), colour = Site)) +
-  geom_point()
+  geom_point() +
+  scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Low"))
+
 l2 <- get_legend(Legend)
 
 p3 <- plot_grid(DryWet, DryArea, AreaSLA, LDMCThick, ncol = 2)
 Traits <- plot_grid(p3, l2, ncol = 2, rel_widths = c(1, 0.2))
-ggsave(Traits, filename = "Traits.jpg", height = 10, width = 10, dpi = 300)
+Traits
+#ggsave(Traits, filename = "Traits.jpg", height = 10, width = 10, dpi = 300)
 
 
-
+## ----OtherStuff
 traits %>% 
   select(Elevation, Site,  Location, Project, Taxon, StoichLabel, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
   gather(key = Trait, value = Value, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
