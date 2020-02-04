@@ -204,8 +204,8 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          )
 
   
-  
-# CN Analysis
+#************************************************************************** 
+#### CN ANALYSIS ####
 # read in ID for 2016
 CN_ID2016 <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
 
@@ -218,38 +218,35 @@ CN_ID2016 <- CN_ID2016 %>%
 
 
 # 2015 ID
-CN_ID2015 <- read.csv("traits/data/CNAnalysis_2017-08-20.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
+CN_ID2015 <- read_excel(path = "traits/data/2015 China leaves.xls", col_names = TRUE)
 
 CN_ID <- CN_ID2015 %>% 
   as_tibble() %>% 
-  filter(stoich.vial.label != "") %>% 
-  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, stoich.vial.label) %>% 
-  mutate(stoich.vial.label = as.character(stoich.vial.label)) %>% 
+  filter(`stoich vial label` != "") %>% 
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, `stoich vial label`) %>% 
+  mutate(stoich.vial.label = as.character(`stoich vial label`)) %>% 
+  select(-`stoich vial label`) %>% 
   bind_rows(CN_ID2016)
 
 # CN data
 CNdata <- read_excel(path = "traits/data/CHINA_CNP_19January2018.xls")
 
-# one leaf does not join!!! FIX LATER; and change to full_join
+# Still a whole batch that does not match
 CNdata <- CNdata %>% 
   select(-SITE) %>%
   rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
-  mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
-  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
-
+  #mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
+  full_join(CN_ID, by = c("StoichLabel" = "stoich.vial.label"))
 
 CN2015 <- CNdata %>% 
   filter(is.na(Full_Envelope_Name)) %>% 
   select(-Full_Envelope_Name) %>% 
-  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number))
+  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number)) 
   
 CN2016 <- CNdata %>% 
   filter(!is.na(Full_Envelope_Name)) %>% 
   select(-Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
 
-
-
-#setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
 # Merge CN Data with traits data separate for each year
 # Using left join, because not all leaves have CN data
@@ -257,7 +254,8 @@ CN2016 <- CNdata %>%
 traits_raw2015 <- traits_raw %>% 
   filter(is.na(Full_Envelope_Name)) %>% 
   left_join(CN2015, by = c("Date", "Elevation", "Site", "Taxon", "Individual_number", "Leaf_number"))
-  
+ 
+
 # 2016 data
 traits_raw2016 <- traits_raw %>% 
   filter(!is.na(Full_Envelope_Name)) %>% 
@@ -267,10 +265,12 @@ traits_raw2016 <- traits_raw %>%
 
 
 traits_raw2 <- traits_raw2015 %>% 
-  bind_rows(traits_raw2016)
+  bind_rows(traits_raw2016) %>%
+  # remove duplicates
+  distinct()
 
 
-
+#*************************************************************************************
 #### FLAG DATA ####
 # And more Cleaning
 # Check for problematic 2016 leaves, where site, project and location do not match
@@ -334,8 +334,10 @@ traits <- traits_raw2 %>%
          GeneralFlag = gsub("NA |^ ", "", GeneralFlag)) %>% 
   # Remove high N values: > 6.4 (Henn et al paper)
   mutate(N_percent = ifelse(N_percent > 6.4, NA, N_percent)) %>% 
-# Remove high N values: > 6.4 (Henn et al paper)
-mutate(N_percent = ifelse(N_percent > 6.4, NA, N_percent))
+  #  # Remove SLA > 2000
+  mutate(SLA_cm2_g = ifelse(SLA_cm2_g > 2000, NA, SLA_cm2_g)) 
+ 
+  
   
 
 #Check all combinaitons of Flags, maybe one can be removed
