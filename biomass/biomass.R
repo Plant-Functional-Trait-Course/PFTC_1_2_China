@@ -3,8 +3,8 @@ library("readxl")
 library("tidyverse")
 library("vegan")
 library("ggvegan")
-#devtools::install_github("Between-the-Fjords/downloader")
-library("downloader")
+#devtools::install_github("Between-the-Fjords/dataDownloader")
+library("dataDownloader")
 
 pn <- . %>% print(n = Inf)
 
