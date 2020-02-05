@@ -17,7 +17,6 @@ monthlyiButton <- read_csv(file = "climate/data_cleaned/China_2019_Monthly_Tempe
 
 Sys.setlocale("LC_ALL", "en_GB")
 
-head(monthlyiButton)
 # create Transplant values (take controls from one step down)
 WarmAirT <- monthlyiButton %>% 
   filter(depth == "air", treatment == "C", site != "H") %>%
@@ -47,6 +46,7 @@ ClimatePlot <- monthlyiButton %>%
         strip.text = element_text(size = 15),
         legend.title=element_text(size = 15), 
         legend.text=element_text(size = 10))
+ClimatePlot
 ## ----next stuff
 ggsave(ClimatePlot, filename = "climate/iButtonPlot.jpg", height = 7, width = 10, dpi = 300)
 ggsave(ClimatePlot, filename = "community/FinalFigures/ClimatePlot.jpg", height = 7, width = 10, dpi = 300)
