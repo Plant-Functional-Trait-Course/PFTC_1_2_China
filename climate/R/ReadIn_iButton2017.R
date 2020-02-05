@@ -66,8 +66,7 @@ iButton <- iButton %>%
   mutate(value = ifelse(depth == "soil" & value > 25, NA, value)) %>% # soil +25
   mutate(value = ifelse(depth %in% c("soil", "ground") & value < -7, NA, value)) # soil -7
 
-save(iButton, file = "TemperatureiButton.RData")
-
+write.csv(iButton, file = "climate/data_cleaned/China_2019_TemperatureiButton.csv")
 
 ### CALCULATE DAILY DATA ###
 dailyiButton <- iButton %>%
@@ -127,8 +126,8 @@ monthlyiButton <- iButton %>%
   ungroup() %>% 
   mutate(site = factor(site, levels = c("H", "A", "M", "L")))
  
-save(monthlyiButton, file = "Temperature_monthlyiButton.RData")
 
+write.csv(monthlyiButton, file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv")
 
 # Plot monthly data by site and depth
 monthlyiButton %>% 
