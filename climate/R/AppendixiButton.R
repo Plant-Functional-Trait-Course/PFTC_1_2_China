@@ -1,9 +1,9 @@
 #### Appendix for iButton data ####
-
+## ----iButtonPlot
 library("tidyverse")
 library("lubridate")
 
-load(file = "Temperature_monthlyiButton.RData")
+load(file = "climate/data_cleaned/Temperature_monthlyiButton.RData")
 
 Sys.setlocale("LC_ALL", "en_GB")
 
@@ -24,11 +24,11 @@ ClimatePlot <- monthlyiButton %>%
   gather(key = Temperature, value = value, Tmean, Tmin, Tmax) %>%
   mutate(Temperature = plyr::mapvalues(Temperature, c("Tmean", "Tmin", "Tmax"), c("Mean", "Minimum", "Maximum"))) %>% 
   mutate(Temperature = factor(Temperature, levels = c("Maximum", "Mean", "Minimum"))) %>% 
-  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Low"))) %>% 
-  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Low"))) %>% 
+  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   ggplot(aes(x = month, y = value, color = treatment)) +
   geom_line() +
-  scale_color_manual(name = "Treatment", values = c("grey", "purple", "orange")) +
+  scale_color_manual(name = "Treatment", values = c("grey", "purple", "orange"), labels=c("Control", "OTC", "Warming")) +
   labs(x = "", y = "Monthly temperature °C") +
   facet_grid(Temperature ~ destSite, scales = "free") +
   theme_minimal() +
@@ -37,7 +37,8 @@ ClimatePlot <- monthlyiButton %>%
         strip.text = element_text(size = 15),
         legend.title=element_text(size = 15), 
         legend.text=element_text(size = 10))
-
+## ----next stuff
+ggsave(ClimatePlot, filename = "climate/iButtonPlot.jpg", height = 7, width = 10, dpi = 300)
 ggsave(ClimatePlot, filename = "community/FinalFigures/ClimatePlot.jpg", height = 7, width = 10, dpi = 300)
 
 monthlyTemps <- monthlyiButton %>% 
