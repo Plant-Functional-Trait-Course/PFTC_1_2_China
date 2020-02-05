@@ -15,7 +15,7 @@ get_file(node = "f3knq",
 
 monthlyiButton <- read_csv(file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv", col_names = TRUE)
 
-Sys.setlocale("LC_ALL", "en_GB")
+#Sys.setlocale("LC_ALL", "en_GB")
 
 # create Transplant values (take controls from one step down)
 WarmAirT <- monthlyiButton %>% 

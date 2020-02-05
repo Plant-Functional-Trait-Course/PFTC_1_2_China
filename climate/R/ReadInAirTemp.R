@@ -8,10 +8,10 @@ library("dataDownloader")
 
 # Download OSF
 #Download files from OSF
-# get_file(node = "f3knq",
-#          file = "China_2013_2016_AirTemp.csv",
-#          path = "climate/data_cleaned",
-#          remote_path = "Climate")
+get_file(node = "f3knq",
+         file = "China_2013_2016_AirTemp.csv",
+         path = "climate/data_cleaned",
+         remote_path = "Climate")
 
 
 # Read in data

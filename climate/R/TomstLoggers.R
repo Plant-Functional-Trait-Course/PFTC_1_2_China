@@ -41,10 +41,10 @@ temp <- temp %>%
 #### Load clean data
 # Download OSF
 #Download files from OSF
-# get_file(node = "f3knq",
-#          file = "China_2019_Climate_TomtsLogger.csv",
-#          path = "climate/data_cleaned",
-#          remote_path = "Climate")
+get_file(node = "f3knq",
+         file = "China_2019_Climate_TomstLogger.csv",
+         path = "climate/data_cleaned",
+         remote_path = "Climate")
 
 # Read in data
 temp <- read_csv(file = "climate/data_cleaned/China_2019_Climate_TomstLogger.csv")
