@@ -14,7 +14,15 @@ The transplant study is located in the Gongga Mountains in Sichuan Province, sou
 | Middle         |       3500|  29.86192|   102.0360|
 | Lowland        |       3000|  29.84347|   102.0343|
 
-<img src="./map/TransplantMap.png" width="60%" />
+<img src="./map/TransplantMap.png" alt="Location of the four study sites along an elevational gradient. Inset indicates the locations of the study sites in China." width="60%" />
+<p class="caption">
+Location of the four study sites along an elevational gradient. Inset indicates the locations of the study sites in China.
+</p>
+
+<img src="./map/ChinaMountain.jpg" alt="Experimental set up fo rht different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant" width="60%" />
+<p class="caption">
+Experimental set up fo rht different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant
+</p>
 
 The experimental set-up
 -----------------------
@@ -96,9 +104,9 @@ Leaf Dry Matter Content LDMC was measured with the dry mass divided by the wet m
 
 ##### Traits Distributions and Values
 
-![](ReadMe_files/figure-markdown_github/TraitDistribution-1.png)
+![Distributions of trait data from all sampled leaves from the four sites along the 1000 altitudinal gradient in Mt Gongga, Sichuan, China.](ReadMe_files/figure-markdown_github/TraitDistribution-1.png)
 
-![](ReadMe_files/figure-markdown_github/TraitsPlots-1.png)
+![Biplots of some of the trait measurements and traits from the four sites along the 1000 altitudinal gradient in Mt Gongga, Sichuan, China.](ReadMe_files/figure-markdown_github/TraitsPlots-1.png)
 
 ##### Data processing and cleaning
 
@@ -149,7 +157,7 @@ Over the years of collecting this extensive data set, different people were invo
 
 ##### Diversity along elevational gradient
 
-![](ReadMe_files/figure-markdown_github/DiversityPlot-1.png)
+![Figure 3 Change in species richness, evenness, sum of covers, and proportion of graminoids along the elevation gradient (left hand plots), and in OTCs and transplants (right hand plots). The treatments are expressed as contrasts from controls, moderate and extreme cooling and warming (one or three ‘steps’ to the left and right of the control level), respectively. Different colours indicate the sites, High alpine, Alpine, Middle and Lowland, and symbols show the treatments; control, local transplant, OTC and extreme transplant. Gradients are indicated by grey lines and experiments by lines coloured by origin site. OTCs are indicated by solid lines, extreme transplants by stapled lines, and moderate cooling an warming transplants by dotted lines.](ReadMe_files/figure-markdown_github/DiversityPlot-1.png)
 
 #### Biomass
 
@@ -165,6 +173,29 @@ Script: biomass.R
 -   Can we trust the graminoid species or should these be merged?
 -   There are 2 plots that contain &gt; 20% seedlings (impossible!)
 -   a couple of seedlings are huge
+
+#### Climate data
+
+-   There is a climate station at each transplant site along the gradients recording air temperature at 2m (°C Tair). Data are recorded (usually) every 10 minutes and there are data from 2013-2016 in the database.
+-   Air (30 cm), ground (0 cm) and soil temperature (-5 cm) from iButtions in summer 2017. This data was recorded inside the OTC and outside.
+-   Air (15 cm), ground (0 cm) and soil temperature (-6 cm) and volumetirc soil moisture from Tomst loggers from September 2019 onwards.
+
+Data processing
+---------------
+
+The data was provided in excel or csv files. The data was checked visually for outliers. Outliers and unrealistic values were removed.
+
+    #> NULL
+
+![Air temperature in °C from 2013 - 2016 in each site along the elevational gradient.](ReadMe_files/figure-markdown_github/AirTempPlot-1.png)
+
+    #> NULL
+
+![Max, mean and min monthly air temperature in °C in the four summer month of 2017 in each site along the elevational gradient. The colour indicate the different warming treatments.](ReadMe_files/figure-markdown_github/iButtonPlot-1.png)
+
+    #> NULL
+
+![Mean monthly air, ground and soil temperature in °C in autumne 2019 at the High alpine site. The colour indicate the different warming treatments.](ReadMe_files/figure-markdown_github/TomstOTCPlot-1.png)
 
 #### TRAIT PLASTICITY DATA AND ANALYSIS
 
