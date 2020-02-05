@@ -2,8 +2,18 @@
 ## ----iButtonPlot
 library("tidyverse")
 library("lubridate")
+#devtools::install_github("Between-the-Fjords/dataDownloader")
+library("dataDownloader")
 
-load(file = "climate/data_cleaned/Temperature_monthlyiButton.RData")
+
+# Download OSF
+#Download files from OSF
+get_file(node = "f3knq",
+         file = "China_2019_Monthly_TemperatureiButton.csv",
+         path = "climate/data_cleaned",
+         remote_path = "Climate")
+
+monthlyiButton <- read_csv(file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv", col_names = TRUE)
 
 Sys.setlocale("LC_ALL", "en_GB")
 
