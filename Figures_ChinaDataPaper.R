@@ -271,9 +271,9 @@ plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
 traits <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv", col_names = TRUE)
 
 traitsWide <- traits %>% 
-  filter(!Project %in% c("SEAN", "6")) %>% 
-  mutate(Project = ifelse(is.na(Project), "LOCAL", Project)) %>% 
-  filter(Project == "LOCAL") %>%
+  filter(!Treatment %in% c("SEAN", "6")) %>% 
+  mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
+  filter(Treatment == "LOCAL") %>%
   mutate(Wet_Mass_g.log = log(Wet_Mass_g),
          Dry_Mass_g.log = log(Dry_Mass_g),
          Leaf_Area_cm2.log = log(Leaf_Area_cm2)) %>% 
@@ -283,8 +283,8 @@ traitsWide <- traits %>%
          Wet_Mass_g = ifelse(Site == "M" & Taxon == "Arisaema parvum" & Date == "2015-08-20" & Individual_number == 2, NA, Wet_Mass_g))
 
 traitsLong <- traitsWide %>% 
-  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm, Leaf_Area_cm2.log, SLA_cm2_g, LDMC, StoichLabel, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
-  gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number, -StoichLabel)
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm, Leaf_Area_cm2.log, SLA_cm2_g, LDMC, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_percent) %>% 
+  gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
 
 
 controlTraitDist <- traitsLong %>% 
