@@ -1,4 +1,9 @@
 
+<style>
+p.caption {
+  font-size: 0.8em;
+}
+</style>
 TRANSPLANT EXPERIMENT GONGGA MOUNTAIN - CHINA
 =============================================
 

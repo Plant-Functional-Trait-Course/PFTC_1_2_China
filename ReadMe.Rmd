@@ -3,6 +3,12 @@ output: github_document
 fig_caption: yes
 ---
 
+<style>
+p.caption {
+  font-size: 0.8em;
+}
+</style>
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -25,8 +31,9 @@ knitr::read_chunk("climate/R/TomstLoggers.R")
 knitr::read_chunk("climate/R/AppendixiButton.R")
 knitr::read_chunk("climate/R/ReadInAirTemp.R")
 
-theme_set(theme_bw())
-#theme_set(theme(text = element_text(size = 14)))
+theme_set(theme_bw(base_size = 12))
+
+
 ```
 # TRANSPLANT EXPERIMENT GONGGA MOUNTAIN - CHINA
 
