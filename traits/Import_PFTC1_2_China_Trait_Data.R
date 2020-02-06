@@ -81,7 +81,7 @@ trait2016LeafArea <- trait2016LeafArea %>%
 
 # import leaf trait data
 trait2016LeafTrait <-readLines(con = "traits/data/2016_China_envelope_names_CPcorr_30032017.csv") %>% 
-  gsub("elevation C2, entered values", "elevation C2; entered values", .) %>% 
+  gsub("elevation C2, entered values", "elevation C2_entered values", .) %>% 
   read.table(text = ., sep = ",", comment = "", header = TRUE, fill = TRUE, stringsAsFactors = FALSE) %>% 
   as_tibble()
 
@@ -128,7 +128,7 @@ allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),TraitsNoScans %>% 
 # Add flags for missing traits and area
 trait2016LeafTrait <- trait2016LeafTrait %>% 
   # next line can go if we have calculated leaf area!!!
-  mutate(AreaFlag = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "leaf area missing; need scaning", AreaFlag),
+  mutate(AreaFlag = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "leaf area missing_need scaning", AreaFlag),
          WetFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", WetFlag),
          DryFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", DryFlag),
          ThickFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", ThickFlag),
@@ -202,7 +202,8 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName),
          Taxon = trimws(Taxon)
          )
-
+# Error message ok. 2 species have been fixed otherwise
+# The following `from` values were not present in `x`: Codonopsis foetens subsp. Nervosa, Youngia racimifera
   
 #************************************************************************** 
 #### CN ANALYSIS ####
@@ -281,7 +282,7 @@ traits_raw2 <- traits_raw2 %>%
          GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3500_M_A5_2_Artemisia_flaccida_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
          GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Polygonum_viviparum_", Envelope_Name_Corrected), paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
          Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), "1", Project),
-         GeneralFlag = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), paste(GeneralFlag, "Possible wrong Site Location Project; changed Project from 2 to 1"), GeneralFlag),
+         GeneralFlag = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), paste(GeneralFlag, "Possible wrong Site Location Project changed Project from 2 to 1"), GeneralFlag),
          Project = ifelse(grepl("20160815_4100_H_H2_6_Allium_prattii_U_|20160815_4100_H_H2_6_Polygonum_macrophyllum_U_|20160815_4100_H_H2_6_Viola_biflora_var_rockiana_1_", Envelope_Name_Corrected), "C", Project),
          GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Allium_prattii_U_|20160815_4100_H_H2_6_Polygonum_macrophyllum_U_|20160815_4100_H_H2_6_Viola_biflora_var_rockiana_1_", Envelope_Name_Corrected), paste(GeneralFlag, "Project might be wrong changed 6 to C"), GeneralFlag),
          
@@ -320,13 +321,13 @@ traits <- traits_raw2 %>%
          # Missing Dry_Mass_2016_g for 2015 leaves
          DryFlag = ifelse(year(Date) == "2015" & flag == "DryMass2015", paste(DryFlag, "Area might be incorrect 2015 weighing"), DryFlag)) %>% 
   # Flag wrong Individual and leaf number
-  mutate(GeneralFlag = ifelse(Individual_number %in% c("", "Unknown", "U", "1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.2", "5.2"), paste(GeneralFlag, "Wrong Ind. number due to duplicate FileName"), GeneralFlag),
-         GeneralFlag = ifelse(Individual_number %in% c(""), paste(GeneralFlag, "Missing Ind. number"), GeneralFlag),
-         GeneralFlag = ifelse(Leaf_number %in% c("Unknown", "3 (2)", "4 (2)", "5 (2)", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"), paste(GeneralFlag, "Wrong leaf number due to duplicate or missing Ind. nr"), GeneralFlag),
+  mutate(GeneralFlag = ifelse(Individual_number %in% c("", "Unknown", "U", "1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.2", "5.2"), paste(GeneralFlag, "Wrong Ind number due to duplicate FileName"), GeneralFlag),
+         GeneralFlag = ifelse(Individual_number %in% c(""), paste(GeneralFlag, "Missing Ind number"), GeneralFlag),
+         GeneralFlag = ifelse(Leaf_number %in% c("Unknown", "3 (2)", "4 (2)", "5 (2)", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"), paste(GeneralFlag, "Wrong leaf number due to duplicate or missing Ind nr"), GeneralFlag),
          GeneralFlag = ifelse(is.na(Leaf_number), paste(GeneralFlag, "Missing leaf number"), GeneralFlag)) %>% 
   # Flag duplicate leaves where the area was merged by arranging by arranging dry mass and size
-  mutate(AreaFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(AreaFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), AreaFlag),
-         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), DryFlag)) %>% 
+  mutate(AreaFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(AreaFlag, "Area possibly wrong_duplicate EnvelopeName_matching area and mass arranged by size and mass"), AreaFlag),
+         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong_duplicate EnvelopeName_matching area and mass arranged by size and mass"), DryFlag)) %>% 
   mutate(DryFlag = gsub("NA |^ ", "", DryFlag),
          AreaFlag = gsub("NA |^ ", "", AreaFlag),
          WetFlag = gsub("NA |^ ", "", WetFlag),
@@ -339,6 +340,7 @@ traits <- traits_raw2 %>%
  
 # fix names
 traits <- traits %>% 
+  mutate(allComments = gsub(",", "_", allComments)) %>% 
   rename("P_percent" = "P_AVG", "BlockID" = "Location", "Treatment" = "Project") %>% 
   select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, C_percent:P_Co_Var, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
 
