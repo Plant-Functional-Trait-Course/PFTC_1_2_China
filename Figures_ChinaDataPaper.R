@@ -218,7 +218,7 @@ GradientPlot <- ResponsesGradient %>%
 responsesExp <- responses %>% 
   filter(year == 2016) %>% 
   ungroup() %>% 
-  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, 1)),
+  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, -1)),
          contrast = as.numeric(as.character(contrast))) %>% 
   select(-N1, -total_vascular, -diversity, -vegetationHeight) %>% 
   gather(key = Index, value = Value, Richness, Evenness, SumofCover, ProportionGraminoid)
@@ -277,6 +277,7 @@ traitsWide <- traits %>%
   filter(Treatment == "LOCAL") %>%
   mutate(Wet_Mass_g.log = log(Wet_Mass_g),
          Dry_Mass_g.log = log(Dry_Mass_g),
+         Leaf_Thickness_Ave_mm.log = log(Leaf_Thickness_Ave_mm),
          Leaf_Area_cm2.log = log(Leaf_Area_cm2)) %>% 
   mutate(Site = factor(Site, levels = c("H", "A", "M", "L"))) %>% 
   mutate(LDMC = ifelse(Site == "M" & Taxon == "Trifolium repens" & Date == "2015-08-20", NA, LDMC),
@@ -284,13 +285,13 @@ traitsWide <- traits %>%
          Wet_Mass_g = ifelse(Site == "M" & Taxon == "Arisaema parvum" & Date == "2015-08-20" & Individual_number == 2, NA, Wet_Mass_g))
 
 traitsLong <- traitsWide %>% 
-  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm, Leaf_Area_cm2.log, SLA_cm2_g, LDMC, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_percent) %>% 
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm.log, Leaf_Area_cm2.log, SLA_cm2_g, LDMC, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_percent) %>% 
   gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
 
 
 controlTraitDist <- traitsLong %>% 
   filter(!is.na(Value)) %>% 
-  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "C_percent", "N_percent", "CN_ratio", "P_AVG", "dN15_percent", "dC13_percent"))) %>% 
+  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm.log", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "C_percent", "N_percent", "CN_ratio", "P_percent", "dN15_percent", "dC13_percent"))) %>% 
   ggplot(aes(x = Value, fill = Site)) +
   geom_density(alpha = 0.5) +
   scale_fill_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
