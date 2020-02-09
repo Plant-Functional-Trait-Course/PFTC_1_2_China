@@ -20,8 +20,8 @@ trait2015_all <- trait2015_all %>%
   bind_rows(trait2015_Halenia %>% mutate(Leaf_Number = as.character(Leaf_Number)))
 
 #check character variables
-trait2015_all %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
-trait2015_all %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
+# trait2015_all %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
+# trait2015_all %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
 
 # fix some variables, replace missing 2016 dry mass with 2015 dry mass
 trait2015 <- trait2015_all %>% 
@@ -44,8 +44,8 @@ trait2015 <- trait2015_all %>%
 
 
 # Check if species in traits but not in area and vice versa (there should be no leafs in area and missing in trait!)
-setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
-setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
+# setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
+# setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
 
 
 # merge Newleafarea2015 with trait2015 data
@@ -59,7 +59,7 @@ trait2015 <- trait2015 %>%
 
 
 # Check if there are areas that do not match with traits (should be zero!)
-trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
+# trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
 
 
 
@@ -189,6 +189,9 @@ trait2016 <- trait2016 %>%
 
 # Combine and recalculate SLA and LDMC
 traits_raw <- bind_rows(trait2016, trait2015) %>%
+  # remove unrealistic trait values
+  # remove very small Wet_mass_g
+  mutate(Wet_Mass_g = if_else(Wet_Mass_g < 0.0003354626, NA_real_, Wet_Mass_g)) %>% 
   mutate(SLA_cm2_g = Leaf_Area_cm2 / Dry_Mass_g,
          LDMC = Dry_Mass_g / Wet_Mass_g,
          Site = factor(Site, levels = c("H", "A", "M", "L")), 
@@ -201,7 +204,12 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = gsub("  ", " ", Taxon),
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName),
          Taxon = trimws(Taxon)
-         )
+         ) %>% 
+  # remove SLA > 500 and larger than 5
+  mutate(SLA_cm2_g = if_else(SLA_cm2_g > 500 | SLA_cm2_g < 5, NA_real_, SLA_cm2_g)) %>% 
+  # remove LDMC > 1
+  mutate(LDMC = if_else(LDMC > 1, NA_real_, LDMC))
+
 # Error message ok. 2 species have been fixed otherwise
 # The following `from` values were not present in `x`: Codonopsis foetens subsp. Nervosa, Youngia racimifera
   
@@ -305,11 +313,6 @@ traits <- traits_raw2 %>%
   filter(!grepl("not Rumex", allComments)) %>% 
   # Flag possibly problematic leaves: eaten, folded, cut, too white, etc.
   mutate(AreaFlag = ifelse(grepl("leaf eaten|white|stalk missing|folded|cut|leaf not recognised", allComments), paste(AreaFlag, "Area might be incorrect eaten cut white etc"), AreaFlag),
-         # SLA wrong
-         AreaFlag = ifelse(SLA_cm2_g > 500, paste(AreaFlag, "Area might be incorrect SLA too large"), AreaFlag),
-         AreaFlag = ifelse(SLA_cm2_g < 5, paste(AreaFlag, "Area might be incorrect SLA too small"), AreaFlag),
-         DryFlag = ifelse(SLA_cm2_g > 500, paste(DryFlag, "Dry mass might be incorrect SLA too large"), DryFlag),
-         DryFlag = ifelse(SLA_cm2_g < 5, paste(DryFlag, "Dry mass might be incorrect SLA too small"), DryFlag),
          # brown and yellow leaves
          WetFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(WetFlag, "Wet mass might be too low"), WetFlag),
          # Wet < Dry
@@ -334,15 +337,32 @@ traits <- traits_raw2 %>%
          ThickFlag = gsub("NA |^ ", "", ThickFlag),
          GeneralFlag = gsub("NA |^ ", "", GeneralFlag)) %>% 
   # Remove high N values: > 6.4 (Henn et al paper)
-  mutate(N_percent = ifelse(N_percent > 6.4, NA, N_percent)) %>% 
-  #  # Remove SLA > 2000
-  mutate(SLA_cm2_g = ifelse(SLA_cm2_g > 2000, NA, SLA_cm2_g)) 
- 
+  mutate(N_percent = ifelse(N_percent > 6.4, NA_real_, N_percent)) %>% 
+  # Remove Wet mass if larger than dry
+  mutate(Wet_Mass_g = ifelse(WetFlag == "Wet mass might be incorrect Wet < Dry #zap", NA_real_, Wet_Mass_g),
+         LDMC = ifelse(WetFlag == "Wet mass might be incorrect Wet < Dry #zap", NA_real_, LDMC),
+         Wet_Mass_g = ifelse(WetFlag == "Wet mass might be too low Wet mass might be incorrect Wet < Dry #zap", NA_real_, Wet_Mass_g),
+         LDMC = ifelse(WetFlag == "Wet mass might be too low Wet mass might be incorrect Wet < Dry #zap", NA_real_, LDMC))
+
 # fix names
 traits <- traits %>% 
   mutate(allComments = gsub(",", "_", allComments)) %>% 
   rename("P_percent" = "P_AVG", "BlockID" = "Location", "Treatment" = "Project") %>% 
-  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, C_percent:P_Co_Var, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+  # Remove leaves from Sean
+  filter(!Treatment %in% c("SEAN", "6") | is.na(Treatment)) %>% 
+  mutate(Individual_number = if_else(Individual_number == c("Unknown"), NA_character_, Individual_number)) %>% 
+  mutate(Individual_number = if_else(Individual_number == c(""), NA_character_, Individual_number)) %>% 
+  mutate(Leaf_number = if_else(Leaf_number %in% c("Unknown"), NA_character_, Leaf_number)) %>% 
+  # Add BlockID to local 2015 leaves
+  mutate(BlockID = case_when(is.na(Treatment) & Site == "H" ~ "HO",
+                             is.na(Treatment) & Site == "A" ~ "AO",
+                             is.na(Treatment) & Site == "M" ~ "MO",
+                             is.na(Treatment) & Site == "L" ~ "LO",
+                             TRUE ~ BlockID)) %>% 
+  # mark all 2015 leaves with Local
+  mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, C_percent:P_Co_Var, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+
 
 
 #Check all combinaitons of Flags, maybe one can be removed
