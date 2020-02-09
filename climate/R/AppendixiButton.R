@@ -41,7 +41,7 @@ ClimatePlot <- monthlyiButton %>%
   labs(x = "", y = "Monthly temperature °C") +
   facet_grid(Temperature ~ destSite, scales = "free") +
   theme_minimal() +
-  theme(axis.text=element_text(size = 15), 
+  theme(axis.text=element_text(size = 12), 
         axis.title=element_text(size = 17), 
         strip.text = element_text(size = 15),
         legend.title=element_text(size = 15), 
