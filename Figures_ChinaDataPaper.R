@@ -272,9 +272,7 @@ plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
 traits <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv", col_names = TRUE)
 
 traitsWide <- traits %>% 
-  filter(!Treatment %in% c("SEAN", "6")) %>% 
-  mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
-  filter(Treatment == "LOCAL") %>%
+  #filter(Treatment == "LOCAL") %>%
   mutate(Wet_Mass_g.log = log(Wet_Mass_g),
          Dry_Mass_g.log = log(Dry_Mass_g),
          Leaf_Thickness_Ave_mm.log = log(Leaf_Thickness_Ave_mm),
@@ -291,14 +289,15 @@ traitsLong <- traitsWide %>%
 
 controlTraitDist <- traitsLong %>% 
   filter(!is.na(Value)) %>% 
-  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm.log", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "C_percent", "N_percent", "CN_ratio", "P_percent", "dN15_percent", "dC13_percent"))) %>% 
+  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm.log", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "P_percent", "C_percent", "N_percent", "CN_ratio", "dN15_percent", "dC13_percent"))) %>% 
   ggplot(aes(x = Value, fill = Site)) +
   geom_density(alpha = 0.5) +
   scale_fill_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
+  labs(x = "Mean trait value", y = "Density") +
   facet_wrap( ~ Traits, scales = "free") +
   theme(legend.position="top")
 controlTraitDist
-#ggsave(controlTraitDist, filename = "controlTraitDist.jpg", height = 10, width = 10, dpi = 300)
+#ggsave(controlTraitDist, filename = "controlTraitDist.jpg", height = 13, width = 13, dpi = 300)
 
 ## ----Stuff
 traits2 %>% 
