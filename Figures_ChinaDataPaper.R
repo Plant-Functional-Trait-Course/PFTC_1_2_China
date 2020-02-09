@@ -208,6 +208,7 @@ GradientPlot <- ResponsesGradient %>%
   geom_line(data = MeanGradResponse, aes(x = Elevation, y = Ave_value), colour = "grey", linetype = "dashed", size = 0.8) +
   scale_color_brewer(palette = "RdBu", direction = -1) +
   scale_shape_manual(values = c(1, 16)) +
+  scale_x_continuous(breaks = c(3000, 3200, 3400, 3600, 3800, 4000, 4200)) +
   labs(x = "Elevation m a.s.l.", y = "Average value", shape = "Treatment", colour = "Site") +
   facet_wrap( ~ Index, scale = "free", ncol = 1) +
   theme(legend.position = "none")
@@ -247,7 +248,7 @@ ContrastPlot <- responses %>%
   select(-N1, -total_vascular, -diversity, -vegetationHeight) %>% 
   gather(key = Index, value = Value, Richness, Evenness, SumofCover, ProportionGraminoid) %>% 
   mutate(Index = factor(Index, levels = c("Richness", "Evenness", "SumofCover", "ProportionGraminoid"))) %>% 
-  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, 1)),
+  mutate(contrast = plyr::mapvalues(TTtreat, c("control", "local", "warm1", "cool1", "warm3", "cool3", "OTC"), c(0, 0, -1, 1, -3, 3, -1)),
          contrast = as.numeric(as.character(contrast))) %>% 
   ggplot(aes(x = contrast, y = Value, colour = originSiteID, shape = TTtreat)) +
   geom_jitter(height = 0, width = 0.1, size = 1.8) +
@@ -256,7 +257,7 @@ ContrastPlot <- responses %>%
   scale_linetype_manual(values = c("dashed", "solid", "dotted")) +
   scale_shape_manual(values = c(1, 16, 15, 17, 18, 6, 7), labels=c("Control", "Local transplant", "Warming", "Cooling", "Extreme warming", "Extreme cooling", "OTC")) +
   labs(x = "Contrast levels", y = "", colour = "Site", linetype = "Experiment", shape = "Treatment") +
-  scale_x_continuous(breaks = c(-3, 0, 3), labels = c("cooler", "control", "warmer")) +
+  scale_x_continuous(breaks = c(-3, 0, 3), labels = c("warmer", "control", "cooler")) +
   facet_wrap(~ Index, scales = "free", ncol = 1)
 #+ theme(axis.text.x = element_text(values = c("cooler", "control", "warmer")))
 
