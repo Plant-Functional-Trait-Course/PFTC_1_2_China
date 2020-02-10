@@ -34,8 +34,10 @@ temp <- map_df(set_names(files), function(file) {
 temp <- temp %>% 
   pivot_longer(cols = c(SoilTemperature, GroundTemperature, AirTemperature), names_to = "Variable", values_to = "Temperature") %>% 
   mutate(Treatment = recode(Treatment, "C" = "Control", "W" = "OTC"),
-         YearMonth = ymd(paste(year(DateTime), month(DateTime), "15"))) 
+         YearMonth = ymd(paste(year(DateTime), month(DateTime), "15"))) %>% 
+  select(File, DateTime, VolumetricMoisture:YearMonth)
   
+#write_csv(temp, path = "climate/data_cleaned/China_2019_Climate_TomstLogger.csv")
 
 ## ----TomstOTCPlot
 #### Load clean data
