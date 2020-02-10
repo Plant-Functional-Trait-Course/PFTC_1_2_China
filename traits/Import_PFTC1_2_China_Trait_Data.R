@@ -344,24 +344,26 @@ traits <- traits_raw2 %>%
          Wet_Mass_g = ifelse(WetFlag == "Wet mass might be too low Wet mass might be incorrect Wet < Dry #zap", NA_real_, Wet_Mass_g),
          LDMC = ifelse(WetFlag == "Wet mass might be too low Wet mass might be incorrect Wet < Dry #zap", NA_real_, LDMC))
 
-# fix names
+# fix stuff for final data set
 traits <- traits %>% 
   mutate(allComments = gsub(",", "_", allComments)) %>% 
-  rename("P_percent" = "P_AVG", "BlockID" = "Location", "Treatment" = "Project") %>% 
+  rename("P_percent" = "P_AVG", "destBlockID" = "Location", "Treatment" = "Project") %>% 
   # Remove leaves from Sean
   filter(!Treatment %in% c("SEAN", "6") | is.na(Treatment)) %>% 
   mutate(Individual_number = if_else(Individual_number == c("Unknown"), NA_character_, Individual_number)) %>% 
   mutate(Individual_number = if_else(Individual_number == c(""), NA_character_, Individual_number)) %>% 
   mutate(Leaf_number = if_else(Leaf_number %in% c("Unknown"), NA_character_, Leaf_number)) %>% 
-  # Add BlockID to local 2015 leaves
-  mutate(BlockID = case_when(is.na(Treatment) & Site == "H" ~ "HO",
+  # Add destBlockID to local 2015 leaves
+  mutate(destBlockID = case_when(is.na(Treatment) & Site == "H" ~ "HO",
                              is.na(Treatment) & Site == "A" ~ "AO",
                              is.na(Treatment) & Site == "M" ~ "MO",
                              is.na(Treatment) & Site == "L" ~ "LO",
-                             TRUE ~ BlockID)) %>% 
+                             TRUE ~ destBlockID)) %>% 
+  # Fix wrong dates
+  mutate(Date = if_else(Date == "2015-01-01", ymd("2015-08-20"), Date)) %>% 
   # mark all 2015 leaves with Local
   mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
-  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, C_percent:P_Co_Var, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, dC13_percent:P_Co_Var, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
 
 
 
