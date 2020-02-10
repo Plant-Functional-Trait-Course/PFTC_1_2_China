@@ -25,7 +25,8 @@ temp <- map_df(set_names(files), function(file) {
   rename("DateTime" = `Date & time`, "TMS3Number" = `TMS3 number`, "SoilTemperature" = "Soil temperature -6 cm", "GroundTemperature" = "Surface temperature", "AirTemperature" = "Air temperature +12 cm", "Period" = "period in 640 μs", "Error" = "error by probe", "TempCorrection" = "temperature correction", "RawSoilmoisture" = "Volumetric soil moisture without temp correction", "VolumetricMoisture" = "Vol. moisture") %>% 
   mutate(DateTime = ymd_hm(DateTime),
          Treatment = substr(basename(File), 1, 1),
-         Plot = substr(basename(File), 2, 2)) %>% 
+         Plot = substr(basename(File), 2, 2),
+         Site = "H") %>% 
   # remove befor
   filter(DateTime > "2019-09-13 00:00:00")
 
