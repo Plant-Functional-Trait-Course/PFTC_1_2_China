@@ -361,10 +361,11 @@ traits <- traits %>%
                              TRUE ~ destBlockID)) %>% 
   # Fix wrong dates
   mutate(Date = if_else(Date == "2015-01-01", ymd("2015-08-20"), Date)) %>% 
+  # fix last species
+  mutate(Taxon = if_else(Taxon == "Gentiana trichomata", "Gentiana trichotoma", Taxon)) %>% 
   # mark all 2015 leaves with Local
   mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
   select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, dC13_percent:P_Co_Var, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
-
 
 
 #Check all combinaitons of Flags, maybe one can be removed
