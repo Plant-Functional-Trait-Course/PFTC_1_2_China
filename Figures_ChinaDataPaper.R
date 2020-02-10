@@ -5,6 +5,7 @@ library("tidyverse")
 library("vegan")
 library("ggvegan")
 library("cowplot")
+library("gridExtra")
 
 source("community/start_here.R")
 
@@ -346,6 +347,7 @@ Traits
 
 
 ## ----OtherStuff
+# How many leaves
 traits %>% 
   select(Elevation, Site,  Location, Project, Taxon, StoichLabel, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
   gather(key = Trait, value = Value, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
@@ -354,5 +356,86 @@ traits %>%
   group_by(StoichLabel) %>% 
   summarise(n())
 
-104 Local leaves
-324 Experiment
+
+
+# Climate figure
+# Read in Air data
+airtemp <- read_csv(file = "climate/data_cleaned/China_2013_2016_AirTemp.csv", col_names = TRUE)
+
+AirTempPlot <- airtemp %>% 
+  mutate(site = plyr::mapvalues(site, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(site = factor(site, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  ggplot(aes(x = dateTime, y = Tair, colour = site)) +
+  geom_line() +
+  scale_color_brewer(palette = "RdBu", direction = -1) +
+  labs(x = "", y = "Mean air temperature °C") +
+  facet_wrap(~ site) +
+  theme(legend.position="top")
+
+
+# iButton
+monthlyiButton <- read_csv(file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv", col_names = TRUE)
+
+iButtonPlot <- monthlyiButton %>% 
+  filter(depth == "air") %>% 
+  mutate(site = plyr::mapvalues(site, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(site = factor(site, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  ggplot(aes(x = site, y = Tmean, fill = treatment)) +
+  geom_boxplot() +
+  scale_fill_manual(name = "Treatment", values = c("grey", "purple"), labels=c("Control", "OTC")) +
+  labs(x = "", y = "Mean summer temperature °C") +
+  theme(legend.position="top")
+  # theme(axis.text=element_text(size = 12), 
+  #       axis.title=element_text(size = 17), 
+  #       strip.text = element_text(size = 15),
+  #       legend.title=element_text(size = 15), 
+  #       legend.text=element_text(size = 10))
+
+
+# Read in Tomst data
+temp <- read_csv(file = "climate/data_cleaned/China_2019_Climate_TomstLogger.csv")
+
+TomstOTC <- temp %>% 
+  mutate(Variable = plyr::mapvalues(Variable, c("AirTemperature", "GroundTemperature", "SoilTemperature"), c("Air", "Ground", "Soil"))) %>% 
+  ggplot(aes(x = Variable, y = Temperature, fill = Treatment)) +
+  scale_fill_manual(name = "Treatment", values = c("grey", "purple"), labels=c("Control", "OTC")) +
+  geom_boxplot() +
+  labs(x = "", y = "Mean temperautre in °C") +
+  theme(legend.position="top")
+
+# temp %>% 
+#   group_by(Variable, Treatment) %>% 
+#   summarise(MeanTemperature = mean(Temperature), SETemperature = sd(Temperature)/sqrt(n())) %>% 
+#   ggplot(aes(x = Variable, y = MeanTemperature, ymin = MeanTemperature - SETemperature, ymax = MeanTemperature + SETemperature, colour = Treatment)) +
+#   scale_colour_manual(name = "Treatment", values = c("grey", "purple"), labels=c("Control", "OTC")) +
+#   geom_point() +
+#   geom_errorbar(width = 0.1) +
+#   labs(x = "", y = "Mean temperautre in °C")
+  
+ClimatePlot <- grid.arrange(AirTempPlot, iButtonPlot, TomstOTC, layout_matrix = rbind(c(1,1), c(2,3)))
+ggsave(ClimatePlot, filename = "ClimatePlot.jpg", height = 10, width = 10, dpi = 300)
+
+
+
+
+### SPECIES TABLE
+biomass <- read_csv(file = "biomass/China_2016_Biomass_cleanded.csv")
+traits <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv")
+
+spList <- taxa %>% select(speciesName) %>%  
+  mutate(Dataset = "community") %>% 
+  rbind(biomass %>% select(speciesName) %>% 
+          distinct() %>% 
+          mutate(Dataset = "biomass")) %>% 
+  rbind(traits %>% select(Taxon) %>% 
+          rename("speciesName" = "Taxon") %>% 
+          distinct() %>% 
+          mutate(Dataset = "trait")) %>% 
+  mutate(Presence = "x") %>% 
+  pivot_wider(names_from = Dataset, values_from = Presence) %>% 
+  arrange(speciesName)
+
+write_csv(spList, path = "spList.csv")
+
+
+
