@@ -223,7 +223,9 @@ CN_ID2016 <- CN_ID2016 %>%
   filter(stoich.vial.label != "") %>% 
   select(Full_Envelope_Name, stoich.vial.label) %>% 
   mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
-  mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name))
+  mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name)) %>% 
+  # remove Chemical data from StoichLabel 1049, 1051, 1052. Might have been mixed species
+  filter(!stoich.vial.label %in% c(1049, 1051, 1052))
 
 
 # 2015 ID
@@ -365,14 +367,36 @@ traits <- traits %>%
   mutate(Taxon = if_else(Taxon == "Gentiana trichomata", "Gentiana trichotoma", Taxon)) %>% 
   # mark all 2015 leaves with Local
   mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
-  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, dC13_percent:P_Co_Var, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, StoichLabel:dC13_percent, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
 
 
-#Check all combinaitons of Flags, maybe one can be removed
-# Check figures and remove
-# Remove impossible values
+# divide data set into leaf and chemical traits
+traitsLeaf <- traits %>% 
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+
+traitsChem <- traits %>% 
+  filter(!is.na(StoichLabel)) %>% 
+  select(Date:Taxon, P_percent, StoichLabel:dC13_percent) %>% 
+  # remove duplicate rows
+  distinct() %>% 
+  # remove rows with StoichLabel but no trait values
+  filter(!(is.na(P_percent) & is.na(C_percent) & is.na(N_percent) & is.na(CN_ratio) & is.na(dN15_percent) & is.na(dC13_percent))) %>% 
+  group_by(StoichLabel) %>% 
+  # remove 4 observations where leaves from 2 blocks were merged
+  # StoichLabel: 1014 - L5 & L6, 1054 - A1 & A2, 1063 - A5 & A6, 1181 - A1 & A2
+  mutate(n = 1:n()) %>% 
+  filter(n == 1) %>% 
+  mutate(CNP_Comment = case_when(StoichLabel == "1014" ~ "BlockID L5 and L6 merged",
+                                 StoichLabel == "1054" ~ "BlockID A1 and A2 merged",
+                                 StoichLabel == "1063" ~ "BlockID A5 and A6 merged",
+                                 StoichLabel == "1181" ~ "BlockID A1 and A2 merged"))
+
+
+
+#Check all combinations of Flags, maybe one can be removed
 #traits %>% filter(grepl("#zap", AreaFlag))
-write_csv(traits, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv", col_names = TRUE)
+write_csv(traitsLeaf, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_LeafTraits.csv", col_names = TRUE)
+write_csv(traitsChem, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_ChemicalTraits.csv", col_names = TRUE)
 
 
 ### Is this needed???
