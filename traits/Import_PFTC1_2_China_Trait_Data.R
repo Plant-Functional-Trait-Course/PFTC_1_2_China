@@ -376,7 +376,7 @@ traitsLeaf <- traits %>%
 
 traitsChem <- traits %>% 
   filter(!is.na(StoichLabel)) %>% 
-  select(Date:Taxon, P_percent, StoichLabel:dC13_percent) %>% 
+  select(Date:Taxon, StoichLabel, P_percent, C_percent:dC13_percent) %>% 
   # remove duplicate rows
   distinct() %>% 
   # remove rows with StoichLabel but no trait values
