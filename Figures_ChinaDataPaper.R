@@ -270,23 +270,27 @@ plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
 
 ## ----TraitDistribution
 # Trait distributions
-traits <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_Traits.csv", col_names = TRUE)
+traitsLeaf <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_LeafTraits.csv", col_names = TRUE)
+traitsChem <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_ChemicalTraits.csv", col_names = TRUE)
 
-traitsWide <- traits %>% 
-  #filter(Treatment == "LOCAL") %>%
+traitsWideL <- traitsLeaf %>% 
   mutate(Wet_Mass_g.log = log(Wet_Mass_g),
          Dry_Mass_g.log = log(Dry_Mass_g),
          Leaf_Thickness_Ave_mm.log = log(Leaf_Thickness_Ave_mm),
          Leaf_Area_cm2.log = log(Leaf_Area_cm2)) %>% 
-  mutate(Site = factor(Site, levels = c("H", "A", "M", "L"))) %>% 
-  mutate(LDMC = ifelse(Site == "M" & Taxon == "Trifolium repens" & Date == "2015-08-20", NA, LDMC),
-         Leaf_Area_cm2 = ifelse(Site == "M" & Taxon == "Arisaema parvum" & Date == "2015-08-20" & Individual_number == 2, NA, Leaf_Area_cm2),
-         Wet_Mass_g = ifelse(Site == "M" & Taxon == "Arisaema parvum" & Date == "2015-08-20" & Individual_number == 2, NA, Wet_Mass_g))
+  mutate(Site = factor(Site, levels = c("H", "A", "M", "L"))) 
 
-traitsLong <- traitsWide %>% 
-  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm.log, Leaf_Area_cm2.log, SLA_cm2_g, LDMC, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_percent) %>% 
+
+traitsLongL <- traitsWideL %>% 
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm.log, Leaf_Area_cm2.log, SLA_cm2_g, LDMC) %>% 
   gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
 
+
+traitsLongC <- traitsChem %>% 
+  select(Date, Elevation, Site, Taxon, P_percent, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent) %>% 
+  gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon)
+
+traitsLong <- traitsLongL %>% bind_rows(traitsLongC)
 
 controlTraitDist <- traitsLong %>% 
   filter(!is.na(Value)) %>% 
@@ -309,7 +313,7 @@ traits2 %>%
 
 ## ----TraitsPlots
 
-DryWet <- traitsWide %>% 
+DryWet <- traitsWideL %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Wet_Mass_g), colour = Site)) +
   geom_point() +
   scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
@@ -348,14 +352,34 @@ Traits
 
 ## ----OtherStuff
 # How many leaves
-traits %>% 
-  select(Elevation, Site,  Location, Project, Taxon, StoichLabel, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
-  gather(key = Trait, value = Value, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_AVG) %>% 
+traitsLeaf %>% 
+  mutate(Wet_Mass_g.log = log(Wet_Mass_g),
+         Dry_Mass_g.log = log(Dry_Mass_g),
+         Leaf_Thickness_Ave_mm.log = log(Leaf_Thickness_Ave_mm),
+         Leaf_Area_cm2.log = log(Leaf_Area_cm2)) %>% 
+  select(Date, Elevation, Site, Treatment, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm.log, Leaf_Area_cm2.log, SLA_cm2_g, LDMC) %>% 
+  gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Treatment, -Taxon, -Individual_number, -Leaf_number) %>% 
   filter(!is.na(Value)) %>% 
-  filter(!Location %in% c("LO", "MO", "HO", "AO")) %>% 
-  group_by(StoichLabel) %>% 
+  #group_by(Treatment) %>% 
+  summarise(n())
+# Total: 33'314
+ 
+traitsLeaf %>% 
+  filter(Treatment != "LOCAL") %>% 
+  group_by(Taxon) %>% 
   summarise(n())
 
+traitsChem %>% 
+  select(Elevation, Site,  Treatment, Taxon, StoichLabel, P_percent, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent) %>% 
+  gather(key = Trait, value = Value, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_percent) %>% 
+  filter(!is.na(Value)) %>% 
+  group_by(Treatment) %>% 
+  summarise(n())
+# Total obs: 3429, 
+traitsChem %>% 
+  group_by(Treatment) %>% 
+  summarise(n())
+# Total leaves: 576, gradient: 265, experiment: 311
 
 
 # Climate figure
