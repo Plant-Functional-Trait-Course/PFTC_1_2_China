@@ -7,6 +7,7 @@ library("ggvegan")
 library("cowplot")
 library("tidylog")
 library("gridExtra")
+library("lubridate")
 
 theme_set(theme_bw())
 
@@ -480,6 +481,31 @@ taxa %>% select(speciesName) %>%
   count()
 
 
+airtemp <- read_csv(file = "climate/data_cleaned/China_2013_2016_AirTemp.csv", col_names = TRUE)
+
+# GDD
+airtemp %>% 
+  mutate(year = year(dateTime),
+         month = month(dateTime),
+         day = day(dateTime)) %>% 
+  filter(year %in% c(2013)) %>% 
+  group_by(site, year, month, day) %>% 
+  summarise(mean = mean(Tair)) %>% 
+  filter(mean >= 5) %>%
+  group_by(year, site) %>% 
+  summarise(n = n())
+
+# Freezing days
+airtemp %>% 
+  mutate(year = year(dateTime),
+         month = month(dateTime),
+         day = day(dateTime)) %>% 
+  filter(year %in% c(2013)) %>% 
+  group_by(site, year, month, day) %>% 
+  summarise(mean = mean(Tair)) %>% 
+  filter(mean < 0) %>%
+  group_by(year, site) %>% 
+  summarise(n = n())
 
 
 
