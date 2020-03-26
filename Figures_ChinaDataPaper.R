@@ -373,18 +373,25 @@ traitsLeaf %>%
   group_by(Taxon) %>% 
   summarise(n())
 
+
 traitsChem %>% 
   select(Elevation, Site,  Treatment, Taxon, StoichLabel, P_percent, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent) %>% 
   gather(key = Trait, value = Value, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent, P_percent) %>% 
   filter(!is.na(Value)) %>% 
   group_by(Treatment) %>% 
   summarise(n())
-# Total obs: 3429, 
+# Total obs: 3429
+
+# Nr leaves: 6671
+# Nr trait observations: 33314 + 3429 = 36743
+
 traitsChem %>% 
   group_by(Treatment) %>% 
   summarise(n())
 # Total leaves: 576, gradient: 265, experiment: 311
 
+traitsLeaf %>% distinct(Taxon)
+# Taxon: 193
 
 ## ----Climate figure
 # Climate figure
