@@ -8,6 +8,7 @@ library("cowplot")
 library("tidylog")
 library("gridExtra")
 library("lubridate")
+library("patchwork")
 
 theme_set(theme_bw())
 
@@ -161,7 +162,7 @@ l <- get_legend(legend)
 p <- plot_grid(short, extremes, otc, ncol = 1, align = TRUE)
 OrdinationPlot <- plot_grid(p, l, ncol = 2, rel_widths = c(2, 1))
 
-ggsave(OrdinationPlot, filename = "OrdinationPlot.jpg", height = 10, width = 6, dpi = 300)
+ggsave(OrdinationPlot, filename = "OrdinationPlot.pdf", height = 10, width = 6, dpi = 300)
 
 
 ## ----DiversityPlot
@@ -269,7 +270,7 @@ ContrastPlot <- responses %>%
 
 plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
 #Diversity <- plot_grid(GradientPlot, ContrastPlot, ncol = 2, rel_widths = c(1.3, 2))
-#ggsave(Diversity, filename = "Diversity.jpg", height = 10, width = 10, dpi = 300)
+#ggsave(Diversity, filename = "Diversity.pdf", height = 10, width = 10, dpi = 300)
 
 
 ## ----TraitDistribution
@@ -306,7 +307,7 @@ controlTraitDist <- traitsLong %>%
   facet_wrap( ~ Traits, scales = "free") +
   theme(legend.position="top")
 controlTraitDist
-#ggsave(controlTraitDist, filename = "controlTraitDist.jpg", height = 13, width = 13, dpi = 300)
+#ggsave(controlTraitDist, filename = "controlTraitDist.pdf", height = 13, width = 13, dpi = 300)
 
 ## ----Stuff
 traits2 %>% 
@@ -351,7 +352,7 @@ l2 <- get_legend(Legend)
 p3 <- plot_grid(DryWet, DryArea, AreaSLA, LDMCThick, ncol = 2)
 Traits <- plot_grid(p3, l2, ncol = 2, rel_widths = c(1, 0.2))
 Traits
-#ggsave(Traits, filename = "Traits.jpg", height = 10, width = 10, dpi = 300)
+#ggsave(Traits, filename = "Traits.pdf", height = 10, width = 10, dpi = 300)
 
 
 ## ----OtherStuff
@@ -442,8 +443,14 @@ TomstOTC <- temp %>%
   facet_wrap(~ Variable) +
   theme(legend.position="top")
   
-ClimatePlot <- grid.arrange(AirTempPlot, iButtonPlot, TomstOTC, layout_matrix = rbind(c(1,1), c(2,3)))
-ggsave(ClimatePlot, filename = "ClimatePlot.jpg", height = 10, width = 10, dpi = 300)
+
+
+ClimatePlot <- AirTempPlot / (iButtonPlot + TomstOTC) + plot_annotation(tag_levels = "a")
+
+ggsave(ClimatePlot, filename = "ClimatePlot.pdf", height = 10, width = 10, dpi = 300)
+
+
+
 
 
 
