@@ -98,31 +98,7 @@ Up to 5 leaves from preferably different healthy individuals were collected outs
 
 Singular leaves were then separated from the shoot or the individual for the measurements. Collected leaves from each plot were put in zip-lock plastic bag, per species, and stored in a cooler to keep them from drying. The leaves were scanned, weighing (wet and dry), and leaf thickness was measured. All measurements were completed within 24 hours of collection.
 
-##### Trait measurements
-Data analyses was measured according to Pérez-Harguindeguy et al. 2012 as well as the Enquist Macrosystems protocol. The text has been modified as followed: 
 
-Leaf form
-Leaves were denoted as simple and compound.
-
-Leaf area in cm2
-Each leaf (including petiole) was cut from the stem. Leaf area was measured with a flatbed scanner, set on 300dpi, and used with colours to provide maximal information. The leaves were carefully flattened and laid down in the position that gave the largest area before measurement to avoid squashing, overlapping or curled leaves. To determine the leaf area in squared centimeters ImageJ was used with the Ben Bolder’s macro method.  
-Allium prattii was harder to make flat so it was flattened as much as possible and the once still overlapping was manually taken care of by doubling the leaf area. 
-
-Simple leaves - Leaf lamina and petioles are measured independently for 5 leaves per individual, when possible. The petiole and lamina are then scanned and area is measured.
-Compound leaves - The rachis and petiole was removed. The fresh area was measured for the rachis and petiole of 5 leaves including all leaflets and petiolules per individual. The area of the rachis plus petiole was measured separately from the lamina plus petiolules.
-
-Leaf mass in grams
-Wet leaf mass was measured in grams. Leaves was then dried at 60-65°C for 72 hours and weighed for dry mass in milligrams.
-
-Leaf thickness
-The leaf thickness was measured carefully with a digital micrometer. Three random spots were selected for each leaf that includes midrib, lamina with veins and lamina without veins. The average value of these three spots was used to obtain leaf thickness. Some leaves were so small that three spots measurement was impossible. On this small leaves only one or two spots were measured and then this was used to get the average value. 
-
-Specific leaf area
-Whole leaf SLA. Specific leaf area is calculated from the leaf area for the whole leaf (measured with the scanner), divided by the dry mass (measured after 72 hours drying) for the whole leaf. SLA = leaf area (cm2)/dry mass (g).
-
-Leaf Dry Matter Content 
-LDMC was measured with the dry mass divided by the wet mass. 
-LDMC = Leaf dry mass (mg)/ leaf wet mass (g).  
 
 ##### Difference in data collection in 2015
 * Leaves were all collected on one day. All species that could be found were collected, but not necessarily always healthy plants.
@@ -141,35 +117,6 @@ In the OTCs leaves were collected throughout the entire chamber.
 Whereas in all transplant treatments leaves were only collected from individuals definitely inside the plots. 
 
 
-#### Data cleaning
-* Many variables (elevation, site, taxon, individual and leaf numbers, location, project) had to be fixed to join the leaf area and trait data
-* duplicate leafs or scans have been removed
-* The 2015 and 2016 data has been merged
-* CN data has been merged, but not checked, because it contains only a small part of the data yet.
-* SLA and LMDC has been calculated
-* The Taxonomy has been checked according to the plant list (Richard is this true?)
-
-##### 2015 data
-* The dry mass was once weight in 2015 and reweighed in 2016, because the first time many leaves had the wrong unit (g instead of mg). 2016 dry mass is used, but when it is missing the 2015 dry mass is used. These leaves have been flagged (GeneralFlag).
-* Leaf Area has been recalculating for the 2015 leaves
-* The 2015 scans were often very dirty included black lines, the leaves were folded and cut. Each scan has been checked and comments about the scan added (allComments)
-* obviously wrong areas have been removed (empty, double, dirt)
-* For a few leaves the scanning did not work (e.g. Swertias) and these areas are missing
-* Leaves with black lines or part of the leaf too white, will be scanned again with different options (cropping, etc), which might improve the calculation of the leaf area
-* 62 duplicate leaves that only had one scan have been matched according to size and mass. Some of the leaves (intermediate size and mass) might have been wrongly matched. (GeneralFlag)
-
-
-#### Checking, cleaning and flagging data
-* Each measured variable has a separate flag: Area (AreaFlag), Wet mass (WetFlag), Dry mass (DryFlag) and Leaf Thickness (ThickFlag) and one for general comments (GeneralFlag)
-* Flags that include #zap should be removed/have been removed???
-* all other comments are warnings
-* Tiny wet mass (< 0.0005) has been flagged (Dry and Wet Flag)
-* SLA > 500 and < 5 have been flagged (Area and Dry Flag)
-* Wet mass < dry mass has been flagged (Dry and Wet Flag)
-* brown and yellow leaves can affect dry mass (Wet and DryFlag)
-* eaten, folded, cut white parts, black line can affect area (AreaFlag)
-* Wrong and missing individual number, leaf number have been flagged. Does not affect analysis, unless these variables are included (GeneralFlag)
-* Impossible combinations of location, site and project have been assigned the right combination if possible. If not the leaves have been excluded
 
 
 #### WET VS. DRY MASS

@@ -41,11 +41,12 @@ vignettes/*.pdf
 !transplant_taxonomy.csv
 !trait_name_changes.csv
 !biomass_taxonomic_corrections.csv
-*.xlsx#
+!ReadMe.md
 *.rar
 *.sqlite
 *.dat
 *.RData.Tmp1
+*.rds
 
 #rasters & shapefiles
 *.bil
@@ -61,5 +62,5 @@ vignettes/*.pdf
 .my.cnf
 *.md
 
-
+*.tex
 *.DS_Store

@@ -1,13 +1,22 @@
 #### Appendix for iButton data ####
-
+## ----iButtonPlot
 library("tidyverse")
 library("lubridate")
+#devtools::install_github("Between-the-Fjords/dataDownloader")
+library("dataDownloader")
 
-load(file = "Temperature_monthlyiButton.RData")
 
-Sys.setlocale("LC_ALL", "en_GB")
+# Download OSF
+#Download files from OSF
+get_file(node = "f3knq",
+         file = "China_2019_Monthly_TemperatureiButton.csv",
+         path = "climate/data_cleaned",
+         remote_path = "Climate")
 
-head(monthlyiButton)
+monthlyiButton <- read_csv(file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv", col_names = TRUE)
+
+#Sys.setlocale("LC_ALL", "en_GB")
+
 # create Transplant values (take controls from one step down)
 WarmAirT <- monthlyiButton %>% 
   filter(depth == "air", treatment == "C", site != "H") %>%
@@ -24,20 +33,22 @@ ClimatePlot <- monthlyiButton %>%
   gather(key = Temperature, value = value, Tmean, Tmin, Tmax) %>%
   mutate(Temperature = plyr::mapvalues(Temperature, c("Tmean", "Tmin", "Tmax"), c("Mean", "Minimum", "Maximum"))) %>% 
   mutate(Temperature = factor(Temperature, levels = c("Maximum", "Mean", "Minimum"))) %>% 
-  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Low"))) %>% 
-  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Low"))) %>% 
+  mutate(destSite = plyr::mapvalues(destSite, c("H", "A", "M", "L"), c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
+  mutate(destSite = factor(destSite, levels = c("High alpine", "Alpine", "Middle", "Lowland"))) %>% 
   ggplot(aes(x = month, y = value, color = treatment)) +
   geom_line() +
-  scale_color_manual(name = "Treatment", values = c("grey", "purple", "orange")) +
+  scale_color_manual(name = "Treatment", values = c("grey", "purple", "orange"), labels=c("Control", "OTC", "Warming")) +
   labs(x = "", y = "Monthly temperature °C") +
   facet_grid(Temperature ~ destSite, scales = "free") +
   theme_minimal() +
-  theme(axis.text=element_text(size = 15), 
+  theme(axis.text=element_text(size = 12), 
         axis.title=element_text(size = 17), 
         strip.text = element_text(size = 15),
         legend.title=element_text(size = 15), 
         legend.text=element_text(size = 10))
-
+ClimatePlot
+## ----next stuff
+ggsave(ClimatePlot, filename = "climate/iButtonPlot.jpg", height = 7, width = 10, dpi = 300)
 ggsave(ClimatePlot, filename = "community/FinalFigures/ClimatePlot.jpg", height = 7, width = 10, dpi = 300)
 
 monthlyTemps <- monthlyiButton %>% 

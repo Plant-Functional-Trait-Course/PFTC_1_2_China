@@ -14,7 +14,7 @@ source("community/yans_ms_functions.R")
 
 ##load data
 #climate
-load("climate/climate_month.Rdata")
+load("climate/data_cleaned/climate_month.Rdata")
 summer_temp <- climate_month %>% 
   filter(variable == "Tair") %>% 
   mutate(month = month(month)) %>%

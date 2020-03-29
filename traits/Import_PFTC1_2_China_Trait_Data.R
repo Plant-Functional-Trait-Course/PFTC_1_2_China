@@ -20,8 +20,8 @@ trait2015_all <- trait2015_all %>%
   bind_rows(trait2015_Halenia %>% mutate(Leaf_Number = as.character(Leaf_Number)))
 
 #check character variables
-trait2015_all %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
-trait2015_all %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
+# trait2015_all %>% filter(is.na(as.numeric(Dry_Mass_2016_g))) %>% distinct(Dry_Mass_2016_g) 
+# trait2015_all %>% filter(is.na(as.numeric(Leaf_Area_m2))) %>% distinct(Leaf_Area_m2) 
 
 # fix some variables, replace missing 2016 dry mass with 2015 dry mass
 trait2015 <- trait2015_all %>% 
@@ -44,8 +44,8 @@ trait2015 <- trait2015_all %>%
 
 
 # Check if species in traits but not in area and vice versa (there should be no leafs in area and missing in trait!)
-setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
-setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
+# setdiff(trait2015$Taxon_FoC_corrected, Newleafarea2015$Taxon)
+# setdiff(Newleafarea2015$Taxon, trait2015$Taxon_FoC_corrected)
 
 
 # merge Newleafarea2015 with trait2015 data
@@ -59,7 +59,7 @@ trait2015 <- trait2015 %>%
 
 
 # Check if there are areas that do not match with traits (should be zero!)
-trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
+# trait2015 %>% filter(is.na(Taxon_written_on_envelopes)) %>% select(2:7, 21) %>% pn
 
 
 
@@ -81,7 +81,7 @@ trait2016LeafArea <- trait2016LeafArea %>%
 
 # import leaf trait data
 trait2016LeafTrait <-readLines(con = "traits/data/2016_China_envelope_names_CPcorr_30032017.csv") %>% 
-  gsub("elevation C2, entered values", "elevation C2; entered values", .) %>% 
+  gsub("elevation C2, entered values", "elevation C2_entered values", .) %>% 
   read.table(text = ., sep = ",", comment = "", header = TRUE, fill = TRUE, stringsAsFactors = FALSE) %>% 
   as_tibble()
 
@@ -128,7 +128,7 @@ allTheCrap <- bind_rows(ScansNoTraits %>% mutate(scan = TRUE),TraitsNoScans %>% 
 # Add flags for missing traits and area
 trait2016LeafTrait <- trait2016LeafTrait %>% 
   # next line can go if we have calculated leaf area!!!
-  mutate(AreaFlag = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "leaf area missing; need scaning", AreaFlag),
+  mutate(AreaFlag = ifelse(Envelope_Name_Corrected %in% c("20160810_3000_L_LO_LOCAL_Athyrium_davidii_1_1", "20160810_3500_M_MO_LOCAL_Fargesia_sp_1_4"), "leaf area missing_need scaning", AreaFlag),
          WetFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", WetFlag),
          DryFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", DryFlag),
          ThickFlag = ifelse(Envelope_Name_Corrected == "20160812_3850_A_M2_2_Geranium_pylzowianum_U_5", "envelope missing", ThickFlag),
@@ -189,6 +189,9 @@ trait2016 <- trait2016 %>%
 
 # Combine and recalculate SLA and LDMC
 traits_raw <- bind_rows(trait2016, trait2015) %>%
+  # remove unrealistic trait values
+  # remove very small Wet_mass_g
+  mutate(Wet_Mass_g = if_else(Wet_Mass_g < 0.0003354626, NA_real_, Wet_Mass_g)) %>% 
   mutate(SLA_cm2_g = Leaf_Area_cm2 / Dry_Mass_g,
          LDMC = Dry_Mass_g / Wet_Mass_g,
          Site = factor(Site, levels = c("H", "A", "M", "L")), 
@@ -201,11 +204,17 @@ traits_raw <- bind_rows(trait2016, trait2015) %>%
          Taxon = gsub("  ", " ", Taxon),
          Taxon = plyr::mapvalues(Taxon, from = trait_taxa$wrongName, to = trait_taxa$correctName),
          Taxon = trimws(Taxon)
-         )
+         ) %>% 
+  # remove SLA > 500 and larger than 5
+  mutate(SLA_cm2_g = if_else(SLA_cm2_g > 500 | SLA_cm2_g < 5, NA_real_, SLA_cm2_g)) %>% 
+  # remove LDMC > 1
+  mutate(LDMC = if_else(LDMC > 1, NA_real_, LDMC))
 
+# Error message ok. 2 species have been fixed otherwise
+# The following `from` values were not present in `x`: Codonopsis foetens subsp. Nervosa, Youngia racimifera
   
-  
-# CN Analysis
+#************************************************************************** 
+#### CN ANALYSIS ####
 # read in ID for 2016
 CN_ID2016 <- read.csv("traits/data/ChinaLeafTraitData_senttogroup.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
 
@@ -214,42 +223,41 @@ CN_ID2016 <- CN_ID2016 %>%
   filter(stoich.vial.label != "") %>% 
   select(Full_Envelope_Name, stoich.vial.label) %>% 
   mutate(Full_Envelope_Name = gsub("-", "_", Full_Envelope_Name)) %>% 
-  mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name))
+  mutate(Full_Envelope_Name = gsub("-O-", "-0-", Full_Envelope_Name)) %>% 
+  # remove Chemical data from StoichLabel 1049, 1051, 1052. Might have been mixed species
+  filter(!stoich.vial.label %in% c(1049, 1051, 1052))
 
 
 # 2015 ID
-CN_ID2015 <- read.csv("traits/data/CNAnalysis_2017-08-20.csv", sep = ";", fill = TRUE, stringsAsFactors = FALSE)
+CN_ID2015 <- read_excel(path = "traits/data/2015 China leaves.xls", col_names = TRUE)
 
 CN_ID <- CN_ID2015 %>% 
   as_tibble() %>% 
-  filter(stoich.vial.label != "") %>% 
-  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, stoich.vial.label) %>% 
-  mutate(stoich.vial.label = as.character(stoich.vial.label)) %>% 
+  filter(`stoich vial label` != "") %>% 
+  select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, `stoich vial label`) %>% 
+  mutate(stoich.vial.label = as.character(`stoich vial label`)) %>% 
+  select(-`stoich vial label`) %>% 
   bind_rows(CN_ID2016)
 
 # CN data
 CNdata <- read_excel(path = "traits/data/CHINA_CNP_19January2018.xls")
 
-# one leaf does not join!!! FIX LATER; and change to full_join
+# Still a whole batch that does not match
 CNdata <- CNdata %>% 
   select(-SITE) %>%
   rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
-  mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
-  left_join(CN_ID, by = c(StoichLabel = "stoich.vial.label"))
-
+  #mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
+  full_join(CN_ID, by = c("StoichLabel" = "stoich.vial.label"))
 
 CN2015 <- CNdata %>% 
   filter(is.na(Full_Envelope_Name)) %>% 
   select(-Full_Envelope_Name) %>% 
-  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number))
+  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number)) 
   
 CN2016 <- CNdata %>% 
   filter(!is.na(Full_Envelope_Name)) %>% 
   select(-Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
 
-
-
-#setdiff(CNdata$Full_Envelope_Name, traits_raw$Full_Envelope_Name)
 
 # Merge CN Data with traits data separate for each year
 # Using left join, because not all leaves have CN data
@@ -257,7 +265,8 @@ CN2016 <- CNdata %>%
 traits_raw2015 <- traits_raw %>% 
   filter(is.na(Full_Envelope_Name)) %>% 
   left_join(CN2015, by = c("Date", "Elevation", "Site", "Taxon", "Individual_number", "Leaf_number"))
-  
+ 
+
 # 2016 data
 traits_raw2016 <- traits_raw %>% 
   filter(!is.na(Full_Envelope_Name)) %>% 
@@ -267,10 +276,12 @@ traits_raw2016 <- traits_raw %>%
 
 
 traits_raw2 <- traits_raw2015 %>% 
-  bind_rows(traits_raw2016)
+  bind_rows(traits_raw2016) %>%
+  # remove duplicates
+  distinct()
 
 
-
+#*************************************************************************************
 #### FLAG DATA ####
 # And more Cleaning
 # Check for problematic 2016 leaves, where site, project and location do not match
@@ -281,7 +292,7 @@ traits_raw2 <- traits_raw2 %>%
          GeneralFlag = ifelse(Envelope_Name_Corrected == "20160812_3500_M_A5_2_Artemisia_flaccida_U_1", paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
          GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Polygonum_viviparum_", Envelope_Name_Corrected), paste(GeneralFlag, "Wrong Site Location or Project #zap"), GeneralFlag),
          Project = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), "1", Project),
-         GeneralFlag = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), paste(GeneralFlag, "Possible wrong Site Location Project; changed Project from 2 to 1"), GeneralFlag),
+         GeneralFlag = ifelse(grepl("20160812_3850_A_H3_2_Hypericum_wightianum_U_", Envelope_Name_Corrected), paste(GeneralFlag, "Possible wrong Site Location Project changed Project from 2 to 1"), GeneralFlag),
          Project = ifelse(grepl("20160815_4100_H_H2_6_Allium_prattii_U_|20160815_4100_H_H2_6_Polygonum_macrophyllum_U_|20160815_4100_H_H2_6_Viola_biflora_var_rockiana_1_", Envelope_Name_Corrected), "C", Project),
          GeneralFlag = ifelse(grepl("20160815_4100_H_H2_6_Allium_prattii_U_|20160815_4100_H_H2_6_Polygonum_macrophyllum_U_|20160815_4100_H_H2_6_Viola_biflora_var_rockiana_1_", Envelope_Name_Corrected), paste(GeneralFlag, "Project might be wrong changed 6 to C"), GeneralFlag),
          
@@ -304,11 +315,6 @@ traits <- traits_raw2 %>%
   filter(!grepl("not Rumex", allComments)) %>% 
   # Flag possibly problematic leaves: eaten, folded, cut, too white, etc.
   mutate(AreaFlag = ifelse(grepl("leaf eaten|white|stalk missing|folded|cut|leaf not recognised", allComments), paste(AreaFlag, "Area might be incorrect eaten cut white etc"), AreaFlag),
-         # SLA wrong
-         AreaFlag = ifelse(SLA_cm2_g > 500, paste(AreaFlag, "Area might be incorrect SLA too large"), AreaFlag),
-         AreaFlag = ifelse(SLA_cm2_g < 5, paste(AreaFlag, "Area might be incorrect SLA too small"), AreaFlag),
-         DryFlag = ifelse(SLA_cm2_g > 500, paste(DryFlag, "Dry mass might be incorrect SLA too large"), DryFlag),
-         DryFlag = ifelse(SLA_cm2_g < 5, paste(DryFlag, "Dry mass might be incorrect SLA too small"), DryFlag),
          # brown and yellow leaves
          WetFlag = ifelse(grepl("brown|yellow|eaten", allComments), paste(WetFlag, "Wet mass might be too low"), WetFlag),
          # Wet < Dry
@@ -320,26 +326,77 @@ traits <- traits_raw2 %>%
          # Missing Dry_Mass_2016_g for 2015 leaves
          DryFlag = ifelse(year(Date) == "2015" & flag == "DryMass2015", paste(DryFlag, "Area might be incorrect 2015 weighing"), DryFlag)) %>% 
   # Flag wrong Individual and leaf number
-  mutate(GeneralFlag = ifelse(Individual_number %in% c("", "Unknown", "U", "1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.2", "5.2"), paste(GeneralFlag, "Wrong Ind. number due to duplicate FileName"), GeneralFlag),
-         GeneralFlag = ifelse(Individual_number %in% c(""), paste(GeneralFlag, "Missing Ind. number"), GeneralFlag),
-         GeneralFlag = ifelse(Leaf_number %in% c("Unknown", "3 (2)", "4 (2)", "5 (2)", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"), paste(GeneralFlag, "Wrong leaf number due to duplicate or missing Ind. nr"), GeneralFlag),
+  mutate(GeneralFlag = ifelse(Individual_number %in% c("", "Unknown", "U", "1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.2", "5.2"), paste(GeneralFlag, "Wrong Ind number due to duplicate FileName"), GeneralFlag),
+         GeneralFlag = ifelse(Individual_number %in% c(""), paste(GeneralFlag, "Missing Ind number"), GeneralFlag),
+         GeneralFlag = ifelse(Leaf_number %in% c("Unknown", "3 (2)", "4 (2)", "5 (2)", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"), paste(GeneralFlag, "Wrong leaf number due to duplicate or missing Ind nr"), GeneralFlag),
          GeneralFlag = ifelse(is.na(Leaf_number), paste(GeneralFlag, "Missing leaf number"), GeneralFlag)) %>% 
   # Flag duplicate leaves where the area was merged by arranging by arranging dry mass and size
-  mutate(AreaFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(AreaFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), AreaFlag),
-         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong; duplicate EnvelopeName; matching area and mass arranged by size and mass"), DryFlag)) %>% 
+  mutate(AreaFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(AreaFlag, "Area possibly wrong_duplicate EnvelopeName_matching area and mass arranged by size and mass"), AreaFlag),
+         DryFlag = ifelse(LeafID == 2 & year(Date) == 2015, paste(DryFlag, "Area possibly wrong_duplicate EnvelopeName_matching area and mass arranged by size and mass"), DryFlag)) %>% 
   mutate(DryFlag = gsub("NA |^ ", "", DryFlag),
          AreaFlag = gsub("NA |^ ", "", AreaFlag),
          WetFlag = gsub("NA |^ ", "", WetFlag),
          ThickFlag = gsub("NA |^ ", "", ThickFlag),
-         GeneralFlag = gsub("NA |^ ", "", GeneralFlag))
-  
+         GeneralFlag = gsub("NA |^ ", "", GeneralFlag)) %>% 
+  # Remove high N values: > 6.4 (Henn et al paper)
+  mutate(N_percent = ifelse(N_percent > 6.4, NA_real_, N_percent)) %>% 
+  # Remove Wet mass if larger than dry
+  mutate(Wet_Mass_g = ifelse(WetFlag == "Wet mass might be incorrect Wet < Dry #zap", NA_real_, Wet_Mass_g),
+         LDMC = ifelse(WetFlag == "Wet mass might be incorrect Wet < Dry #zap", NA_real_, LDMC),
+         Wet_Mass_g = ifelse(WetFlag == "Wet mass might be too low Wet mass might be incorrect Wet < Dry #zap", NA_real_, Wet_Mass_g),
+         LDMC = ifelse(WetFlag == "Wet mass might be too low Wet mass might be incorrect Wet < Dry #zap", NA_real_, LDMC))
 
-#Check all combinaitons of Flags, maybe one can be removed
-# Check figures and remove
-# Remove impossible values
+# fix stuff for final data set
+traits <- traits %>% 
+  mutate(allComments = gsub(",", "_", allComments)) %>% 
+  rename("P_percent" = "P_AVG", "destBlockID" = "Location", "Treatment" = "Project") %>% 
+  # Remove leaves from Sean
+  filter(!Treatment %in% c("SEAN", "6") | is.na(Treatment)) %>% 
+  mutate(Individual_number = if_else(Individual_number == c("Unknown"), NA_character_, Individual_number)) %>% 
+  mutate(Individual_number = if_else(Individual_number == c(""), NA_character_, Individual_number)) %>% 
+  mutate(Leaf_number = if_else(Leaf_number %in% c("Unknown"), NA_character_, Leaf_number)) %>% 
+  # Add destBlockID to local 2015 leaves
+  mutate(destBlockID = case_when(is.na(Treatment) & Site == "H" ~ "HO",
+                             is.na(Treatment) & Site == "A" ~ "AO",
+                             is.na(Treatment) & Site == "M" ~ "MO",
+                             is.na(Treatment) & Site == "L" ~ "LO",
+                             TRUE ~ destBlockID)) %>% 
+  # Fix wrong dates
+  mutate(Date = if_else(Date == "2015-01-01", ymd("2015-08-20"), Date)) %>% 
+  # fix last species
+  mutate(Taxon = if_else(Taxon == "Gentiana trichomata", "Gentiana trichotoma", Taxon)) %>% 
+  # mark all 2015 leaves with Local
+  mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, StoichLabel:dC13_percent, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+
+
+# divide data set into leaf and chemical traits
+traitsLeaf <- traits %>% 
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, StoichLabel, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+
+traitsChem <- traits %>% 
+  filter(!is.na(StoichLabel)) %>% 
+  select(Date:Taxon, StoichLabel, P_percent, C_percent:dC13_percent) %>% 
+  # remove duplicate rows
+  distinct() %>% 
+  # remove rows with StoichLabel but no trait values
+  filter(!(is.na(P_percent) & is.na(C_percent) & is.na(N_percent) & is.na(CN_ratio) & is.na(dN15_percent) & is.na(dC13_percent))) %>% 
+  group_by(StoichLabel) %>% 
+  # remove 4 observations where leaves from 2 blocks were merged
+  # StoichLabel: 1014 - L5 & L6, 1054 - A1 & A2, 1063 - A5 & A6, 1181 - A1 & A2
+  mutate(n = 1:n()) %>% 
+  filter(n == 1) %>% 
+  mutate(CNP_Comment = case_when(StoichLabel == "1014" ~ "BlockID L5 and L6 merged",
+                                 StoichLabel == "1054" ~ "BlockID A1 and A2 merged",
+                                 StoichLabel == "1063" ~ "BlockID A5 and A6 merged",
+                                 StoichLabel == "1181" ~ "BlockID A1 and A2 merged"))
+
+
+
+#Check all combinations of Flags, maybe one can be removed
 #traits %>% filter(grepl("#zap", AreaFlag))
-  
-save(traits, file = "traits/traits.Rdata")
+write_csv(traitsLeaf, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_LeafTraits.csv", col_names = TRUE)
+write_csv(traitsChem, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_ChemicalTraits.csv", col_names = TRUE)
 
 
 ### Is this needed???
