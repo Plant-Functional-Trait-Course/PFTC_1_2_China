@@ -57,7 +57,7 @@ trait_plan <- drake_plan(
     
     
     x <- bind_rows(imputed_traits_home, imputed_traits_transplant)
-    attributes(x) <- attributes(imputed_traits_home)
+    attr(x, "attrib") <- attr(imputed_traits_home, "attrib")
     x
   },
 
@@ -83,7 +83,11 @@ trait_plan <- drake_plan(
   
   moments_plot = bootstrapped_trait_moments %>% ggplot(aes(x = Site, y = mean)) +
     geom_boxplot() +
-    facet_wrap(~trait, scales = "free_y")
+    facet_wrap(~trait, scales = "free_y"), 
+  
+  plot = bootstrapped_trait_moments %>% filter(!TTtreat %in% c("control", "local", "OTC")) %>%group_by(year, turfID, TTtreat, trait, Site) %>% summarise(mean = mean(mean)) %>% ggplot(aes(x = year, y = mean, colour = TTtreat, group = turfID)) +
+    geom_line() +
+    facet_grid(trait~Site, scales = "free_y")
   
 )
 
