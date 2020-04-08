@@ -9,12 +9,12 @@ library("nlme")
 library("broom")
 
 source("community/start_here.R")
-source("community/yans_ms_functions.R")
+source("community/Yanetal_2018/yans_ms_functions.R")
 
 
 ##load data
 #climate
-load("climate/data_cleaned/climate_month.Rdata")
+load("community/Yanetal_2018/data/climate_month.Rdata")
 summer_temp <- climate_month %>% 
   filter(variable == "Tair") %>% 
   mutate(month = month(month)) %>%
@@ -225,7 +225,7 @@ CommunityPlot <- ggdraw(p) +
   draw_label("Contrasts °C", x = 0.795, y = 0.03,
              vjust = 1, hjust = 1, size = 14)
 CommunityPlot
-ggsave(CommunityPlot, filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
+#ggsave(CommunityPlot, filename = "community/FinalFigures/CommunityPlot.jpg", height = 8, width = 10, dpi = 300)
 
 
 

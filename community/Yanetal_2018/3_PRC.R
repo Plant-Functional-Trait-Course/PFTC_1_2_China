@@ -5,7 +5,7 @@ library("gridExtra")
 #example(prc)
 
 source("community/start_here.R")
-source("community/prcPlotwithoutSP.R")
+source("community/Yanetal_2018/prcPlotwithoutSP.R")
 
 ## functional groups
 fun_gp <- tbl(con, "taxon") %>% 
@@ -116,7 +116,7 @@ SpScore <- SpScoreTransplant %>%
          L_OTC = (-1) * L_OTC)
 
 # Table S4
-writexl::write_xlsx(x = SpScore, path = "community/FinalFigures/SpScore.xlsx")
+#writexl::write_xlsx(x = SpScore, path = "community/FinalFigures/SpScore.xlsx")
 
 
 
@@ -146,8 +146,7 @@ spselectHA <- colSums(communitydataHA) > 50
 fitHA <- prc(response = communitydataHA, treatment = coverFatHA$newTT, time = coverFatHA$year)
 pHA <- plot(fitHA, species = FALSE, col = c("orange", "purple", "grey30"), xlab = "")
 
-ggvegan:::autoplot.prc(fitHA, xlab = "", legend.position = "top", species = FALSE) +
-  scale_colour_manual(values = c("orange", "purple", "grey30"))
+#ggvegan:::autoplot.prc(fitHA, xlab = "", legend.position = "top", species = FALSE) + scale_colour_manual(values = c("orange", "purple", "grey30"))
 
 
 
@@ -238,4 +237,4 @@ prcLegend <- cowplot::get_legend(pp)
 prcPlot <- grid.arrange(prcLegend, pHA, pAM, pML, 
              layout_matrix = rbind(c(1),c(2), c(2), c(2),c(3), c(3), c(3),c(4), c(4), c(4)))
 
-ggsave(prcPlot, filename = "community/FinalFigures/Fig2_prcPlot.jpg", height = 8, width = 6, dpi = 300)
+#ggsave(prcPlot, filename = "community/FinalFigures/Fig2_prcPlot.jpg", height = 8, width = 6, dpi = 300)

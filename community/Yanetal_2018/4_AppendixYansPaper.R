@@ -1,4 +1,4 @@
-source("community/CommunityChange.R")
+source("community/Yanetal_2018/2_CommunityChange.R")
 
 ### Supporting Information 1: Species list
 
@@ -12,7 +12,6 @@ spList <- cover_thin %>%
   spread(key = originSiteID, value = value) %>% 
   rename(FunctionalGroup = functionalGroup, Species = speciesName, HighAlpine = H, Alpine = A, Middle = M, Lowland = L) %>% 
   replace(., is.na(.), "-")
-
 
 #write_csv(spList, path = "community/FinalFigures/spList.csv", col_names = TRUE)
 
