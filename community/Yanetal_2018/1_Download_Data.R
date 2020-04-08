@@ -4,11 +4,10 @@ library("dataDownloader")
 #Download community data from OSF
 get_file(node = "f3knq",
          file = "transplant.sqlite",
-         path = "community/Yanetal_2018/data/",
+         path = "community/data/",
          remote_path = "Community")
 
 #Download climate data from OSF
-get_file(node = "f3knq",
-         file = "China_2013_2016_AirTemp.csv",
-         path = "climate/data_cleaned",
-         remote_path = "Climate")
+get_file(node = "4hjzu",
+         file = "climate_month.Rdata",
+         path = "community/Yanetal_2018/data/")
