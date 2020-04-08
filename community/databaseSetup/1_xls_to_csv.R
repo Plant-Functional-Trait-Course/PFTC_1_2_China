@@ -1,3 +1,7 @@
+####
+####Convert xls files to single csv file
+####
+
 #list of xls files
 flist <- dir("community/databaseSetup/data/commXLSx", pattern = "*.xls", full.names = TRUE, recursive = TRUE)
 

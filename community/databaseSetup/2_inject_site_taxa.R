@@ -1,3 +1,7 @@
+#### Build sqlite database from seedclimstructure.txt
+### Populate with data
+### do corrections
+
 library("DBI")
 library("RSQLite")
 library("readxl")
@@ -7,7 +11,7 @@ library("assertthat")
 library("readr")
 
 #compile all data into one csv file
-#source("community/databaseSetup/xls_to_csv.R")#uncomment to re-compile excel sheets
+#source("community/databaseSetup/1_xls_to_csv.R")#uncomment to re-compile excel sheets
 
 #function to add data to database - padding for missing columns
 dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE, ...){
@@ -20,7 +24,7 @@ dbPadWriteTable <- function(conn, table, value, row.names = FALSE, append = TRUE
 }
 
 
-#load csv file
+#load csv file made by 1_xls_to_csv.R
 dat <- read_csv("community/databaseSetup/data/allsites.csv", guess_max = 20000)
 
 #fix ".." error
@@ -121,10 +125,10 @@ turfs <- setNames(data.frame(unique(dat[, c("turfID", "TTtreat", "originPlotID",
 dbPadWriteTable(con, "turfs", value = turfs)
 
 #do taxonomic corrections
-source("community/databaseSetup/doCorrections.R")
+source("community/databaseSetup/R/doCorrections.R")
 
 #import community and environment data
-source("community/databaseSetup/importcommunity.r")
+source("community/databaseSetup/R/importcommunity.r")
 import.data(dat, mergedictionary = select(taxonomy0, oldID = oldCode, newID = newCode), flags = flags)
 
 dbDisconnect(con)
