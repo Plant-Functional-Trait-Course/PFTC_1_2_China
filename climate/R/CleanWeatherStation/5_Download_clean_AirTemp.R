@@ -1,4 +1,4 @@
-# Read in climate data from weather station
+# Read in cleaned air temperature data from weather station
 ## ----AirTempPlot
 library("tidyverse")
 library("lubridate")
@@ -25,3 +25,13 @@ AirTempPlot <- ggplot(airtemp, aes(x = dateTime, y = Tair, colour = site)) +
   facet_wrap(~ site, labeller=labeller(site = sitenames))
 AirTempPlot
 #ggsave(AirTempPlot, filename = "AirTempPlot.jpg", height = 6, width = 10, dpi = 300)
+
+
+#Download monthly data from OSF
+get_file(node = "f3knq",
+         file = "China_2013_2016_AirTemp_month.csv",
+         path = "climate/data_cleaned",
+         remote_path = "Climate")
+
+# Read in data
+airtemp_months <- read_csv(file = "climate/data_cleaned/China_2013_2016_AirTemp_month.csv", col_names = TRUE)
