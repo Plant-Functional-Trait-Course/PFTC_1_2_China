@@ -1,15 +1,19 @@
+##############################
+### DOWNLOAD DATA FROM OSF ###
+##############################
+
 #devtools::install_github("Between-the-Fjords/dataDownloader")
 library("dataDownloader")
 
 # Download zip file from OSF
 get_file(node = "f3knq",
-         file = "China_Gradient_OTC_iButton_2017.zip",
+         file = "China_H_OTC_Tomst_2020.zip",
          path = "climate/data_raw/",
          remote_path = "RawData/RawData_Climate")
 
 
 # Unzip files
-zipFile <- "climate/data_raw/China_Gradient_OTC_iButton_2017.zip"
-outDir <- "climate/data_raw/"
+zipFile <- "climate/data_raw/China_H_OTC_Tomst_2020.zip"
+outDir <- "climate/data_raw/Tomst"
 unzip(zipFile, exdir = outDir)
 

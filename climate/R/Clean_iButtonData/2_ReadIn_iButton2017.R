@@ -1,4 +1,8 @@
-### Reading in iButton data 2017
+####################################
+ ### CLEAN, CALC MEANS AND PLOT ###
+####################################
+
+### Libraries
 library("tidyverse")
 library("lubridate")
 library("readxl")
@@ -7,12 +11,13 @@ library("data.table")
 
 pn <- . %>% print(n = Inf)
 
+#### READ IN FILES ####
 # Extract file names from all iButton files to create dictionary
-myfiles <- dir(path = "climate/data_raw/China_Gradient_OTC_iButton_2017.zip", pattern = "xls", recursive = TRUE, full.names = TRUE)
+myfiles <- dir(path = "climate/data_raw/Tomst/", pattern = "xls", recursive = TRUE, full.names = TRUE)
 
 myfiles <- myfiles[!grepl("^l\\.xls", basename(myfiles), ignore.case = TRUE)] # remove l.xls file, is duplicate
 
-#### Read in iButtons Function
+### Read in iButtons Function
 ReadIniButtons <- function(textfile){
   print(textfile)
   
@@ -31,6 +36,8 @@ ReadIniButtons <- function(textfile){
 # Read in iButton data
 mdat <- map_df(myfiles, ReadIniButtons)
 
+
+#### CLEAN DATA ####
 # Extract turfID and depth from ID
 iButton <- mdat %>% 
   mutate(ID = gsub("\\_", "\\-", ID)) %>% # make all lines lower case
@@ -57,7 +64,7 @@ iButton <- iButton %>%
   group_by(date, turfID, depth, value) %>% 
   slice(1)
 
-# Clean data
+# Cleaning
 iButton <- iButton %>% 
   ungroup() %>% 
   # remove everything before 1. May in 2017 (before put to the field)
@@ -66,17 +73,16 @@ iButton <- iButton %>%
   mutate(value = ifelse(depth == "soil" & value > 25, NA, value)) %>% # soil +25
   mutate(value = ifelse(depth %in% c("soil", "ground") & value < -7, NA, value)) # soil -7
 
-write.csv(iButton, file = "climate/data_cleaned/China_2019_TemperatureiButton.csv")
+#write.csv(iButton, file = "climate/data_cleaned/China_2019_TemperatureiButton.csv")
 
-### CALCULATE DAILY DATA ###
+
+#### CALCULATE DAILY DATA ####
 dailyiButton <- iButton %>%
   mutate(date = dmy(format(date, "%d.%b.%Y"))) %>%
   group_by(date, depth, site, treatment) %>%
   summarise(n = n(), mean = mean(value), se = sd(value)/sqrt(n), min = min(value), max = max(value)) %>%
   filter(n > 6) %>%
   select(-n)
-
-
 
 
 # Check each turf
@@ -113,7 +119,7 @@ iButton %>%
   facet_grid(treatment ~ site)
   
 
-# Calculate Monthly data
+#### CALCULATE MONTHLY DATA ####
 monthlyiButton <- iButton %>% 
   mutate(month = lubridate::ymd(format(date, "%Y-%m-15"))) %>% 
   select(-date) %>%
@@ -127,7 +133,7 @@ monthlyiButton <- iButton %>%
   mutate(site = factor(site, levels = c("H", "A", "M", "L")))
  
 
-write.csv(monthlyiButton, file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv")
+#write.csv(monthlyiButton, file = "climate/data_cleaned/China_2019_Monthly_TemperatureiButton.csv")
 
 # Plot monthly data by site and depth
 monthlyiButton %>% 
