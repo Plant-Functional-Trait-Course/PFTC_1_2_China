@@ -3,8 +3,8 @@
 #load libraries
 library("tidyverse")
 
-source("climate/R/read_badly_formatted_data.R") # badly formatted data in data/csv
-source("climate/R/read_well_formatted_data.R") # better formatted data in data/2016
+source("climate/R/CleanWeatherStation/read_badly_formatted_data.R") # badly formatted data in data/csv
+source("climate/R/CleanWeatherStation/read_well_formatted_data.R") # better formatted data in data/2016
 weather2 <- weather #make safe copy
 datsaftey <- dat
 #combine output of well and badly formatted dat

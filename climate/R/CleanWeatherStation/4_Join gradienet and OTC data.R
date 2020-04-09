@@ -19,7 +19,7 @@ climate <- distinct_weather %>%
   mutate(flag = NA, comment = NA, month = month(dateTime)) %>% 
   mutate(flag = ifelse(logger == "gradient" & site == "L", "Tsoil5 decreasing variance", flag))
   
-save(climate, file = "climate/climate.Rdata")
+#save(climate, file = "climate/data_cleaned/climate.Rdata")
 
 climate <- setDT(climate)
 
@@ -42,10 +42,21 @@ full_grid <- expand.grid(logger = unique(climate_month$logger), variable = uniqu
 
 climate_month <- left_join(full_grid, climate_month) %>% tbl_df()
 
-save(climate_month, file = "climate/climate_month.Rdata")
+#save(climate_month, file = "climate/climate_month.Rdata")
+
+
+#### SAVE AIR TEMPERATURE ####
+# save only AirT
+Tair <- climate %>% 
+  select(site, dateTime, Tair, logger, flag, comment, month)
+write_csv(Tair, path = "climate/data_cleaned/China_2013_2016_AirTemp.csv")
+
+Tair_month <- climate_month %>% 
+  filter(variable == "Tair")
+write_csv(Tair_month, path = "climate/data_cleaned/China_2013_2016_AirTemp_month.csv")
 
 
 #### ANNUAL DATA ####
-climate_annaul <- 
+#climate_annaul <- 
   
-save(monthly, annual, file = paste0("climate/month_annual", Sys.Date(), ".Rdata"))
+#save(monthly, annual, file = paste0("climate/month_annual", Sys.Date(), ".Rdata"))

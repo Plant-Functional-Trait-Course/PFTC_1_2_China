@@ -6,7 +6,7 @@ library("tidyverse")
 
 #get file list
 
-fl <- dir(path = "/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/OTCs", pattern = "xls$", recursive = TRUE, full.names = TRUE)
+fl <- dir(path = "climate/data_raw/WeatherStation/ClimateData/OTCs/", pattern = "xls$", recursive = TRUE, full.names = TRUE)
 
 #loop over file list and extract data
 

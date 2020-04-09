@@ -12,7 +12,7 @@
 
 
 #list of files
-fl <- dir("/Volumes/FELLES/MATNAT/BIO/Ecological and Environmental Change/TransplantChina/ClimateData/BadlyFormatted", pattern = "csv$", recursive = TRUE, full.names = TRUE)
+fl <- dir("climate/data_raw/WeatherStation/ClimateData/BadlyFormatted", pattern = "csv$", recursive = TRUE, full.names = TRUE)
 
 
 #fix column names by mapping names onto consistant pattern
