@@ -16,7 +16,7 @@ library(ggplot2)
 #Get most recent trait data from dropbox (as of June 2018, most recent data was uploaded in January 2018)
 #setwd("~/Documents/R_data/China_2016_partitioning/012018_data_update/")
 
-load("data/traits.RData") #the data frame is called "traits"
+load("traits/data/traits.RData") #the data frame is called "traits"
 
 ###############################################################
 ##### Add taxonomic data to trait data

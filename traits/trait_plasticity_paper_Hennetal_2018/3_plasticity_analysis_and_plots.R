@@ -2,10 +2,10 @@ library(tidyverse)
 library(dplyr)
 
 ####load and organize data####
-load("data/china_intra_trait.RData")
+load("traits/data/china_intra_trait.RData")
 #comm.trait.data <- read.csv("china_community_traits.csv")
-comm.trait.data <- read.csv("data/China_moments_site_level_for_Jon_9_13_2018.csv")
-cont_dist <- read.csv("data/cont_trait_dist.csv") %>% 
+comm.trait.data <- read.csv("traits/data/China_moments_site_level_for_Jon_9_13_2018.csv")
+cont_dist <- read.csv("traits/data/cont_trait_dist.csv") %>% 
   mutate(Taxon.x = Taxon) %>% 
   select(-Taxon, -X)
 
