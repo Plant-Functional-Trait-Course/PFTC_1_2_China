@@ -8,7 +8,7 @@ library("data.table")
 pn <- . %>% print(n = Inf)
 
 # Extract file names from all iButton files to create dictionary
-myfiles <- dir(path = "~/Dropbox/iButtonDataChina", pattern = "xls", recursive = TRUE, full.names = TRUE)
+myfiles <- dir(path = "climate/data_raw/China_Gradient_OTC_iButton_2017.zip", pattern = "xls", recursive = TRUE, full.names = TRUE)
 
 myfiles <- myfiles[!grepl("^l\\.xls", basename(myfiles), ignore.case = TRUE)] # remove l.xls file, is duplicate
 
