@@ -1,9 +1,16 @@
-library(tidyverse)
-library(lubridate)
-library(broom)
+library("tidyverse")
+library("lubridate")
+library("broom")
+#devtools::install_github("Between-the-Fjords/dataDownloader")
+library("dataDownloader")
+
+# Download cleaned file from OSF
+get_file(node = "emzgf",
+         file = "traits.Rdata",
+         path = "traits/data")
 
 #### import data ####
-load("data/traits.RData")
+load(file = "traits/data/traits.RData")
 
 #rename some columns
 trait2016 <- traits %>%
@@ -90,7 +97,7 @@ trait.mod.dist <- trait.mod.mean %>%
   select(-Elevation)
 
 #save the species distributions for each trait at each site
-write.csv(trait.mod.dist, file = "data/cont_trait_dist.csv")
+write.csv(trait.mod.dist, file = "traits/data/cont_trait_dist.csv")
 
 ##put full dataset into long form
 intra.trait.data <- trait.mod %>% 
@@ -102,4 +109,4 @@ intra.trait.data <- trait.mod %>%
 
 
 #save long form full dataset
-save(intra.trait.data, file = "data/china_intra_trait.RData") 
+save(intra.trait.data, file = "traits/data/china_intra_trait.RData") 
