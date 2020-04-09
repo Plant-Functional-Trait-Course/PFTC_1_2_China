@@ -38,18 +38,35 @@
 
 
 #Bootstrapped data based on biomass dataset
+#devtools::install_github("Between-the-Fjords/dataDownloader")
+library("dataDownloader")
 
-#FOr some reason the files downloaded this way don't work, so manually download these
-#download.file(url = "https://osf.io/u7frt/download",destfile = "C:/Users/Brian/Desktop/current_projects/transplant/community/data/transplant.sqlite")
-#download.file(url = "https://osf.io/cr4p9/download",destfile = "C:/Users/Brian/Desktop/current_projects/transplant/community/data/biomass_cleaned.Rdata")
+#Download community data from OSF
+get_file(node = "f3knq",
+         file = "transplant.sqlite",
+         path = "community/data/",
+         remote_path = "Community")
+
+# Download raw data from OSF
+get_file(node = "f3knq",
+         file = "China_2016_Biomass_cleaned.csv",
+         path = "biomass/clean_data",
+         remote_path = "Biomass")
+
+# Download cleaned file from OSF
+get_file(node = "emzgf",
+         file = "traits.Rdata",
+         path = "traits/data")
 
 
 library(moments)
 
 #Load biomass data
 #load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/biomass_cleaned.Rdata")
-load("C:/Users/Brian/Desktop/current_projects/transplant/community/data/biomass_cleaned.Rdata")
-load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/traits.Rdata")
+#load("C:/Users/Brian/Desktop/current_projects/transplant/community/data/biomass_cleaned.Rdata")
+biomass_cleaned <- read_csv(file = "biomass/clean_data/China_2016_Biomass_cleaned.csv")
+#load("C:/Users/Brian/Dropbox/transplant/USE THIS DATA/traits.Rdata")
+load(file = "traits/data/traits.RData")
 
 unique(biomass$site)
 bad_spp<-unique(biomass$speciesName[which(!biomass$speciesName %in% traits$Taxon)])
@@ -429,8 +446,9 @@ for(i in 1: nrow(unique(moments_output_plastic[c('site','plot')]))){
 moment_plastic_summary_plot_level<-as.data.frame(moment_plastic_summary_plot_level)
 rm(i,j,lower_95_ci,mean_val,plot,site,sort_j,to_remove,upper_95_ci,variable,output,data_i)
 
-write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/current_projects/transplant/site_bootstrapped_moments_2_26_2018.csv")
-write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/current_projects/transplant/plot_bootstrapped_moments_2_26_2018.csv")
+# write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/current_projects/transplant/site_bootstrapped_moments_2_26_2018.csv")
+# write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/current_projects/transplant/plot_bootstrapped_moments_2_26_2018.csv")
+
 
 rm(moment_plastic_summary_plot_level,moment_plastic_summary_site_level,moments_output_plastic)
 
@@ -741,6 +759,7 @@ for(i in 1: nrow(unique(moments_output_biomass[c('site','plot')]))){
 moment_plastic_summary_plot_level<-as.data.frame(moment_plastic_summary_plot_level)
 rm(i,j,lower_95_ci,mean_val,plot,site,sort_j,to_remove,upper_95_ci,variable,output)
 
+write_csv(moment_plastic_summary_site_level, file = "traits/data/China_moments_site_level_for_Jon_9_13_2018.csv")
 #write.csv(x = moment_plastic_summary_plot_level,file = "C:/Users/Brian/Desktop/China_moments_plot_level_for_Jon_9_13_2018.csv")
 #write.csv(x = moment_plastic_summary_site_level,file = "C:/Users/Brian/Desktop/China_moments_site_level_for_Jon_9_13_2018.csv")
 
