@@ -12,7 +12,7 @@ library("dataDownloader")
 
 
 ### Read in files
-files <- dir(path = "climate/data_raw/China_H_OTC_Tomst_2020.zip", pattern = "\\.xlsx$", full.names = TRUE, recursive = TRUE)
+files <- dir(path = "climate/data_raw/TomsT/", pattern = "\\.xlsx$", full.names = TRUE, recursive = TRUE)
 
 # Function to read in data
 temp <- map_df(set_names(files), function(file) {

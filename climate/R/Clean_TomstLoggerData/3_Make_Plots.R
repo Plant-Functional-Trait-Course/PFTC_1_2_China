@@ -13,7 +13,7 @@ library("dataDownloader")
 ## ----TomstOTCPlot
 #### Load clean data
 # Download OSF
-#Download files from OSF
+#Download cleaned data from OSF
 get_file(node = "f3knq",
          file = "China_2019_Climate_TomstLogger.csv",
          path = "climate/data_cleaned",
