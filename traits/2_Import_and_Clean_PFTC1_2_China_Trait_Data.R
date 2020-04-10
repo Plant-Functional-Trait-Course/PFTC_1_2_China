@@ -9,7 +9,7 @@ pn <- . %>% print(n = Inf)
 #### IMPORT DATA 2015 ####
 
 # Import leaf area
-source("traits/LeafArea2_2015.R")
+source("traits/R/LeafArea2_2015.R")
 
 # import trait data
 trait2015_all <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
@@ -80,7 +80,7 @@ trait2016LeafArea <- trait2016LeafArea %>%
 
 
 # import leaf trait data
-trait2016LeafTrait <-readLines(con = "traits/data/2016_China_envelope_names_CPcorr_30032017.csv") %>% 
+trait2016LeafTrait <- readLines(con = "traits/data/2016_China_envelope_names_CPcorr_30032017.csv") %>% 
   gsub("elevation C2, entered values", "elevation C2_entered values", .) %>% 
   read.table(text = ., sep = ",", comment = "", header = TRUE, fill = TRUE, stringsAsFactors = FALSE) %>% 
   as_tibble()
