@@ -137,18 +137,19 @@ traitsWideL <- traitsLeaf %>%
 
 traitsLongL <- traitsWideL %>% 
   select(Date, Elevation, Site, Taxon, Individual_number, Leaf_number, Wet_Mass_g.log, Dry_Mass_g.log, Leaf_Thickness_Ave_mm.log, Leaf_Area_cm2.log, SLA_cm2_g, LDMC) %>% 
-  gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
+  gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number) %>% 
+  filter(!is.na(Value))
 
 
 traitsLongC <- traitsChem %>% 
-  select(Date, Elevation, Site, Taxon, P_percent, C_percent, N_percent, CN_ratio, dN15_percent, dC13_percent) %>% 
+  select(Date, Elevation, Site, Taxon, P_percent, C_percent, N_percent, CN_ratio, dN15_permil, dC13_permil) %>% 
   gather(key = Traits, value = Value, -Date, -Elevation, -Site, -Taxon)
 
 traitsLong <- traitsLongL %>% bind_rows(traitsLongC)
 
 controlTraitDist <- traitsLong %>% 
   filter(!is.na(Value)) %>% 
-  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm.log", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "P_percent", "C_percent", "N_percent", "CN_ratio", "dN15_percent", "dC13_percent"))) %>% 
+  mutate(Traits = factor(Traits, levels = c("Wet_Mass_g.log", "Dry_Mass_g.log", "Leaf_Thickness_Ave_mm.log", "Leaf_Area_cm2.log", "SLA_cm2_g", "LDMC", "P_percent", "C_percent", "N_percent", "CN_ratio", "dN15_permil", "dC13_permil"))) %>% 
   ggplot(aes(x = Value, fill = Site)) +
   geom_density(alpha = 0.5) +
   scale_fill_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
