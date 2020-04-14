@@ -9,7 +9,7 @@ p.caption {
 }
 </style>
 
-```{r, include = FALSE}
+```{r InitialSettings, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -43,14 +43,14 @@ Vandvik et al. (under review in DataScience). Plant traits and vegetation data f
 ## PROJECT AND SITE INFORMATION
 This project reports on plant functional traits, vegetation, ecosystem, and climate data in response to climate change experiments and along a 1000 m elevational gradient in the Gongga Mountains, Sichuan Province, China. Across four sites along the elevational gradient, we conducted whole-community TransPlant warming and cooling experiments and passive Open Top chamber (OTC) warming experiments. The data were collected between 2012 and 2020 as part of several Chinese and Norwegian research projects and the international Plant Functional Traits Courses 1 and 2 (PFTC1 and PFTC2).
 
-```{r echo=FALSE}
+```{r DownloadMeta, echo=FALSE, include=FALSE}
 get_file(node = "f3knq",
          file = "metaCH.csv",
          path = "data", 
          remote_path = "Meta Data")
 ```
 
-```{r echo=FALSE}
+```{r ReadFile, echo=FALSE}
 read.csv(file = "data/metaCH.csv", header = TRUE, sep = ";") %>% 
   select(-Country, -Gradient) %>% 
   mutate(Site = recode(Site, "H" = "High Elevation", "A" = "Alpine", "M" = "Middle", "L" = "Lowland")) %>% 
@@ -62,7 +62,7 @@ read.csv(file = "data/metaCH.csv", header = TRUE, sep = ";") %>%
 knitr::include_graphics('./map/TransplantMap.png')
 ```
 
-```{r echo=FALSE, out.width='60%', fig.cap= "Experimental set up fo rht different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant"}
+```{r echo=FALSE, out.width='60%', fig.cap= "Experimental set up for the different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant"}
 knitr::include_graphics('./map/ChinaMountain.jpg')
 ```
 
@@ -82,38 +82,39 @@ Thus, each OTC has a local unmanipulated control, and each transplanted turf has
 
 
 ## DATASETS, CODE AND ANALYSES
-The raw and cleaned datasets are stored on OSF Transplant Experiment Gongga Mountain: https://osf.io/f3knq/
+The raw and cleaned datasets are stored on OSF PFTCourses Elevational Gradient and TransPlant Experiment, Gongga Mountain, China: https://osf.io/f3knq/
 
-The data was processed and analysed using R. All code is stored on github: https://github.com/richardjtelford/transplant
+The data was processed and analysed using R. All code is stored on github: https://github.com/Plant-Functional-Trait-Course/PFTC_1_2_China
 
 ### Download data
 To download the data, the following function can be used:
 
-```{r eval=FALSE}
+```{r InstallPackages, eval=TRUE}
 #install.packages("remotes")
-remotes::install_github("Between-the-Fjords/dataDownloader")
-library("dataDownloader")
+#remotes::install_github("Plant-Functional-Trait-Course/PFTCFunctions")
+library("PFTCFunctions")
 ```
 
-
-
-```{r eval=FALSE}
+```{r DownloadExample, eval=TRUE}
 #Download files from OSF
-get_file(node = "f3knq",
-         file = "biomass2015.xls",
-         path = "biomass/data",
-         remote_path = "RawData")
+download_PFTC_data(country = "China", 
+                   datatype = "biomass", 
+                   path = "data")
 ```
 
-Use the following nodes, files and remote path to download the data:
-
-```{r echo=FALSE}
-# dat <- gs_title("LocationOfPFTCData")
-# traits <- gs_read(ss = dat, ws = "Tabellenblatt1") %>%
-#   filter(Country == "China") %>%
-#   select(-Country) %>%
-#   knitr::kable()
+Use the following specifications to download the data:
+```{r showCode, echo = TRUE, eval=FALSE}
+data("location", package = "PFTCFunctions")
 ```
+
+```{r showTable, echo = FALSE}
+data("location", package = "PFTCFunctions")
+location %>% 
+  select(Country, DataType, Remark) %>% 
+  filter(Country == "China") %>% 
+  knitr::kable()
+```
+
 
 
 
