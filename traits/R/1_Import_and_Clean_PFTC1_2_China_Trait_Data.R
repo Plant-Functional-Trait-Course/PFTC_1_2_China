@@ -252,11 +252,15 @@ CNdata <- CNdata %>%
 CN2015 <- CNdata %>% 
   filter(is.na(Full_Envelope_Name)) %>% 
   select(-Full_Envelope_Name) %>% 
-  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number)) 
+  mutate(Date = dmy(Date), Site = as.character(Site), Leaf_number = as.character(Leaf_number)) %>% 
+  mutate(P_AVG = if_else(P_AVG == "REPEAT", NA_character_, P_AVG),
+         P_AVG = as.numeric(P_AVG))
   
 CN2016 <- CNdata %>% 
   filter(!is.na(Full_Envelope_Name)) %>% 
-  select(-Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number)
+  select(-Date, -Elevation, -Site, -Taxon, -Individual_number, -Leaf_number) %>% 
+  mutate(P_AVG = if_else(P_AVG == "REPEAT", NA_character_, P_AVG),
+         P_AVG = as.numeric(P_AVG))
 
 
 # Merge CN Data with traits data separate for each year
@@ -390,7 +394,6 @@ traitsChem <- traits %>%
                                  StoichLabel == "1054" ~ "BlockID A1 and A2 merged",
                                  StoichLabel == "1063" ~ "BlockID A5 and A6 merged",
                                  StoichLabel == "1181" ~ "BlockID A1 and A2 merged"))
-
 
 
 #Check all combinations of Flags, maybe one can be removed
