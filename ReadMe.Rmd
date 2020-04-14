@@ -28,21 +28,26 @@ source("community/start_here.R")
 
 knitr::read_chunk("DataPaper_Vandviketal_2020/1_Download_Data.R")
 knitr::read_chunk("DataPaper_Vandviketal_2020/2_Figures_ChinaDataPaper.R")
+knitr::read_chunk("DataPaper_Vandviketal_2020/3_Ordination.R")
 knitr::read_chunk("climate/R/Clean_iButtonData/3_DownloadCleanData_CalcMeans_Plot.R")
 
 theme_set(theme_bw(base_size = 12))
 
 
 ```
-# TRANSPLANT EXPERIMENT GONGGA MOUNTAIN - CHINA
+# PFTCOURSES ELEVATIONAL GRADIENT AND TRANSPLANT EXPERIMENT, GONGGA MOUNTAIN, CHINA
 
-## STUDY AND SITE INFORMATION
-The transplant study is located in the Gongga Mountains in Sichuan Province, south-west China. The study contains four sites spanning from 3000 to 4130 m a.s.l. along an elevational gradient. The vegetation ranges from coniferous-broadleaved forest to alpine meadows.
+This is the git repository for the paper:
+Vandvik et al. (under review in DataScience). Plant traits and vegetation data from climate warming experiments along an 1100 m elevation gradient in Gongga Mountains, China.
 
-```{r echo=FALSE, eval = FALSE}
+## PROJECT AND SITE INFORMATION
+This project reports on plant functional traits, vegetation, ecosystem, and climate data in response to climate change experiments and along a 1000 m elevational gradient in the Gongga Mountains, Sichuan Province, China. Across four sites along the elevational gradient, we conducted whole-community TransPlant warming and cooling experiments and passive Open Top chamber (OTC) warming experiments. The data were collected between 2012 and 2020 as part of several Chinese and Norwegian research projects and the international Plant Functional Traits Courses 1 and 2 (PFTC1 and PFTC2).
+
+```{r echo=FALSE}
 get_file(node = "f3knq",
          file = "metaCH.csv",
-         path = "data")
+         path = "data", 
+         remote_path = "Meta Data")
 ```
 
 ```{r echo=FALSE}
@@ -230,6 +235,11 @@ Over the years of collecting this extensive data set, different people were invo
 
 ```
 
+
+```{r OrdinationPlot, echo=FALSE, eval = TRUE, fig.cap="Figure 4 Community response to experimental temperature change including Open Top Chamber warming, transplantation to warmer sites, and transplantation to colder sites across the 4 study sites."}
+
+
+```
 
 
 

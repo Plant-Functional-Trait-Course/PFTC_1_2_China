@@ -145,12 +145,22 @@ l <- get_legend(legend)
 # plot 3 plots together, plus legend
 p <- plot_grid(short, extremes, otc, ncol = 1, align = TRUE)
 OrdinationPlot <- plot_grid(p, l, ncol = 2, rel_widths = c(2, 1))
+OrdinationPlot
 ##----
 #ggsave(OrdinationPlot, filename = "OrdinationPlot.pdf", height = 10, width = 6, dpi = 300)
 
 
 
 ## ----TraitsPlots
+traitsLeaf <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_LeafTraits.csv", col_names = TRUE)
+traitsChem <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_ChemicalTraits.csv", col_names = TRUE)
+
+traitsWideL <- traitsLeaf %>% 
+  mutate(Wet_Mass_g.log = log(Wet_Mass_g),
+         Dry_Mass_g.log = log(Dry_Mass_g),
+         Leaf_Thickness_Ave_mm.log = log(Leaf_Thickness_Ave_mm),
+         Leaf_Area_cm2.log = log(Leaf_Area_cm2)) %>% 
+  mutate(Site = factor(Site, levels = c("H", "A", "M", "L"))) 
 
 DryWet <- traitsWideL %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Wet_Mass_g), colour = Site)) +
@@ -158,25 +168,25 @@ DryWet <- traitsWideL %>%
   scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
-DryArea <- traitsWide %>% 
+DryArea <- traitsWideL %>% 
   ggplot(aes(x = log(Dry_Mass_g), y = log(Leaf_Area_cm2), colour = Site)) +
   geom_point(alpha = 0.4) +
   scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
-AreaSLA <- traitsWide %>% 
+AreaSLA <- traitsWideL %>% 
   ggplot(aes(x = Leaf_Area_cm2, y = SLA_cm2_g, colour = Site)) +
   geom_point() +
   scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
-LDMCThick <- traitsWide %>% 
+LDMCThick <- traitsWideL %>% 
   ggplot(aes(x = LDMC, y = Leaf_Thickness_Ave_mm, colour = Site)) +
   geom_point() +
   scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland")) +
   theme(legend.position = "none")
 
-Legend <- traitsWide %>% 
+Legend <- traitsWideL %>% 
   ggplot(aes(x = log(Leaf_Area_cm2), y = log(SLA_cm2_g), colour = Site)) +
   geom_point() +
   scale_color_brewer(palette = "RdBu", direction = -1, labels=c("High alpine", "Alpine", "Middle", "Lowland"))
