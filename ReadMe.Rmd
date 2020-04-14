@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 library("tidyverse")
+library("lubridate")
 library("readxl")
 library("dataDownloader")
 library("cowplot")
@@ -121,7 +122,7 @@ location %>%
 ### Functional leaf trait dataset
 
 #### Leaf traits measurements
-Leaves from the most common species in the plant community at each of the four sites in August 2015 and 2016. Leaves were collected from as many species as possible in each site. Plants were collected outside of the experimental plots and we aimed to collect one healthy, fully expanded leaf from up to five individuals for each species at each site where they occurred. However, this was not possible for all species at all sites. To avoid repeated sampling from a single clone, we selected individuals that were visibly separated from other stems of that species. Most trait samples come from just outside the transplanted turfs to avoid damaging the vegetation in the experimental plots
+Leaves from the most common species in the plant community were collected at each of the four sites in August 2015 and 2016. Plants were collected outside of the experimental plots and we aimed to collect one healthy, fully expanded leaf from up to five individuals for each species at each site where they occurred. This was not possible for all species at all sites. To avoid repeated sampling from a single clone, we selected individuals that were visibly separated from other stems of that species.
 
 Ten of the most common species along the gradient were selected for sampling in the experimental turfs during August 2016. These include _Artemisia flaccida_, _Epilobium fangii_, _Geranium pylzowianum_, _Hypericum wrightianum_, _Pedicularis davidii_, _Persicaria vivipara_, _Plantago asiatica_, _Potentilla leuconota_, _Veronica szechuanica_, and _Viola biflora_ var. _rockiana_. 
 
@@ -134,13 +135,13 @@ The dataset contains eleven functional traits related to potential physiological
 - carbon (C, %)
 - nitrogen (N, %)
 - phosphorus (P, %)
-- carbon:nitrogen (C:N)
+- carbon:nitrogen ratio (C:N)
 - nitrogen:phosphorus (N:P)
-- carbon13 isotope ratio (δ ^13^C, h)
-- nitrogen15 isotope ratio (δ ^15^N, h)
+- carbon13 isotope (δ ^13^C, ‰)
+- nitrogen15 isotope (δ ^15^N, ‰)
 
 
-The traits were measured according to Pérez-Harguindeguy et al. (2012) as well as the Enquist Macrosystems protocol. The text has been modified as followed: 
+The traits were measured according to Pérez-Harguindeguy et al. (2012) as well as the Enquist Macrosystems protocol with the following modifications: 
 
 ##### Leaf area in cm2
 
@@ -152,7 +153,7 @@ Compound leaves - The rachis and petiole was removed. The fresh area was measure
 
 ##### Leaf mass in grams
 
-Wet leaf mass was measured in grams. Leaves was then dried at 60-65°C for 72 hours and weighed for dry mass in milligrams.
+Wet leaf mass was measured in grams. Leaves was then dried at 60-65°C for 72 hours and weighed for dry mass in grams.
 
 ##### Leaf thickness
 
@@ -164,9 +165,11 @@ Whole leaf SLA. Specific leaf area is calculated from the leaf area for the whol
 
 ##### Leaf Dry Matter Content 
 
-LDMC was measured with the dry mass divided by the wet mass. 
+LDMC was measured with the leaf dry mass divided by the leaf wet mass. 
 LDMC = Leaf dry mass (mg)/ leaf wet mass (g).  
 
+
+To download the clean data use: `DataPaper_Vandviketal_2020/Download_Data.R`
 
 #### Traits Distributions and Values
 
@@ -181,8 +184,8 @@ LDMC = Leaf dry mass (mg)/ leaf wet mass (g).
 #### Data processing and cleaning 
 All data was manually entered from into digital worksheets, and manually proofread.
 
-All data cleaning and checking was done using code. The data was checked and corrected for spelling mistakes and mislabeled. Missing or mislabeled information (e.g. elevation, site, taxon, individual and leaf numbers, location, project) were added or corrected if possible. Duplicated entries were removed. The taxonomy was checked according to the Plant List.
-The data was then checked visually to detect apparent measurement errors. Unrealistic values were removed. For the trait data this included leaves with leaf dry matter values higher than 1 g/g, leaves with specific leaf area values less than 5 cm^2^ /g or greater than 500 cm^2^ /g and leaf nitrogen values higher than 6.4%. The nitrogen cutoff value was chosen based on the highest published leaf nitrogen values found in the Botanical Information and Ecology Network (Enquist et al., 2009) for the genera in our study.
+All data cleaning and checking was done using code. The data was checked and corrected for spelling mistakes and mislabelling. Missing or mislabeled information (e.g. elevation, site, taxon, individual and leaf numbers, location, project) were added or corrected if possible. Duplicated entries were removed. The taxonomy was checked according to the Plant List (http://www.theplantlist.org/).
+The data was then checked visually to detect apparent measurement errors. Unrealistic values were removed. For the trait data this included leaves with very small wet mass (< 0.0003354626), leaf dry matter values higher than 1 g/g, leaves with specific leaf area values less than 5 cm^2^ /g or greater than 500 cm^2^ /g and leaf nitrogen values higher than 6.4%. The nitrogen cutoff value was chosen based on the highest published leaf nitrogen values found in the Botanical Information and Ecology Network (Enquist et al., 2009) for the genera in our study.
 
 
 ##### 2015 data and flags
@@ -201,9 +204,6 @@ The 2015 data had some unhealthy leaves which led to unrealistic trait values th
 * Each measured variable has a separate flag: Area (AreaFlag), Wet mass (WetFlag), Dry mass (DryFlag) and Leaf Thickness (ThickFlag) and one for general comments (GeneralFlag)
 * Flags that include #zap should be removed before analysing
 * all other comments are warnings
-* Tiny wet mass (< 0.0005) has been flagged (Dry and Wet Flag)
-* SLA > 500 and < 5 have been flagged (Area and Dry Flag)
-* Wet mass < dry mass has been flagged (Dry and Wet Flag)
 * brown and yellow leaves can affect dry mass (Wet and DryFlag)
 * eaten, folded, cut white parts, black line can affect area (AreaFlag)
 * Wrong and missing individual number, leaf number have been flagged. Does not affect analysis, unless these variables are included (GeneralFlag)
@@ -212,19 +212,19 @@ The 2015 data had some unhealthy leaves which led to unrealistic trait values th
 
 
 
-
 ### Community Dataset
 All vascular plant species in each plot were surveyed in 2012 (before treatment), and annually between 2013 and 2016. At each survey, vegetation was surveyed during the peak of the growing season using a 25 cm × 25 cm. We registered presence-absence of all species in 25 subplots per plot and estimated the percentage coverage of each species in the whole plot. Note that the total coverage in each plot can exceed 100 due to layering of the vegetation. Mean vegetation height for each plot was measured in 2013, at five points per plot.
 
-To load the community data start with the R script: `start_here.R`
+The community data is stored in a database.
 
-** Reference: **
-Yang, Y., Halbritter, A.H., Klanderud, K., Telford, R.J., Wang, G. and Vandvik, V. (2018). Transplants, open top chambers (OTCs) and gradient studies ask different questions in climate change effects studies. _Frontiers in Plant Science_ 9:1574. [https://doi.org/10.3389/fpls.2018.01574](https://doi.org/10.3389/fpls.2018.01574)
+To download the clean database use: `DataPaper_Vandviketal_2020/Download_Data.R`
+To load the community data start with the R script: `community/start_here.R`
+
 
 #### Data cleaning steps
 All data was manually entered from into digital worksheets, and manually proofread.
 
-All data cleaning and checking was done using code. The data was checked and corrected for spelling mistakes and mislabeled. Missing information (e.g. PlotID, Site) were added if possible. The data was then checked visually to detect apparent measurement errors. Unrealistic values were removed. For the trait data this included leaves with leaf dry matter values higher than 1 g/g, leaves with specific leaf area values less than 5 cm2 /g or greater than 500 cm2 /g and leaf nitrogen values higher than 6.4%. The nitrogen cutoff value was chosen based on the highest published leaf nitrogen values found in the Botanical Information and Ecology Network (Enquist et al., 2009) for the genera in our study.
+All data cleaning and checking was done using code. The data was checked and corrected for spelling mistakes and mislabeled. Missing information (e.g. PlotID, Site) were added if possible. The data was then checked visually to detect apparent measurement errors.
 
 Over the years of collecting this extensive data set, different people were involved, which increases the risk of observation errors. In particular, species can be misidentified (i.e., sterile graminoids) or might be overlooked in one of the observations. These errors will result in pseudo-turnover in the plant community data. To detect such errors, we compared each recorded species in each subplot over the 5 years (`subturf_maps.Rmd`). We used the subplots to assign unidentified or missing species if there was a record of the species in the previous and following year. Further, we re-estimated species cover in cases where cover was either too low or high to be real when comparing with other years, and replaced these values with the mean cover from the previous and following year. We did such re-estimates in totally 48 occasions (c. 1%) of the whole 5 years dataset.
 
@@ -247,7 +247,7 @@ Over the years of collecting this extensive data set, different people were invo
 ### Biomass
 We measured standing biomass at each of the sites in 2015 (Table 1). As the above-ground biomass dies back each winter, standing biomass can be considered an approximation of  above-ground net productivity . We harvested all above ground biomass from 13 0.5 m × 0.5 m plots at the High alpine site and 20 plots from the other sites. The biomass was oven-dried it at 60◦C for 72 h before weighing. 
 
-Script: `biomass.R`
+To download the clean data use: `biomass/R/1_Download_Cleaned_Biomass.R`
 
 #### Problems
 * There are still duplicate plants in the data set that should be merged
@@ -265,22 +265,15 @@ Script: `biomass.R`
 - Air (30 cm), ground (0 cm) and soil temperature (-5 cm) from iButtions in summer 2017. This data was recorded inside the OTC and outside. 
 - Air (15 cm), ground (0 cm) and soil temperature (-6 cm) and volumetirc soil moisture from Tomst loggers from September 2019 onwards.
 
+To download the clean data use: `DataPaper_Vandviketal_2020/Download_Data.R`
+
 
 #### Data processing
 The data was provided in excel or csv files. The data was checked visually for outliers. Outliers and unrealistic values were removed.
 
 
-```{r AirTempPlot, echo=FALSE, eval = TRUE, fig.cap= "Air temperature in °C from 2013 - 2016 in each site along the elevational gradient."}
+```{r Climate figure, echo=FALSE, eval = TRUE, fig.cap= "Temperature data from the sites along the 1100 m elevation gradient and open top chambers at Mt. Gongga. (a) Continuous (10 minute interval) temperature at 2 m above ground from the climate stations (dataset v), (b) mean temperature during tthe growing season (June-September) at 30 cm above ground inside and outside OTCs at each site (dataset vi), and (c) monthly mean temperatures at 15 cm above ground, at ground leve, and 6 cm below ground in the OTCs at the High alpine site."}
 
-
-```
-
-```{r iButtonPlot, echo=FALSE, eval = TRUE, fig.cap= "Max, mean and min monthly air temperature in °C in the four summer month of 2017 in each site along the elevational gradient. The colour indicate the different warming treatments."}
-
-
-```
-
-```{r TomstOTCPlot, echo=FALSE, eval = TRUE, fig.cap= "Mean monthly air, ground and soil temperature in °C in autumne 2019 at the High alpine site. The colour indicate the different warming treatments."}
 
 ```
 
