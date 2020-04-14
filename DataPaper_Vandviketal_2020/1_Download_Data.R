@@ -1,3 +1,4 @@
+## ----downloadData
 #devtools::install_github("Between-the-Fjords/dataDownloader")
 library("dataDownloader")
 
@@ -42,3 +43,4 @@ get_file(node = "f3knq",
          file = "China_2016_Biomass_cleanded.csv",
          path = "biomass/",
          remote_path = "Biomass")
+## ----

@@ -26,12 +26,9 @@ library("ggvegan")
 
 source("community/start_here.R")
 
+knitr::read_chunk("DataPaper_Vandviketal_2020/1_Download_Data.R")
 knitr::read_chunk("DataPaper_Vandviketal_2020/2_Figures_ChinaDataPaper.R")
 knitr::read_chunk("climate/R/Clean_iButtonData/3_DownloadCleanData_CalcMeans_Plot.R")
-knitr::read_chunk("climate/R/AppendixiButton.R")
-knitr::read_chunk("climate/R/Clean_TomstLoggerData/2_Read_Clean_Tomst_Data.R")
-knitr::read_chunk("climate/R/Clean_TomstLoggerData/3_Make_Plots.R")
-knitr::read_chunk("climate/R/CleanWeatherStation/5_Download_clean_AirTemp.R")
 
 theme_set(theme_bw(base_size = 12))
 
