@@ -23,7 +23,7 @@ library("dataDownloader")
 library("cowplot")
 library("vegan")
 library("ggvegan")
-#library("googlesheets")
+library("patchwork")
 
 source("community/start_here.R")
 
@@ -37,7 +37,7 @@ theme_set(theme_bw(base_size = 12))
 
 ```
 
-```{r downloadData, echo=FALSE}
+```{r downloadData, echo=FALSE, include=FALSE}
 get_file(node = "f3knq",
          file = "metaCH.csv",
          path = "data", 
