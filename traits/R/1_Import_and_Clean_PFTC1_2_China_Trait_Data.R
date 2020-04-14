@@ -389,7 +389,7 @@ traitsChem <- traits %>%
   mutate(CNP_Comment = case_when(StoichLabel == "1014" ~ "BlockID L5 and L6 merged",
                                  StoichLabel == "1054" ~ "BlockID A1 and A2 merged",
                                  StoichLabel == "1063" ~ "BlockID A5 and A6 merged",
-                                 StoichLabel == "1181" ~ "BlockID A1 and A2 merged"))
+                                 StoichLabel == "1181" ~ "BlockID A1 and A2 merged")) %>% rename("dN15_permil" = "dN15_percent", "dC13_permil" = "dC13_percent")
 
 
 
