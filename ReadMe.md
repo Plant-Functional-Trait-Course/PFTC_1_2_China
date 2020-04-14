@@ -47,13 +47,14 @@ China.
 
 <div class="figure">
 
-<img src="./map/ChinaMountain.jpg" alt="Experimental set up for the different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant" width="60%" />
+<img src="./map/ChinaMountain.jpg" alt="Experimental set up for the different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant. For each site elevations are shown in meters a.s.l. and summer temperature in °C." width="60%" />
 
 <p class="caption">
 
 Experimental set up for the different warming treatments at each site.
 Shown are control, local control, OTC, and transplant and arrows
-indicate direction of transplant
+indicate direction of transplant. For each site elevations are shown in
+meters a.s.l. and summer temperature in °C.
 
 </p>
 
@@ -81,7 +82,7 @@ designated to six different experimental treatments:
 
 Thus, each OTC has a local unmanipulated control, and each transplanted
 turf has an “origin” site and a “destination” site, with two types of
-controls, local transplant and untouched plots, in each
+controls, local transplant and untouched plots.
 
 ## DATASETS, CODE AND ANALYSES
 
@@ -175,7 +176,7 @@ The traits were measured according to Pérez-Harguindeguy et al. (2012)
 as well as the Enquist Macrosystems protocol with the following
 modifications:
 
-##### Leaf area in cm2
+##### Leaf area in cm<sup>2</sup>
 
 Each leaf (including petiole) was cut from the stem. Leaf area was
 measured with a flatbed scanner, set on 300dpi, and used with colours to
@@ -221,7 +222,7 @@ the whole leaf (measured with the scanner), divided by the dry mass
 ##### Leaf Dry Matter Content
 
 LDMC was measured with the leaf dry mass divided by the leaf wet mass.
-LDMC = Leaf dry mass (mg)/ leaf wet mass (g).
+LDMC = Leaf dry mass (g)/ leaf wet mass (g).
 
 To download the clean data use:
 `DataPaper_Vandviketal_2020/Download_Data.R`
@@ -249,10 +250,10 @@ Duplicated entries were removed. The taxonomy was checked according to
 the Plant List (<http://www.theplantlist.org/>). The data was then
 checked visually to detect apparent measurement errors. Unrealistic
 values were removed. For the trait data this included leaves with very
-small wet mass (\< 0.0003354626), leaf dry matter values higher than 1
-g/g, leaves with specific leaf area values less than 5 cm<sup>2</sup> /g
-or greater than 500 cm<sup>2</sup> /g and leaf nitrogen values higher
-than 6.4%. The nitrogen cutoff value was chosen based on the highest
+small wet mass (\< 0.0003 g), leaf dry matter values higher than 1 g/g,
+leaves with specific leaf area values less than 5 cm<sup>2</sup> /g or
+greater than 500 cm<sup>2</sup> /g and leaf nitrogen values higher than
+6.4%. The nitrogen cutoff value was chosen based on the highest
 published leaf nitrogen values found in the Botanical Information and
 Ecology Network (Enquist et al., 2009) for the genera in our study.
 
@@ -261,20 +262,20 @@ Ecology Network (Enquist et al., 2009) for the genera in our study.
 The 2015 data had some unhealthy leaves which led to unrealistic trait
 values that needed to be flagged.
 
-  - The dry mass was once weight in 2015 and reweighed in 2016, because
+  - The dry mass was once weighed in 2015 and reweighed in 2016, because
     the first time many leaves had the wrong unit (g instead of mg).
     2016 dry mass is used, but when it is missing the 2015 dry mass is
     used. These leaves have been flagged (GeneralFlag).
-  - Leaf Area has been recalculating for the 2015 leaves (see below)
+  - Leaf Area has been recalculated for the 2015 leaves (see below)
   - The 2015 scans were often very dirty included black lines, the
     leaves were folded and cut. Each scan has been checked and comments
     about the scan added (allComments)
   - obviously wrong areas have been removed (empty, double, dirt)
   - For a few leaves the scanning did not work (e.g. Swertias) and these
     areas are missing
-  - Leaves with black lines or part of the leaf too white, will be
-    scanned again with different options (cropping, etc), which might
-    improve the calculation of the leaf area
+  - Leaves with black lines or part of the leaf too white, were scanned
+    again with different options (cropping, etc), improving the
+    calculation of the leaf area
   - 62 duplicate leaves that only had one scan have been matched
     according to size and mass. Some of the leaves (intermediate size
     and mass) might have been wrongly matched. (GeneralFlag)
@@ -364,7 +365,7 @@ the above-ground biomass dies back each winter, standing biomass can be
 considered an approximation of above-ground net productivity . We
 harvested all above ground biomass from 13 0.5 m × 0.5 m plots at the
 High alpine site and 20 plots from the other sites. The biomass was
-oven-dried it at 60◦C for 72 h before weighing.
+oven-dried it at 60°C for 72 h before weighing.
 
 To download the clean data use: `biomass/R/1_Download_Cleaned_Biomass.R`
 

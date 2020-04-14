@@ -71,7 +71,7 @@ read.csv(file = "data/metaCH.csv", header = TRUE, sep = ";") %>%
 knitr::include_graphics('./map/TransplantMap.png')
 ```
 
-```{r echo=FALSE, out.width='60%', fig.cap= "Experimental set up for the different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant"}
+```{r echo=FALSE, out.width='60%', fig.cap= "Experimental set up for the different warming treatments at each site. Shown are control, local control, OTC, and transplant and arrows indicate direction of transplant. For each site elevations are shown in meters a.s.l. and summer temperature in °C."}
 knitr::include_graphics('./map/ChinaMountain.jpg')
 ```
 
@@ -87,7 +87,7 @@ Within each of the seven blocks at each site, plots were randomly designated to 
 - transplanting within blocks (to control for the transplanting itself)(Local transplant; all sites)
 - an untouched control plot (Control; all sites)
 
-Thus, each OTC has a local unmanipulated control, and each transplanted turf has an “origin” site and a “destination” site, with two types of controls, local transplant and untouched plots, in each
+Thus, each OTC has a local unmanipulated control, and each transplanted turf has an “origin” site and a “destination” site, with two types of controls, local transplant and untouched plots.
 
 
 ## DATASETS, CODE AND ANALYSES
@@ -151,7 +151,7 @@ The dataset contains eleven functional traits related to potential physiological
 
 The traits were measured according to Pérez-Harguindeguy et al. (2012) as well as the Enquist Macrosystems protocol with the following modifications: 
 
-##### Leaf area in cm2
+##### Leaf area in cm^2^ 
 
 Each leaf (including petiole) was cut from the stem. Leaf area was measured with a flatbed scanner, set on 300dpi, and used with colours to provide maximal information. The leaves were carefully flattened and laid down in the position that gave the largest area before measurement to avoid squashing, overlapping or curled leaves. To determine the leaf area in squared centimeters ImageJ was used with the Ben Bolder’s macro method.  
 _Allium prattii_ was harder to make flat so it was flattened as much as possible and the once still overlapping was manually taken care of by doubling the leaf area. 
@@ -174,7 +174,7 @@ Whole leaf SLA. Specific leaf area is calculated from the leaf area for the whol
 ##### Leaf Dry Matter Content 
 
 LDMC was measured with the leaf dry mass divided by the leaf wet mass. 
-LDMC = Leaf dry mass (mg)/ leaf wet mass (g).  
+LDMC = Leaf dry mass (g)/ leaf wet mass (g).  
 
 
 To download the clean data use: `DataPaper_Vandviketal_2020/Download_Data.R`
@@ -193,18 +193,18 @@ To download the clean data use: `DataPaper_Vandviketal_2020/Download_Data.R`
 All data was manually entered from into digital worksheets, and manually proofread.
 
 All data cleaning and checking was done using code. The data was checked and corrected for spelling mistakes and mislabelling. Missing or mislabeled information (e.g. elevation, site, taxon, individual and leaf numbers, location, project) were added or corrected if possible. Duplicated entries were removed. The taxonomy was checked according to the Plant List (http://www.theplantlist.org/).
-The data was then checked visually to detect apparent measurement errors. Unrealistic values were removed. For the trait data this included leaves with very small wet mass (< 0.0003354626), leaf dry matter values higher than 1 g/g, leaves with specific leaf area values less than 5 cm^2^ /g or greater than 500 cm^2^ /g and leaf nitrogen values higher than 6.4%. The nitrogen cutoff value was chosen based on the highest published leaf nitrogen values found in the Botanical Information and Ecology Network (Enquist et al., 2009) for the genera in our study.
+The data was then checked visually to detect apparent measurement errors. Unrealistic values were removed. For the trait data this included leaves with very small wet mass (< 0.0003 g), leaf dry matter values higher than 1 g/g, leaves with specific leaf area values less than 5 cm^2^ /g or greater than 500 cm^2^ /g and leaf nitrogen values higher than 6.4%. The nitrogen cutoff value was chosen based on the highest published leaf nitrogen values found in the Botanical Information and Ecology Network (Enquist et al., 2009) for the genera in our study.
 
 
 ##### 2015 data and flags
 The 2015 data had some unhealthy leaves which led to unrealistic trait values that needed to be flagged.
 
-* The dry mass was once weight in 2015 and reweighed in 2016, because the first time many leaves had the wrong unit (g instead of mg). 2016 dry mass is used, but when it is missing the 2015 dry mass is used. These leaves have been flagged (GeneralFlag).
-* Leaf Area has been recalculating for the 2015 leaves (see below)
+* The dry mass was once weighed in 2015 and reweighed in 2016, because the first time many leaves had the wrong unit (g instead of mg). 2016 dry mass is used, but when it is missing the 2015 dry mass is used. These leaves have been flagged (GeneralFlag).
+* Leaf Area has been recalculated for the 2015 leaves (see below)
 * The 2015 scans were often very dirty included black lines, the leaves were folded and cut. Each scan has been checked and comments about the scan added (allComments)
 * obviously wrong areas have been removed (empty, double, dirt)
 * For a few leaves the scanning did not work (e.g. Swertias) and these areas are missing
-* Leaves with black lines or part of the leaf too white, will be scanned again with different options (cropping, etc), which might improve the calculation of the leaf area
+* Leaves with black lines or part of the leaf too white, were scanned again with different options (cropping, etc), improving the calculation of the leaf area
 * 62 duplicate leaves that only had one scan have been matched according to size and mass. Some of the leaves (intermediate size and mass) might have been wrongly matched. (GeneralFlag)
 
 
@@ -253,7 +253,7 @@ Over the years of collecting this extensive data set, different people were invo
 
 
 ### Biomass
-We measured standing biomass at each of the sites in 2015 (Table 1). As the above-ground biomass dies back each winter, standing biomass can be considered an approximation of  above-ground net productivity . We harvested all above ground biomass from 13 0.5 m × 0.5 m plots at the High alpine site and 20 plots from the other sites. The biomass was oven-dried it at 60◦C for 72 h before weighing. 
+We measured standing biomass at each of the sites in 2015 (Table 1). As the above-ground biomass dies back each winter, standing biomass can be considered an approximation of  above-ground net productivity . We harvested all above ground biomass from 13 0.5 m × 0.5 m plots at the High alpine site and 20 plots from the other sites. The biomass was oven-dried it at 60°C for 72 h before weighing. 
 
 To download the clean data use: `biomass/R/1_Download_Cleaned_Biomass.R`
 
