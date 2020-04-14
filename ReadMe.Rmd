@@ -36,6 +36,14 @@ theme_set(theme_bw(base_size = 12))
 
 
 ```
+
+```{r downloadData, echo=FALSE}
+get_file(node = "f3knq",
+         file = "metaCH.csv",
+         path = "data", 
+         remote_path = "Meta Data")
+```
+
 # PFTCOURSES ELEVATIONAL GRADIENT AND TRANSPLANT EXPERIMENT, GONGGA MOUNTAIN, CHINA
 
 This is the git repository for the paper:
