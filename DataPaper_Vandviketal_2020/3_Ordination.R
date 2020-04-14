@@ -1,4 +1,6 @@
 ##----OrdinationPlot
+source("community/start_here.R")
+
 extreme_colours <- c("grey", "grey40", "red", "blue")
 short_colours <- c("grey", "grey40", "orange", "lightblue")
 otc_colours <- c("grey", "grey40", "purple")
@@ -15,7 +17,7 @@ cover_fat <- cover_thin %>%
 cover_fat_spp <- cover_fat %>% select(-(originSiteID:year))
 
 set.seed(33)
-NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30)#DNC
+NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30, trace = 0)#DNC
 # Kontrollene vekt 0
 
 extremefNMDS <- fortify(NMDS) %>% 
@@ -50,7 +52,7 @@ cover_fat <- cover_thin %>%
 cover_fat_spp <- cover_fat %>% select(-(originSiteID:year))
 
 set.seed(33)
-NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30)#DNC
+NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30, trace = 0)#DNC
 # Kontrollene vekt 0
 
 shortfNMDS <- fortify(NMDS) %>% 
@@ -85,7 +87,7 @@ cover_fat <- cover_thin %>%
 cover_fat_spp <- cover_fat %>% select(-(originSiteID:year))
 
 set.seed(33)
-NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30)#DNC
+NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30, trace = 0)#DNC
 # Kontrollene vekt 0
 
 otcfNMDS <- fortify(NMDS) %>% 
@@ -120,7 +122,7 @@ cover_fat <- cover_thin %>%
 cover_fat_spp <- cover_fat %>% select(-(originSiteID:year))
 
 set.seed(33)
-NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30)#DNC
+NMDS <- metaMDS(cover_fat_spp, noshare = TRUE, try = 30, trace = 0)#DNC
 # Kontrollene vekt 0
 
 lfNMDS <- fortify(NMDS) %>% 
