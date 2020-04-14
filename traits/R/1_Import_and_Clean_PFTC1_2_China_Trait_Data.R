@@ -245,7 +245,7 @@ CNdata <- read_excel(path = "traits/data/CHINA_CNP_19January2018.xls")
 # Still a whole batch that does not match
 CNdata <- CNdata %>% 
   select(-SITE) %>%
-  rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_percent = `δ15N ‰`, dC13_percent = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
+  rename(StoichLabel = `STOICH LABEL`, C_percent = `%C`, N_percent = `%N`, C_percent = `%C`, CN_ratio = `C/N`, dN15_permil = `δ15N ‰`, dC13_permil = `δ13C ‰`, P_Std_Dev = `P_STD DEV`, P_Co_Var = `P_CO VAR`) %>% 
   #mutate(StoichLabel = gsub("\\.000000", "", StoichLabel)) %>% 
   full_join(CN_ID, by = c("StoichLabel" = "stoich.vial.label"))
 
@@ -367,7 +367,7 @@ traits <- traits %>%
   mutate(Taxon = if_else(Taxon == "Gentiana trichomata", "Gentiana trichotoma", Taxon)) %>% 
   # mark all 2015 leaves with Local
   mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
-  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, StoichLabel:dC13_percent, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, StoichLabel:dC13_permil, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
 
 
 # divide data set into leaf and chemical traits
@@ -376,11 +376,11 @@ traitsLeaf <- traits %>%
 
 traitsChem <- traits %>% 
   filter(!is.na(StoichLabel)) %>% 
-  select(Date:Taxon, StoichLabel, P_percent, C_percent:dC13_percent) %>% 
+  select(Date:Taxon, StoichLabel, P_percent, C_percent:dC13_permil) %>% 
   # remove duplicate rows
   distinct() %>% 
   # remove rows with StoichLabel but no trait values
-  filter(!(is.na(P_percent) & is.na(C_percent) & is.na(N_percent) & is.na(CN_ratio) & is.na(dN15_percent) & is.na(dC13_percent))) %>% 
+  filter(!(is.na(P_percent) & is.na(C_percent) & is.na(N_percent) & is.na(CN_ratio) & is.na(dN15_permil) & is.na(dC13_permil))) %>% 
   group_by(StoichLabel) %>% 
   # remove 4 observations where leaves from 2 blocks were merged
   # StoichLabel: 1014 - L5 & L6, 1054 - A1 & A2, 1063 - A5 & A6, 1181 - A1 & A2
@@ -389,7 +389,7 @@ traitsChem <- traits %>%
   mutate(CNP_Comment = case_when(StoichLabel == "1014" ~ "BlockID L5 and L6 merged",
                                  StoichLabel == "1054" ~ "BlockID A1 and A2 merged",
                                  StoichLabel == "1063" ~ "BlockID A5 and A6 merged",
-                                 StoichLabel == "1181" ~ "BlockID A1 and A2 merged")) %>% rename("dN15_permil" = "dN15_percent", "dC13_permil" = "dC13_percent")
+                                 StoichLabel == "1181" ~ "BlockID A1 and A2 merged"))
 
 
 
