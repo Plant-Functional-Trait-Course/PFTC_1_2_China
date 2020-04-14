@@ -1,4 +1,4 @@
-## ordination
+##----OrdinationPlot
 extreme_colours <- c("grey", "grey40", "red", "blue")
 short_colours <- c("grey", "grey40", "orange", "lightblue")
 otc_colours <- c("grey", "grey40", "purple")
@@ -145,8 +145,8 @@ l <- get_legend(legend)
 # plot 3 plots together, plus legend
 p <- plot_grid(short, extremes, otc, ncol = 1, align = TRUE)
 OrdinationPlot <- plot_grid(p, l, ncol = 2, rel_widths = c(2, 1))
-
-ggsave(OrdinationPlot, filename = "OrdinationPlot.pdf", height = 10, width = 6, dpi = 300)
+##----
+#ggsave(OrdinationPlot, filename = "OrdinationPlot.pdf", height = 10, width = 6, dpi = 300)
 
 
 
@@ -186,4 +186,5 @@ l2 <- get_legend(Legend)
 p3 <- plot_grid(DryWet, DryArea, AreaSLA, LDMCThick, ncol = 2)
 Traits <- plot_grid(p3, l2, ncol = 2, rel_widths = c(1, 0.2))
 Traits
+##----
 #ggsave(Traits, filename = "Traits.pdf", height = 10, width = 10, dpi = 300)
