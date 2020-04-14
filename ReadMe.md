@@ -7,7 +7,7 @@ p.caption {
 TRANSPLANT EXPERIMENT GONGGA MOUNTAIN - CHINA
 =============================================
 
-STUDY AND SITE INFROMATION
+STUDY AND SITE INFORMATION
 --------------------------
 
 The transplant study is located in the Gongga Mountains in Sichuan Province, south-west China. The study contains four sites spanning from 3000 to 4130 m a.s.l. along an elevational gradient. The vegetation ranges from coniferous-broadleaved forest to alpine meadows.
