@@ -40,7 +40,7 @@ get_file(node = "f3knq",
 
 #Download biomass data from OSF
 get_file(node = "f3knq",
-         file = "China_2016_Biomass_cleanded.csv",
+         file = "China_2016_Biomass_cleaned.csv",
          path = "biomass/",
          remote_path = "Biomass")
 ## ----
