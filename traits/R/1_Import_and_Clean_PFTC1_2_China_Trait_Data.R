@@ -10,6 +10,7 @@ pn <- . %>% print(n = Inf)
 
 # Import leaf area
 source("traits/R/LeafArea2_2015.R")
+source("traits/R/Taxonomy_harmonizer.R")
 
 # import trait data
 trait2015_all <- read_delim(file = "traits/data/2015_ChinaLeafTraitData_corrCP_16032017.csv", delim = ",", comment = "")
@@ -371,7 +372,11 @@ traits <- traits %>%
   mutate(Taxon = if_else(Taxon == "Gentiana trichomata", "Gentiana trichotoma", Taxon)) %>% 
   # mark all 2015 leaves with Local
   mutate(Treatment = ifelse(is.na(Treatment), "LOCAL", Treatment)) %>% 
-  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, StoichLabel:dC13_permil, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments)
+  select(Envelope_Name_Corrected:Leaf_Thickness_3_mm, Leaf_Thickness_4_mm:Leaf_Thickness_6_mm, Leaf_Thickness_Ave_mm, Leaf_Area_cm2, SLA_cm2_g:LDMC, P_percent, StoichLabel:dC13_permil, WetFlag, DryFlag, ThickFlag, AreaFlag, GeneralFlag, allComments) %>% 
+  # harmonize taxa with community data
+  left_join(taxon_harmonizer, by = "Taxon") %>% 
+  mutate(Taxon = coalesce(new_taxon, Taxon)) %>% 
+  select(-speciesName, -new_taxon)
 
 
 # divide data set into leaf and chemical traits
@@ -400,15 +405,4 @@ traitsChem <- traits %>%
 #traits %>% filter(grepl("#zap", AreaFlag))
 write_csv(traitsLeaf, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_LeafTraits.csv", col_names = TRUE)
 write_csv(traitsChem, path = "traits/data_cleaned/PFTC1.2_China_2015_2016_ChemicalTraits.csv", col_names = TRUE)
-
-
-### Is this needed???
-# calculate large residuals: Area vs. DryMass
-LargeResid <- traits %>% filter(!is.na(Leaf_Area_cm2), !is.na(Dry_Mass_g))
-fit <- lm(log(Leaf_Area_cm2) ~ log(Dry_Mass_g), data = LargeResid)
-LargeResid$resid_Area_Dry <- resid(fit)
-LargeResid <- LargeResid %>% select(Date, Site, Elevation, Taxon, Individual_number, Leaf_number, Dry_Mass_g, Leaf_Area_cm2, resid_Area_Dry)
-
-#traits <- traits %>% left_join(LargeResid, by = c("Date", "Site", "Elevation", "Taxon", "Individual_number", "Leaf_number", "Dry_Mass_g", "Leaf_Area_cm2")) %>% mutate(flag = ifelse(abs(resid_Area_Dry) > 1.2, paste(flag, "LargeResid", sep = "_"), NA))
-  
 
