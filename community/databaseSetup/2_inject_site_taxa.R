@@ -5,7 +5,6 @@
 library("DBI")
 library("RSQLite")
 library("readxl")
-library("taxize")
 library("tidyverse")
 library("assertthat")
 library("readr")

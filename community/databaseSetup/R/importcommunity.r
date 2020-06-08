@@ -55,7 +55,7 @@ import.data<-function(dat, mergedictionary, flags){#dat is data.frame from the c
     #TurfEnv    
     turfEnv <- dat %>% 
     filter(Measure == "cover%", comment != "Yans correction") %>% 
-      select(turfID, year, moss, lichen, litter, soil, rock, totalVascular, totalBryophytes, totalLichen, vegetationHeight, mossHeight, litterThickness, comment, recorder, date) %>%
+      select(turfID, year, totalVascular, vegetationHeight, mossHeight, comment, recorder, date) %>%
       filter(is.na(comment) | comment != "correction")
 
     assert_that(!any(nchar(as.character(turfEnv$comment[!is.na(turfEnv$comment)])) > 255))
