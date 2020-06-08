@@ -69,6 +69,11 @@ local[local == "Kob.pgy"] <- "Kob.pyg"
 local[local == "pol.cya"] <- "Pol.cya"
 local[local == "Potentilla stenophylla"] <- "Potentilla stenophylla var. emergens"
 local[local == "Ligularia subspicata"] <- "Ligularia pleurocaulis"
+local[local == "Juncus leucanthus"] <- "Juncus leucomelas"
+local[local == "Pru.his"] <- "Pru.vul"
+local[local == "Prunella hispida"] <- "Pru.vul"
+local[local == "Smi.jap"] <- "Mai.hen"
+local[local == "Hal.cor"] <- "Hal.ell"
 all_local <- c(local$old, local$new)
 all_local <- all_local[!is.na(all_local)]
 
@@ -231,17 +236,17 @@ for(i in 1:nrow(special)) {
 
 
 
-##manual presence absence corrections for aju.dec/pru.his/cli.pol L1-C
+##manual presence absence corrections for aju.dec/pru.vul/cli.pol L1-C
 target <- dat$Measure == "Presence" & dat$turfID == "L1-C" & dat$year == 2014
 
 dat$Cli.pol[target] <- dat$Aju.dec[target]# Cli.pol get all Aju.dec subplots
-dat$Pru.his[target] <- dat$Pru.his[dat$Measure == "Presence" & dat$turfID == "L1-C" & dat$year == 2013]# Pru.his gets previous years subplots 
+dat$Pru.vul[target] <- dat$Pru.vul[dat$Measure == "Presence" & dat$turfID == "L1-C" & dat$year == 2013]# Pru.vul gets previous years subplots 
 
 dat$Aju.dec[target] <- NA#Aju.dec is wiped
 
 #manual flags
 flags <- flags %>% bind_rows(
-  crossing(year = 2014, turfID = "L1-C", species = c("Cli.pol", "Pru.his"), subPlot = c(1:25, "cover%")))  
+  crossing(year = 2014, turfID = "L1-C", species = c("Cli.pol", "Pru.vul"), subPlot = c(1:25, "cover%")))  
 
 
 ####corrections to percent values 
@@ -250,7 +255,7 @@ perc_subplot <- read_csv("community/databaseSetup/data/cover_correction.csv", co
 #zap blank rows
 perc_subplot <- perc_subplot[!is.na(perc_subplot$year), ]
 
-assert_that(all(perc_subplot$X.turf %in% dat$turfID))#check no bad turfs
+assert_that(all(perc_subplot$`#turf` %in% dat$turfID))#check no bad turfs
 assert_that(all(perc_subplot$species %in%  taxonomy$species))#check no bad turfs
 
 dat$comment[is.na(dat$comment)] <- "" #cannot have NAs for logical test below

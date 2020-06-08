@@ -132,15 +132,3 @@ source("community/databaseSetup/R/importcommunity.r")
 import.data(dat, mergedictionary = select(taxonomy0, oldID = oldCode, newID = newCode), flags = flags)
 
 dbDisconnect(con)
-
-## upload to dropbox
-
-upload <- readline("type 'yes' to upload file to dropbox for distribution")
-if(grepl("yes", upload, ignore.case = TRUE)){
-  rdrop2::drop_upload(
-    file = "community/data/transplant.sqlite", 
-    dest = "transplant/communityDatabase/"
-    )
-  
-}
-

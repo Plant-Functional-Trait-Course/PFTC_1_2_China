@@ -61,7 +61,7 @@ Gal.pal,Cal.pal,0,Caltha palustris ,Ranunculaceae,forb
 Gal.spa,Gal.spa,,Galearis spathulata (Lindley) P. F. Hunt,Orchidaceae,forb
 Gen.cra,Gen.cra,,Gentiana crassuloides Bureau & Franchet,Gentiana,forb
 Gen.pal,Gen.pal,,Gentianopsis paludosa (Munro ex J. D. Hooker) Ma,Gentiana,forb
-Gen.pse,Gen.pse,,Gentiana aquatica var. pseudoaquatica,Gentiana,forb
+Gen.pse,Gen.pse,,Gentiana pseudoaquatica,Gentiana,forb
 Gen.sp,Rho.fas,0,Rhodiola fastigiata,Crassulaceae,forb
 Gen.tri,Gen.tri,,Gentiana trichotoma,Gentiana,forb
 Ger.nep,Ger.nep,,Geranium nepalense Sweet,Geraniaceae,forb
@@ -69,13 +69,13 @@ Ger.pyl,Ger.pyl,,Geranium pylzowianum Maximowicz,Geraniaceae,forb
 Geu.ale,Geu.ale,,Geum aleppicum Jacquin,Rosaceae,forb
 Gym.con,Gym.con,,Gymnadenia conopsea,Orchidaceae,forb
 Hal.cor,Hal.cor,,Halenia corniculata,Gentiana,forb
-Hal.ell,Hal.cor,0,Halenia corniculata,Gentiana,forb
+Hal.ell,Hal.ell,,Halenia elliptica,Gentiana,forb
 Hed.alg,Hed.alg,,Hedysarum algidum L. Z. Shue in W. T. Wang et al.,Leguminosae,forb
 Hem.het,Hem.het,,Hemiphragma heterophyllum Wallich,Scrophulariaceae,forb
 Hyp.wig,Hyp.wig,,Hypericum wightianum Wallich ex Wight & Arnott,Guttiferae,forb
 Jun.all,Jun.all,,Juncus allioides Franchet,Juncaceae,gramineae
 Jun.him,Jun.him,,Juncus himalensis Klotzsch in Klotzsch & Garcke,Juncaceae,gramineae
-Jun.leu,Jun.leu,,Juncus leucanthus Royle ex D. Don,Juncaceae,gramineae
+Jun.leu,Jun.leu,,Juncus leucomelas,Juncaceae,gramineae
 Jun.pri,Jun.pri,,Juncus prismatocarpus R. Brown,Juncaceae,gramineae
 Jun.set,Jun.set,,Juncus setchuensis Buchen.,Juncaceae,gramineae
 Kob.cer,Kob.cer,,Kobresia cercostachys (Franchet) C. B. Clarke,Cyperaceae,sedge
