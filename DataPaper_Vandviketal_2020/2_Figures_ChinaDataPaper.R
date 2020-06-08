@@ -271,11 +271,11 @@ ClimatePlot
 
 ## ----SpList
 ### SPECIES TABLE
-biomass <- read_csv(file = "biomass/China_2016_Biomass_cleanded.csv")
+biomass <- read_csv(file = "biomass/China_2016_Biomass_cleaned.csv")
 traitsLeaf <- read_csv(file = "traits/data_cleaned/PFTC1.2_China_2015_2016_LeafTraits.csv")
 
 
-spList <- taxa %>% select(speciesName) %>%  
+spList <- cover_thin %>% distinct(speciesName) %>%   
   mutate(Dataset = "community") %>% 
   rbind(biomass %>% select(speciesName) %>% 
           distinct() %>% 
