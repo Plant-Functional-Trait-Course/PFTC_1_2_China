@@ -160,10 +160,14 @@ controlTraitDist
 #ggsave(controlTraitDist, filename = "controlTraitDist.pdf", height = 13, width = 13, dpi = 300)
 
 ## ----Stuff
-traits2 %>% 
+traitsLong %>% 
   filter(!is.na(Value)) %>% 
   group_by(Traits) %>% 
-  summarise(min = min(Value), max = max(Value))
+  summarise(min = min(Value, na.rm = TRUE), max = max(Value, na.rm = TRUE))
+
+traitsLeaf %>% 
+  group_by() %>% 
+  summarise(min(Leaf_Thickness_Ave_mm, na.rm = TRUE), max(Leaf_Thickness_Ave_mm, na.rm = TRUE))
 
 
 ## ----OtherStuff
@@ -333,4 +337,18 @@ airtemp %>%
   summarise(n = n())
 
 
+# Table 4
+tbl(con, "turfEnvironment") %>%
+  collect() %>% 
+  pivot_longer(cols = c(moss:litterThickness), names_to = "group", values_to = "value") %>% 
+  group_by(group) %>% 
+  summarise(min = min(value, na.rm = TRUE), max = max(value, na.rm = TRUE)) %>% 
+  print(n = Inf)
 
+
+tbl(con, "turfEnvironment") %>%
+  collect() %>% 
+  pivot_longer(cols = c(moss:litterThickness), names_to = "group", values_to = "value") %>% 
+  ggplot(aes(x = factor(year), y = value)) +
+  geom_boxplot() +
+  facet_wrap(~ group, scales = "free")
