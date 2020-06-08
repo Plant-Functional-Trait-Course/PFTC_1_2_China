@@ -376,7 +376,7 @@ traits <- traits %>%
   # harmonize taxa with community data
   left_join(taxon_harmonizer, by = "Taxon") %>% 
   mutate(Taxon = coalesce(new_taxon, Taxon)) %>% 
-  select(-speciesName, -new_taxon)
+  select(-new_taxon)
 
 
 # divide data set into leaf and chemical traits
