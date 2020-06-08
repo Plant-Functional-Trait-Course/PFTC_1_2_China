@@ -2,6 +2,11 @@
 ####Convert xls files to single csv file
 ####
 
+#load packages
+library("tidyverse")
+library("readxl")
+library("assertthat")
+
 #list of xls files
 flist <- dir("community/databaseSetup/data/commXLSx", pattern = "*.xls", full.names = TRUE, recursive = TRUE)
 
@@ -44,7 +49,11 @@ taxonomy <- taxonomy %>%
   filter(!is.na(fullName)) # I hate excel
 
 #sanity checks on taxonomy file
-dups <- taxonomy %>% filter(is.na(keep)) %>% group_by(newCode) %>% filter(n() > 1) %>% arrange(newCode)
+dups <- taxonomy %>% 
+  filter(is.na(keep)) %>% 
+  group_by(newCode) %>% 
+  filter(n() > 1) %>% 
+  arrange(newCode)
 assert_that(nrow(dups) == 0)
 
 taxonomy <- taxonomy %>% 
@@ -56,7 +65,7 @@ allsites <- plyr::ldply(flist, function(fl){
   onesite <- plyr::ldply(excel_sheets(fl), function(sheet){
     print(sheet)
     dat <- read_excel(fl, sheet = sheet)
-    names(dat) <- gsub("__\\d$", "", names(dat)) #force duplicate columns to have same name. Probably won't work with future versions of tibble
+    names(dat) <- gsub("...\\d+$", "", names(dat)) #force duplicate columns to have same name. Probably won't work with future versions of tibble
 
     #fix metadata
     dat <- dat[!is.na(dat$Measure), ]
