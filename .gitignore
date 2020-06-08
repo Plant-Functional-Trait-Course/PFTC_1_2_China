@@ -27,6 +27,7 @@ vignettes/*.pdf
 
 #data
 *.xls
+*.xls#
 *.csv
 *.Rdata
 *.odb
