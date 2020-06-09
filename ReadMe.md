@@ -358,6 +358,19 @@ including Open Top Chamber warming, transplantation to warmer sites, and
 transplantation to colder sites across the 4 study
 sites.](ReadMe_files/figure-gfm/OrdinationPlot-1.png)
 
+### Vegetation height and structure dataset
+
+Vegetation height and structure data for each plot was recorded each
+year. Mean vegetation height and bryophyte depth was measured at five
+evenly spaced points per plot using a ruler. The percent coverage of
+vascular plant vegetation was also recorded. Obvious outliers in the
+data were removed.
+
+Vegetation height increases in the first 3 years and then decreases,
+because biomass accumulates inside the fence over time (no grazing).
+After 2014 the vegetation inside the fence was clipped at the end of the
+field season to remove this fence effect.
+
 ### Biomass
 
 We measured standing biomass at each of the sites in 2015 (Table 1). As

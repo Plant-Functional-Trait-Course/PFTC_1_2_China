@@ -251,6 +251,12 @@ Over the years of collecting this extensive data set, different people were invo
 ```
 
 
+### Vegetation height and structure dataset
+Vegetation height and structure data for each plot was recorded each year. Mean vegetation height and bryophyte depth was measured at five evenly spaced points per plot using a ruler. The percent coverage of vascular plant vegetation was also recorded. Obvious outliers in the data were removed.
+
+Vegetation height increases in the first 3 years and then decreases, because biomass accumulates inside the fence over time (no grazing). After 2014 the vegetation inside the fence was clipped at the end of the field season to remove this fence effect. 
+
+
 
 ### Biomass
 We measured standing biomass at each of the sites in 2015 (Table 1). As the above-ground biomass dies back each winter, standing biomass can be considered an approximation of  above-ground net productivity . We harvested all above ground biomass from 13 0.5 m × 0.5 m plots at the High alpine site and 20 plots from the other sites. The biomass was oven-dried it at 60°C for 72 h before weighing. 
