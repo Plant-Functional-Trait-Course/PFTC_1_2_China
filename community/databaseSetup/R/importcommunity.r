@@ -56,7 +56,13 @@ import.data<-function(dat, mergedictionary, flags){#dat is data.frame from the c
     turfEnv <- dat %>% 
     filter(Measure == "cover%", comment != "Yans correction") %>% 
       select(turfID, year, totalVascular, vegetationHeight, mossHeight, comment, recorder, date) %>%
-      filter(is.na(comment) | comment != "correction")
+      filter(is.na(comment) | comment != "correction") %>% 
+      # fix unrealistic outliers
+      mutate(mossHeight = case_when(turfID == "A4-OTC" & year == 2014 ~ 3.7,
+                                    turfID == "H7-1" & year == 2014 ~ 2.1,
+                                    turfID == "L7-4" & year == 2013 ~ 1.2,
+                                    turfID == "L2-2" & year == 2013 ~ 1.7,
+                                    TRUE ~ mossHeight))
 
     assert_that(!any(nchar(as.character(turfEnv$comment[!is.na(turfEnv$comment)])) > 255))
     dbPadWriteTable(con, "turfEnvironment", turfEnv)
